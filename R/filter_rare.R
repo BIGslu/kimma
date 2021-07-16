@@ -1,8 +1,22 @@
+#' Filter rare and low abundance genes
+#'
+#' Filter genes at a specified minimum counts per million (CPM) in a minmum number or percent of total samples.
+#'
+#' @param dat DGEList output by edgeR::DEGList( )
+#' @param min.CPM numeric minimum counts per million (CPM)
+#' @param gene.var character name for column with gene names in dat$genes that matches names in expression data dat$E. Default "geneName"
+#' @param min.sample numeric minimum number of samples
+#' @param min.pct numeric minimum percent of samples (0-100)
+#'
+#' @return DGEList
+#' @export
+#'
+#' @examples
+#' filter_rare(dat = dat.example, min.CPM = 0.1, min.sample = 3)
+#' filter_rare(dat = dat.example, min.CPM = 0.1, min.pct = 10)
+
 filter_rare <- function(dat, min.CPM, gene.var="geneName",
                         min.sample=NULL, min.pct=NULL){
-  ##### Packages #####
-  `%notin%` <- Negate(`%in%`)
-
   ##### Check parameters #####
   #Correct input object type?
   if(class(dat) != "DGEList"){ stop("dat object must be a DGEList object") }
@@ -36,7 +50,7 @@ filter_rare <- function(dat, min.CPM, gene.var="geneName",
   #If gene info exists, filter as well
   if(!is.null(dat.filter$genes)){
     #Gene name column in gene info table?
-    if(gene.var %notin% colnames(dat.filter$genes)){
+    if(!(gene.var %in% colnames(dat.filter$genes))){
       stop("Gene name varible not present in gene info (dat$genes)") }
 
     # Filter gene key
