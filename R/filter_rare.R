@@ -1,6 +1,5 @@
 filter_rare <- function(dat, min.CPM, gene.var="geneName",
-                        min.sample=NULL, min.pct=NULL,
-                        name="dat.filter"){
+                        min.sample=NULL, min.pct=NULL){
   ##### Packages #####
   `%notin%` <- Negate(`%in%`)
 
@@ -12,7 +11,8 @@ filter_rare <- function(dat, min.CPM, gene.var="geneName",
   #min samples or percent only?
   if(!is.null(min.sample) & !is.null(min.pct)){ stop("Please provide only one of min.sample or min.pct") }
   #percent as non-decimal?
-  if(!is.null(min.pct) & min.pct<1){ warning("min.pct should be percentage between 0 and 100. Your value appears to be a proporion less than 1. Please verify.") }
+  if(!is.null(min.pct)){
+    if(min.pct<1){ warning("min.pct should be percentage between 0 and 100. Your value appears to be a proporion less than 1. Please verify.") }}
 
   ##### Define min number of samples #####
   #Calculate min samples based on percent if provided
@@ -22,7 +22,7 @@ filter_rare <- function(dat, min.CPM, gene.var="geneName",
 
   ##### List not rare genes #####
   # Convert counts to counts per million
-  dat.cpm <- cpm(dat$counts)
+  dat.cpm <- edgeR::cpm(dat$counts)
   # Calculate number of samples that meet the cutoff per gene
   not.rare.samples <- rowSums(dat.cpm >= min.CPM)
   # List not rare genes to be RETAINED
@@ -42,7 +42,5 @@ filter_rare <- function(dat, min.CPM, gene.var="geneName",
     # Filter gene key
     dat.filter$genes <- dat.filter$genes[dat.filter$genes[,gene.var] %in% not.rare.genes,]
   }
-
-  ##### Save to environment #####
-  assign(name, dat.filter, envir = .GlobalEnv)
+  return(dat.filter)
 }
