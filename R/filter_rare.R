@@ -26,7 +26,7 @@ filter_rare <- function(dat, min.CPM, gene.var="geneName",
   if(!is.null(min.sample) & !is.null(min.pct)){ stop("Please provide only one of min.sample or min.pct") }
   #percent as non-decimal?
   if(!is.null(min.pct)){
-    if(min.pct<1){ warning("min.pct should be percentage between 0 and 100. Your value appears to be a proporion less than 1. Please verify.") }}
+    if(min.pct<1){ warning("min.pct should be percentage between 0 and 100. Your value appears to be a proportion less than 1. Please verify.") }}
 
   ##### Define min number of samples #####
   #Calculate min samples based on percent if provided
