@@ -8,7 +8,7 @@
 #' @param min.sample numeric minimum number of samples
 #' @param min.pct numeric minimum percent of samples (0-100)
 #'
-#' @return DGEList
+#' @return DGEList object filtered to not rare genes
 #' @export
 #'
 #' @examples

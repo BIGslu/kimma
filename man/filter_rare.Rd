@@ -24,7 +24,7 @@ filter_rare(
 \item{min.pct}{numeric minimum percent of samples (0-100)}
 }
 \value{
-DGEList
+DGEList object filtered to not rare genes
 }
 \description{
 Filter genes at a specified minimum counts per million (CPM) in a minmum number or percent of total samples.
