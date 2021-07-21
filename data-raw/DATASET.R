@@ -4,8 +4,8 @@ library(edgeR)
 library(limma)
 
 #Data
-load("/Users/kim/Documents/_Altman/MS/P259_MS/P259_pDC_public/data_clean/P259_pDC_clean.RData")
-count <- read.csv("/Users/kim/Documents/_Altman/MS/P259_MS/P259_pDC_public/data_clean/P259_pDC_counts.csv")
+load("data-raw/P259_pDC_clean.RData")
+count <- read.csv("data-raw/P259_pDC_counts.csv")
 
 #Select 5 libraries
 targets <- dat.pDC.voom$targets[c(1,2,5,6,9,10),c(5,6,17)]
@@ -32,9 +32,18 @@ E <- E[,-1]
 #Format and normalize
 dat.example <- edgeR::DGEList(counts=E, samples=targets, genes=genes)
 
-dat.voom.example <- calcNormFactors(dat.example)
+dat.voom.example <- edgeR::calcNormFactors(dat.example)
 dat.voom.example <- limma::voom(dat.voom.example)
+
+#Kinship data
+
+kin.example <- data.frame(rowname = c("donor1","donor2","donor3"),
+                          donor1 = c(1, 0.5, 0.1),
+                          donor2 = c(0.5, 1, 0.1),
+                          donor3 = c(0.1, 0.1, 1)) %>%
+  tibble::column_to_rownames() %>% as.matrix()
 
 #Add to package
 usethis::use_data(dat.example, overwrite = TRUE)
 usethis::use_data(dat.voom.example, overwrite = TRUE)
+usethis::use_data(kin.example, overwrite = TRUE)
