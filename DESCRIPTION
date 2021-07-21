@@ -10,12 +10,22 @@ Encoding: UTF-8
 LazyData: true
 biocViews: 
 Imports: 
+    stats,
     edgeR,
-    limma
+    limma,
     dplyr,
     tibble,
     magrittr,
     tidyr,
+    forcats,
+    data.table,
+    lme4,
+    coxme,
+    emmeans,
+    broom,
+    foreach,
+    doParallel,
+    car,
     tidyselect
 RoxygenNote: 7.1.1
 Depends: 
