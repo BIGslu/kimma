@@ -176,6 +176,9 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
       if(!is.null(results.kin.ls)){
         #emmeans does not work for lmekin object. Instead, run pairwise contrasts as subsets
         for(var.i in contrast.vars){
+          var.class <- unlist(to.model.gene[,var.i])
+          #only run on categorical variables
+          if(is.character(var.class) | is.factor(var.class)){
           model.contrast <- paste("expression~",var.i, "+(1|", patientID, ")", sep="")
 
           #list all possible combos
@@ -187,7 +190,8 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
           if(!is.null(contrast.mat)){
             contrast.combo <- contrast.combo %>%
               dplyr::filter(combo %in% colnames(contrast.mat))
-          }
+            }
+
 
           if(nrow(contrast.combo)>0){
           for(row.i in 1:nrow(contrast.combo)){
@@ -209,8 +213,10 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                             contrast = contrast.combo[row.i, "combo"],
                             model = "lmekin.contrast") %>%
               dplyr::bind_rows(contrast.kin)
-          }}
-}
+          }
+            }
+          }
+        }
       }
 
       #Combine contrast results

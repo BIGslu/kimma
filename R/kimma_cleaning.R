@@ -92,7 +92,7 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
       dplyr::inner_join(dat.subset$targets, by=c("libID"=libraryID)) %>%
       #Remove samples missing kinship
       dplyr::filter(get(patientID) %in% colnames(kin)) %>%
-      arrange(get(patientID))
+      dplyr::arrange(get(patientID))
 
     #Remove samples from kinship missing expression data
     #Order kinship as in to.model
