@@ -3,4 +3,8 @@
 export("%>%")
 export(extract_lmFit)
 export(filter_rare)
+export(kmFit)
+export(summarise_kmFit)
+export(summarise_lmFit)
+importFrom(foreach,"%dopar%")
 importFrom(magrittr,"%>%")
