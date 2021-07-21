@@ -91,11 +91,18 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
       tidyr::pivot_longer(-rowname, names_to = "libID", values_to = "expression") %>%
       dplyr::inner_join(dat.subset$targets, by=c("libID"=libraryID)) %>%
       #Remove samples missing kinship
-      dplyr::filter(get(patientID) %in% colnames(kin))
+      dplyr::filter(get(patientID) %in% colnames(kin)) %>%
+      arrange(get(patientID))
 
     #Remove samples from kinship missing expression data
+    #Order kinship as in to.model
     to.keep <- unique(unlist(to.model[,patientID]))
-    kin.subset <- kin[rownames(kin) %in% to.keep, to.keep]
+    kin.subset <- as.data.frame(kin) %>%
+      tibble::rownames_to_column() %>%
+      dplyr::filter(rowname %in% to.keep) %>%
+      dplyr::select(rowname, tidyselect::all_of(to.keep)) %>%
+      dplyr::arrange(rowname) %>%
+      tibble::column_to_rownames()
 
     #Compute number of samples to run in models
     rna.no <- dat.subset$targets %>%
