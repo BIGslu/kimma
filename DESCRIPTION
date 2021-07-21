@@ -12,6 +12,11 @@ biocViews:
 Imports: 
     edgeR,
     limma
+    dplyr,
+    tibble,
+    magrittr,
+    tidyr,
+    tidyselect
 RoxygenNote: 7.1.1
 Depends: 
     R (>= 2.10)
