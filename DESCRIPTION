@@ -9,24 +9,7 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 biocViews: 
-Imports: 
-    stats,
-    edgeR,
-    limma,
-    dplyr,
-    tibble,
-    magrittr,
-    tidyr,
-    forcats,
-    data.table,
-    lme4,
-    coxme,
-    emmeans,
-    broom,
-    foreach,
-    doParallel,
-    car,
-    tidyselect
+Imports: broom, car, coxme, data.table, doParallel, dplyr, edgeR, emmeans, forcats, foreach, limma, lme4, magrittr, stats, tibble, tidyr, tidyselect
 RoxygenNote: 7.1.1
 Depends: 
     R (>= 2.10)

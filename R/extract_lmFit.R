@@ -1,14 +1,14 @@
 #' Extract lmFit model results
 #'
-#' Extract model fit and significance for all individual variables and/or contrasts
+#' Extract model fit and significance for all individual variables and/or contrasts in a limma model
 #'
 #' @param design model matrix output by model.matrix( )
 #' @param fit MArrayLM model fit output by limma::eBayes( )
 #' @param contrast.mat contrast matrix output by limma::makeContrasts( )
-#' @param dat.genes data frame with additional gene annotations. Optional. Default is NULL
-#' @param name.genes character for variable name in dat.genes that matches gene names in fit. Default is "geneName"
+#' @param dat.genes data frame with additional gene annotations. Optional.
+#' @param name.genes character for variable name in dat.genes that matches gene names in fit
 #'
-#' @return Data frame with model fit and significant for all variable and genes
+#' @return Data frame with model fit and significance for all variable and genes. Format as in limma::topTable( )
 #' @export
 #'
 #' @examples

@@ -7,7 +7,7 @@
 #' @param FCgroup logical if should separate summary by up/down fold change groups
 #' @param intercept logical if should include intercept variable in summary
 #'
-#' @return Data frame with total significant genes for each variable are various FDR cutoffs
+#' @return Data frame with total significant genes for each variable at various FDR cutoffs
 #' @export
 #'
 #' @examples

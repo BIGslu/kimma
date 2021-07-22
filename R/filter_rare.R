@@ -1,6 +1,6 @@
 #' Filter rare and low abundance genes
 #'
-#' Filter genes at a specified minimum counts per million (CPM) in a minmum number or percent of total samples.
+#' Filter genes at a minimum counts per million (CPM) in a minmum number or percent of total samples.
 #'
 #' @param dat DGEList output by edgeR::DEGList( )
 #' @param min.CPM numeric minimum counts per million (CPM)

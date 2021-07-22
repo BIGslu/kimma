@@ -1,34 +1,26 @@
 #' Linear mixed effects models with kinship for RNA-seq
 #'
-#' Run lmekin and corresponding lm or lme without kinships models for all genes
+#' Run lmekin and corresponding lm or lme without kinship of gene expression in RNA-seq data
 #'
-#' Data
 #' @param dat EList object output by voom( ). Contains counts (dat$E), meta (dat$targets), and genes (dat$genes).
 #' @param kin Matrix with pairwise kinship values between individuals. Must be numeric with rownames.
 #' @param patientID Character of variable name to match dat$targets to kinship row and column names.
 #' @param libraryID Character of variable name to match dat$targets to dat$E colnames
-#'
-#' Alternate data if not using EList object
 #' @param counts Matrix of normalized expression. Rows are genes, columns are libraries.
 #' @param meta Matrix or data frame of sample and individual metadata.
 #' @param genes Matrix or data frame of gene metadata.
-#'
-#' Subset data (optional)
 #' @param subset.var Character list of variable name(s) to filter data by.
 #' @param subset.lvl Character list of variable value(s) or level(s) to filter data to. Must match order of subset.var
 #' @param subset.genes Character vector of genes to include in models.
-#' Model
 #' @param model Character vector of model starting with ~ Should include (1|patientID) if mixed effects will be run
 #' @param compare.lm Logical if should run corresponding lm model without kinship
 #' @param compare.lme Logical if should run corresponding lme model without kinship
 #' @param contrast Logical if should run pairwise contrasts. If no matrix provided, all possible pairwise comparisons are completed.
 #' @param contrast.mat Numeric contrast matrix created limma::makeContrasts( )
-
-#' Other
 #' @param processors Numeric processor to run in parallel
 #' @param p.method Character of FDR adjustment method. Values as in p.adjust( )
 #'
-#' @return data.frame
+#' @return Dataframe with model fit and significance for each gene
 #' @importFrom foreach %dopar%
 #' @export
 #'
