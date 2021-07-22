@@ -232,11 +232,20 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
   })
 
   #### Calculate FDR ####
-  kmFit.results <- fit.results %>%
-    #Within model and variable
-    dplyr::group_by(model, variable) %>%
-    dplyr::mutate(FDR=stats::p.adjust(pval, method=p.method)) %>%
-    dplyr::ungroup()
+  if(contrast | !is.null(contrast.mat)){
+    kmFit.results <- fit.results %>%
+      #Within model and variable
+      dplyr::group_by(model, variable, contrast) %>%
+      dplyr::mutate(FDR=stats::p.adjust(pval, method=p.method)) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(contrast = gsub("contrast","",contrast))
+  }else{
+    kmFit.results <- fit.results %>%
+      #Within model and variable
+      dplyr::group_by(model, variable) %>%
+      dplyr::mutate(FDR=stats::p.adjust(pval, method=p.method)) %>%
+      dplyr::ungroup()
+  }
 
   #### Save ####
   return(kmFit.results)

@@ -55,7 +55,8 @@ summarise_kmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
         dplyr::count(model, variable, contrast, FCgroup, .drop = FALSE)
 
       result.temp <- dplyr::bind_rows(total.temp, group.temp) %>%
-        dplyr::mutate(group = name.fdr)
+        dplyr::mutate(group = name.fdr,
+                      contrast = gsub("contrast","",contrast))
 
       result <- dplyr::bind_rows(result, result.temp)
     }
@@ -102,7 +103,8 @@ summarise_kmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
         dplyr::count(model, variable, contrast, .drop = FALSE)
 
       result.temp <- dplyr::bind_rows(total.temp, group.temp) %>%
-        dplyr::mutate(group = name.fdr)
+        dplyr::mutate(group = name.fdr,
+                      contrast = gsub("contrast","",contrast))
 
       result <- dplyr::bind_rows(result, result.temp)
     }
@@ -129,10 +131,12 @@ summarise_kmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
 
       result <- dplyr::bind_rows(result, result.temp)
     }
-  }
+    }
+
   #Format to wide output
   result.format <- tidyr::pivot_wider(result, names_from = group, values_from = n) %>%
-    dplyr::mutate(variable = forcats::fct_relevel(factor(variable), "total (nonredundant)",
+    dplyr::mutate(variable = forcats::fct_relevel(factor(variable),
+                                                  "total (nonredundant)",
                                                   after=Inf)) %>%
     dplyr::arrange(model, variable)
 
