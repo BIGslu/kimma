@@ -17,9 +17,6 @@ A matrix with 3 rows and 3 variables:
 kin.example
 }
 \description{
-Pairwise kinship values between donor 1,2,3. Values are dummy data with 1 for self comparison, 0.5 for siblings, and 0.1 for unrelated.
-}
-\details{
-Matrix of pairwise kinship values between participants
+Matrix of pairwise kinship values between donor 1,2,3. Values are dummy data with 1 for self comparison, 0.5 for siblings, and 0.1 for unrelated.
 }
 \keyword{datasets}

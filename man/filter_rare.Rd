@@ -27,7 +27,7 @@ filter_rare(
 DGEList object filtered to not rare genes
 }
 \description{
-Filter genes at a specified minimum counts per million (CPM) in a minmum number or percent of total samples.
+Filter genes at a minimum counts per million (CPM) in a minmum number or percent of total samples.
 }
 \examples{
 filter_rare(dat = dat.example, min.CPM = 0.1, min.sample = 3)

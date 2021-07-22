@@ -31,24 +31,19 @@ kmFit(
 
 \item{patientID}{Character of variable name to match dat$targets to kinship row and column names.}
 
-\item{libraryID}{Character of variable name to match dat$targets to dat$E colnames
-
-Alternate data if not using EList object}
+\item{libraryID}{Character of variable name to match dat$targets to dat$E colnames}
 
 \item{counts}{Matrix of normalized expression. Rows are genes, columns are libraries.}
 
 \item{meta}{Matrix or data frame of sample and individual metadata.}
 
-\item{genes}{Matrix or data frame of gene metadata.
-
-Subset data (optional)}
+\item{genes}{Matrix or data frame of gene metadata.}
 
 \item{subset.var}{Character list of variable name(s) to filter data by.}
 
 \item{subset.lvl}{Character list of variable value(s) or level(s) to filter data to. Must match order of subset.var}
 
-\item{subset.genes}{Character vector of genes to include in models.
-Model}
+\item{subset.genes}{Character vector of genes to include in models.}
 
 \item{model}{Character vector of model starting with ~ Should include (1|patientID) if mixed effects will be run}
 
@@ -58,21 +53,17 @@ Model}
 
 \item{contrast}{Logical if should run pairwise contrasts. If no matrix provided, all possible pairwise comparisons are completed.}
 
-\item{contrast.mat}{Numeric contrast matrix created limma::makeContrasts( )
-Other}
+\item{contrast.mat}{Numeric contrast matrix created limma::makeContrasts( )}
 
 \item{processors}{Numeric processor to run in parallel}
 
 \item{p.method}{Character of FDR adjustment method. Values as in p.adjust( )}
 }
 \value{
-data.frame
+Dataframe with model fit and significance for each gene
 }
 \description{
-Run lmekin and corresponding lm or lme without kinships models for all genes
-}
-\details{
-Data
+Run lmekin and corresponding lm or lme without kinship of gene expression in RNA-seq data
 }
 \examples{
 # All samples and all genes

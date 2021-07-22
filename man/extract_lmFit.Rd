@@ -19,15 +19,15 @@ extract_lmFit(
 
 \item{contrast.mat}{contrast matrix output by limma::makeContrasts( )}
 
-\item{dat.genes}{data frame with additional gene annotations. Optional. Default is NULL}
+\item{dat.genes}{data frame with additional gene annotations. Optional.}
 
-\item{name.genes}{character for variable name in dat.genes that matches gene names in fit. Default is "geneName"}
+\item{name.genes}{character for variable name in dat.genes that matches gene names in fit}
 }
 \value{
-Data frame with model fit and significant for all variable and genes
+Data frame with model fit and significance for all variable and genes. Format as in limma::topTable( )
 }
 \description{
-Extract model fit and significance for all individual variables and/or contrasts
+Extract model fit and significance for all individual variables and/or contrasts in a limma model
 }
 \examples{
 # Run limma model

@@ -7,6 +7,7 @@
 summarise_kmFit(
   fdr,
   fdr.cutoff = c(0.05, 0.1, 0.2, 0.3, 0.4, 0.5),
+  contrast = FALSE,
   FCgroup = FALSE,
   intercept = FALSE
 )
@@ -16,12 +17,14 @@ summarise_kmFit(
 
 \item{fdr.cutoff}{numeric vector of FDR cutoffs to summarise at}
 
+\item{contrast}{logical if should separate summary by pairwise contrasts within variables}
+
 \item{FCgroup}{logical if should separate summary by up/down fold change groups}
 
 \item{intercept}{logical if should include intercept variable in summary}
 }
 \value{
-Data frame with total significant genes for each variable are various FDR cutoffs
+Data frame with total significant genes for each variable at various FDR cutoffs
 }
 \description{
 Summarise number of significant genes at various FDR cutoffs. Can split by up/down fold change as well.

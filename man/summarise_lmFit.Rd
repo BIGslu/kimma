@@ -21,7 +21,7 @@ summarise_lmFit(
 \item{intercept}{logical if should include intercept variable in summary}
 }
 \value{
-Data frame with total significant genes for each variable are various FDR cutoffs
+Data frame with total significant genes for each variable at various FDR cutoffs
 }
 \description{
 Summarise number of significant genes at various FDR cutoffs. Can split by up/down fold change as well.
