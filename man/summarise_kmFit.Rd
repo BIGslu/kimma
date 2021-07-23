@@ -13,7 +13,7 @@ summarise_kmFit(
 )
 }
 \arguments{
-\item{fdr}{data.frame output by kimma::extract_lmFit( )}
+\item{fdr}{data.frame output by kimma::kmFit( )}
 
 \item{fdr.cutoff}{numeric vector of FDR cutoffs to summarise at}
 

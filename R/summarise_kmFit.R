@@ -2,7 +2,7 @@
 #'
 #' Summarise number of significant genes at various FDR cutoffs. Can split by up/down fold change as well.
 #'
-#' @param fdr data.frame output by kimma::extract_lmFit( )
+#' @param fdr data.frame output by kimma::kmFit( )
 #' @param fdr.cutoff numeric vector of FDR cutoffs to summarise at
 #' @param contrast logical if should separate summary by pairwise contrasts within variables
 #' @param FCgroup logical if should separate summary by up/down fold change groups
