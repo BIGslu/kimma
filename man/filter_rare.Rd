@@ -9,7 +9,8 @@ filter_rare(
   min.CPM,
   gene.var = "geneName",
   min.sample = NULL,
-  min.pct = NULL
+  min.pct = NULL,
+  plot = FALSE
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ filter_rare(
 \item{min.sample}{numeric minimum number of samples}
 
 \item{min.pct}{numeric minimum percent of samples (0-100)}
+
+\item{plot}{logical if should plot mean variance trends}
 }
 \value{
 DGEList object filtered to not rare genes
@@ -30,6 +33,6 @@ DGEList object filtered to not rare genes
 Filter genes at a minimum counts per million (CPM) in a minmum number or percent of total samples.
 }
 \examples{
-filter_rare(dat = dat.example, min.CPM = 0.1, min.sample = 3)
-filter_rare(dat = dat.example, min.CPM = 0.1, min.pct = 10)
+dat.filter <- filter_rare(dat = dat.example, min.CPM = 0.1, min.sample = 3)
+dat.filter <- filter_rare(dat = dat.example, min.CPM = 0.1, min.pct = 10, plot = TRUE)
 }

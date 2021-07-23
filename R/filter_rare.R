@@ -7,16 +7,19 @@
 #' @param gene.var character name for column with gene names in dat$genes that matches names in expression data dat$E. Default "geneName"
 #' @param min.sample numeric minimum number of samples
 #' @param min.pct numeric minimum percent of samples (0-100)
+#' @param plot logical if should plot mean variance trends
 #'
 #' @return DGEList object filtered to not rare genes
 #' @export
 #'
 #' @examples
-#' filter_rare(dat = dat.example, min.CPM = 0.1, min.sample = 3)
-#' filter_rare(dat = dat.example, min.CPM = 0.1, min.pct = 10)
+#' dat.filter <- filter_rare(dat = dat.example, min.CPM = 0.1, min.sample = 3)
+#' dat.filter <- filter_rare(dat = dat.example, min.CPM = 0.1, min.pct = 10, plot = TRUE)
 
 filter_rare <- function(dat, min.CPM, gene.var="geneName",
-                        min.sample=NULL, min.pct=NULL){
+                        min.sample=NULL, min.pct=NULL, plot=FALSE){
+  x <- y <- linex <- liney <- NULL
+
   ##### Check parameters #####
   #Correct input object type?
   if(class(dat) != "DGEList"){ stop("dat object must be a DGEList object") }
@@ -55,6 +58,28 @@ filter_rare <- function(dat, min.CPM, gene.var="geneName",
 
     # Filter gene key
     dat.filter$genes <- dat.filter$genes[dat.filter$genes[,gene.var] %in% not.rare.genes,]
+  }
+
+  ##### plot #####
+  if(plot){
+    temp <- limma::voom(dat, plot=FALSE, save.plot = TRUE)
+    temp2 <- limma::voom(dat.filter, plot=FALSE, save.plot = TRUE)
+
+    plot <- data.frame(
+      group = c(rep("All genes",length(temp$voom.xy$x)),
+                rep("Filtered genes",length(temp2$voom.xy$x))),
+      x = c(temp$voom.xy$x, temp2$voom.xy$x),
+      y = c(temp$voom.xy$y, temp2$voom.xy$y),
+      linex = c(temp$voom.line$x, temp2$voom.line$x),
+      liney = c(temp$voom.line$y, temp2$voom.line$y)) %>%
+
+      ggplot2::ggplot() +
+      ggplot2::geom_point(ggplot2::aes(x=x, y=y), size=0.5) +
+      ggplot2::geom_path(ggplot2::aes(x=linex, y=liney), color="red") +
+      ggplot2::theme_classic() +
+      ggplot2::facet_wrap(~group, nrow=1) +
+      ggplot2::labs(x="log2( count size + 0.5 )", y="Sqrt (stdev)")
+    print(plot)
   }
   return(dat.filter)
 }
