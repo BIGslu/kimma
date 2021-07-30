@@ -16,9 +16,10 @@ kmFit(
   subset.lvl = NULL,
   subset.genes = NULL,
   model,
-  compare.lm = FALSE,
-  compare.lme = FALSE,
-  contrast = FALSE,
+  run.lm = FALSE,
+  run.lme = FALSE,
+  run.lmekin = FALSE,
+  run.contrast = FALSE,
   contrast.mat = NULL,
   processors = 1,
   p.method = "BH"
@@ -47,11 +48,13 @@ kmFit(
 
 \item{model}{Character vector of model starting with ~ Should include (1|patientID) if mixed effects will be run}
 
-\item{compare.lm}{Logical if should run corresponding lm model without kinship}
+\item{run.lm}{Logical if should run lm model without kinship}
 
-\item{compare.lme}{Logical if should run corresponding lme model without kinship}
+\item{run.lme}{Logical if should run lme model without kinship}
 
-\item{contrast}{Logical if should run pairwise contrasts. If no matrix provided, all possible pairwise comparisons are completed.}
+\item{run.lmekin}{Logical if should run lmekin model with kinship}
+
+\item{run.contrast}{Logical if should run pairwise contrasts. If no matrix provided, all possible pairwise comparisons are completed.}
 
 \item{contrast.mat}{Numeric contrast matrix created limma::makeContrasts( )}
 
@@ -70,14 +73,13 @@ Run lmekin and corresponding lm or lme without kinship of gene expression in RNA
 # Not run
 # kmFit(dat = dat.voom.example,
 #       patientID = "donorID", libraryID = "libID",
-#       kin = kin.example, compare.lme = TRUE,
+#       kin = kin.example, run.lmekin = TRUE,
 #       model = "~ virus + (1|donorID)")
 
 # Subset samples and genes
 kmFit(dat = dat.voom.example,
       patientID = "donorID", libraryID = "libID",
-      kin = kin.example,
-      compare.lme = TRUE,
+      kin = kin.example, run.lme = TRUE,
       subset.var = list("donorID"), subset.lvl = list(c("donor1","donor2")),
       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
       model = "~ virus + (1|donorID)")
@@ -85,7 +87,7 @@ kmFit(dat = dat.voom.example,
 kmFit(dat = dat.voom.example,
       patientID = "donorID", libraryID = "libID",
       kin = kin.example,
-      compare.lm = TRUE, contrast = TRUE,
+      run.lme = TRUE, run.contrast = TRUE,
       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
-      model = "~ donorID + (1|donorID)")
+      model = "~ virus + (1|donorID)")
 }

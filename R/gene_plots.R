@@ -27,9 +27,9 @@
 #' subset.genes <- c("ENSG00000250479","ENSG00000250510","ENSG00000255823")
 #' fdr <- kmFit(dat = dat.voom.example,
 #'       patientID = "donorID",
-#'       kin = kin.example,
+#'       kin = kin.example, run.lmekin=TRUE,
 #'       subset.genes = subset.genes,
-#'       model = "~ virus + (1|donorID)")
+#'       model = "~ virus + (1|donorID)")#'
 #' gene_plots(dat = dat.voom.example, fdr = fdr, subset.genes = subset.genes,
 #'      variables = "virus", colorID = "virus")
 

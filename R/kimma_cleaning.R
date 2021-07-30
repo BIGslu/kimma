@@ -110,8 +110,8 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
     kin.no <- to.model %>%
       dplyr::distinct(get(patientID)) %>% nrow()
 
-    message(paste(rna.no-kin.no, "individuals missing kinship data. Running models on",
-                  kin.no))
+    message(paste("Running models on", kin.no, "individuals.",
+                  rna.no-kin.no, "individuals missing kinship data."))
   }else{
     #Combine expression data (E) and sample metadata (targets)
     to.model <- dat.subset$E %>%
@@ -123,7 +123,7 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
     rna.no <- to.model %>%
       dplyr::distinct(get(patientID)) %>% nrow()
 
-    message(paste("No kinship provided. Running models on",  rna.no, "individuals"))
+    message(paste("Running models on", rna.no, "individuals. No kinship provided."))
   }
 
   #Combine for saving

@@ -16,7 +16,7 @@
 #' fdr <- kmFit(dat = dat.voom.example,
 #'       patientID = "donorID", libraryID = "libID",
 #'       kin = kin.example,
-#'       compare.lme = TRUE,
+#'       run.lme = TRUE, run.lmekin=TRUE,
 #'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
 #'       model = "~ virus + (1|donorID)")
 #'
