@@ -9,6 +9,6 @@
 #' }
 #' @description Matrix of pairwise kinship values between donor 1,2,3. Values are dummy data with 1 for self comparison, 0.5 for siblings, and 0.1 for unrelated.
 #' @docType data
-#' @name kin.example
+#' @name example.kin
 #' @keywords datasets
-"kin.example"
+"example.kin"

@@ -71,22 +71,22 @@ Run lmekin and corresponding lm or lme without kinship of gene expression in RNA
 \examples{
 # All samples and all genes
 # Not run
-# kmFit(dat = dat.voom.example,
+# kmFit(dat = example.voom,
 #       patientID = "donorID", libraryID = "libID",
-#       kin = kin.example, run.lmekin = TRUE,
+#       kin = example.kin, run.lmekin = TRUE,
 #       model = "~ virus + (1|donorID)")
 
 # Subset samples and genes
-kmFit(dat = dat.voom.example,
+kmFit(dat = example.voom,
       patientID = "donorID", libraryID = "libID",
-      kin = kin.example, run.lme = TRUE,
+      run.lme = TRUE,
       subset.var = list("donorID"), subset.lvl = list(c("donor1","donor2")),
       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
       model = "~ virus + (1|donorID)")
 # Pairwise contrasts
-kmFit(dat = dat.voom.example,
+kmFit(dat = example.voom,
       patientID = "donorID", libraryID = "libID",
-      kin = kin.example,
+      kin = example.kin,
       run.lme = TRUE, run.contrast = TRUE,
       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
       model = "~ virus + (1|donorID)")

@@ -43,7 +43,12 @@ kin.example <- data.frame(rowname = c("donor1","donor2","donor3"),
                           donor3 = c(0.1, 0.1, 1)) %>%
   tibble::column_to_rownames() %>% as.matrix()
 
+#Rename
+example.dat <- dat.example
+example.voom <- dat.voom.example
+example.kin <- kin.example
+
 #Add to package
-usethis::use_data(dat.example, overwrite = TRUE)
-usethis::use_data(dat.voom.example, overwrite = TRUE)
-usethis::use_data(kin.example, overwrite = TRUE)
+usethis::use_data(example.dat, overwrite = TRUE)
+usethis::use_data(example.voom, overwrite = TRUE)
+usethis::use_data(example.kin, overwrite = TRUE)

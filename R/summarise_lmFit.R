@@ -12,8 +12,8 @@
 #'
 #' @examples
 #'# Run limma model
-#' design <- model.matrix(~ virus, data = dat.voom.example$targets)
-#' fit <- limma::eBayes(limma::lmFit(dat.voom.example$E, design))
+#' design <- model.matrix(~ virus, data = example.voom$targets)
+#' fit <- limma::eBayes(limma::lmFit(example.voom$E, design))
 #'
 #' ## Get results
 #' fdr <- extract_lmFit(design = design, fit = fit)

@@ -13,18 +13,18 @@
 #'
 #' @examples
 #' # Run limma model
-#' design <- model.matrix(~ virus, data = dat.voom.example$targets)
-#' fit <- limma::eBayes(limma::lmFit(dat.voom.example$E, design))
+#' design <- model.matrix(~ virus, data = example.voom$targets)
+#' fit <- limma::eBayes(limma::lmFit(example.voom$E, design))
 #'
 #' ## Get results
 #' result <- extract_lmFit(design = design, fit = fit)
 #' ## Get results and add gene annotations
 #' fdr <- extract_lmFit(design = design, fit = fit,
-#'                         dat.genes = dat.voom.example$genes, name.genes = "geneName")
+#'                         dat.genes = example.voom$genes, name.genes = "geneName")
 #'
 #' # Run limma contrasts model
-#' design <- model.matrix(~ 0 + virus, data = dat.voom.example$targets)
-#' fit <- limma::lmFit(dat.voom.example$E, design)
+#' design <- model.matrix(~ 0 + virus, data = example.voom$targets)
+#' fit <- limma::lmFit(example.voom$E, design)
 #' contrast.mat <- limma::makeContrasts(virusB-virusA, levels = design)
 #' fit <- eBayes(contrasts.fit(fit, contrast.mat))
 #'

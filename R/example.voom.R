@@ -52,6 +52,6 @@
 #' @references Dill-McFarland et al. 2021. Eosinophil-mediated suppression and Anti-IL-5 enhancement of plasmacytoid dendritic cell interferon responses in asthma. J Allergy Clin Immunol. In revision
 #' @description A limma EList data set containing normalized log2 RNA-seq counts. RNA-seq of human dendritic cells cultured with and without virus. Samples from 3 donors and a random subset of 1000 genes were selected. Counts are TMM normalized log2 counts per million (CPM).
 #' @docType data
-#' @name dat.voom.example
+#' @name example.voom
 #' @keywords datasets
-"dat.voom.example"
+"example.voom"
