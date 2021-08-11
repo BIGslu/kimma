@@ -68,6 +68,11 @@ summarise_lmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
           dplyr::mutate(variable = "total (nonredundant)") %>%
           dplyr::count(variable, .drop = FALSE)
 
+        #If 0 genes, make zero df
+        if(nrow(total.temp)==0){
+          total.temp <- data.frame(variable="total (nonredundant)",
+                                   n=0)
+        }
         #Summarize signif genes per variable at various levels
         group.temp <- fdr.filter %>%
           dplyr::filter(adj.P.Val <= FDR.i) %>%
