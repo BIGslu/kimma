@@ -124,19 +124,22 @@ summarise_kmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
         dplyr::mutate(variable = "total (nonredundant)") %>%
         dplyr::count(model, variable, .drop = FALSE)
 
-      #If 0 genes, make zero df
-      if(nrow(total.temp)==0){
-        total.temp <- data.frame(variable="total (nonredundant)",
-                                 n=0)
-      }
       #Summarize signif genes per variable at various levels
       group.temp <- fdr.filter %>%
         dplyr::filter(FDR <= FDR.i) %>%
         dplyr::count(model, variable, .drop = FALSE)
 
-      result.temp <- dplyr::bind_rows(total.temp, group.temp) %>%
-        dplyr::mutate(group = name.fdr)
-
+      #If 0 genes, make zero df
+      if(nrow(total.temp)==0){
+        result.temp <- data.frame(variable=c(unique(fdr.filter$variable),
+                                             "total (nonredundant)"),
+                                 n=0,
+                                 model=unique(fdr.filter$model),
+                                 group=name.fdr)
+      } else {
+        result.temp <- dplyr::bind_rows(total.temp, group.temp) %>%
+          dplyr::mutate(group = name.fdr)
+      }
       result <- dplyr::bind_rows(result, result.temp)
     }
     }
