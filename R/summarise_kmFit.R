@@ -33,7 +33,8 @@ summarise_kmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
 
   } else{
     fdr.filter <- dplyr::filter(fdr, variable != '(Intercept)') %>%
-      dplyr::mutate(FCgroup = ifelse(estimate<0,"down","up"))
+      dplyr::mutate(FCgroup = ifelse(estimate<0,"down","up")) %>%
+      droplevels()
   }
 
   if(FCgroup & contrast){
@@ -84,7 +85,8 @@ summarise_kmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
 
       result <- dplyr::bind_rows(result, result.temp)
     }
-  } else if(contrast){
+  }
+  else if(contrast){
     #Blank df for results
     result <- data.frame()
 
@@ -97,6 +99,7 @@ summarise_kmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
         dplyr::mutate(variable = "total (nonredundant)") %>%
         dplyr::count(model, variable, .drop = FALSE)
 
+
       #Summarize signif genes per variable at various levels
       group.temp <- fdr.filter %>%
         dplyr::filter(FDR <= FDR.i) %>%
@@ -107,8 +110,8 @@ summarise_kmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
                       contrast = gsub("contrast","",contrast))
 
       result <- dplyr::bind_rows(result, result.temp)
-    }
-    } else {
+    }}
+  else {
     #Blank df for results
     result <- data.frame()
 

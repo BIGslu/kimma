@@ -28,7 +28,8 @@ summarise_lmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
   if(intercept){
     fdr.filter <- fdr
   } else{
-    fdr.filter <- dplyr::filter(fdr, variable != '(Intercept)')
+    fdr.filter <- dplyr::filter(fdr, variable != '(Intercept)') %>%
+      droplevels()
   }
 
   if(FCgroup){
