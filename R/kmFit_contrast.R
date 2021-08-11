@@ -21,7 +21,7 @@ kmFit_contrast <- function(fit, contrast.vars, contrast.list){
     } else if(!is.null(contrast.list)){
       ##From model matrix
       for(var.i in contrast.vars){
-        contrast.lme <- emmeans::lsmeans(fit, var.i) %>%
+        contrast.lme <- emmeans::emmeans(fit, var.i) %>%
           emmeans::contrast(contrast.list) %>%
           broom::tidy() %>%
           dplyr::bind_rows(contrast.lme)

@@ -55,7 +55,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                   run.contrast = FALSE, contrast.mat = NULL,
                   processors = 1, p.method = "BH"){
 
-  rowname <- libID <- libraryID <- variable <- pval <- group <- i <- V1 <- V2 <- combo <- term <- p.value <- estimate <- contrast <- NULL
+  rowname <- libID <- variable <- pval <- group <- i <- V1 <- V2 <- combo <- term <- p.value <- estimate <- contrast <- NULL
 
   #Log start time
   old <- Sys.time()
