@@ -5,12 +5,15 @@
 \alias{example.kin}
 \title{kimma example kinship.}
 \format{
-A matrix with 3 rows and 3 variables:
+A matrix with 6 rows and 6 variables:
 \describe{
   \item{rowname}{Donor ID. Same as column names}
   \item{donor1}{numeric kinship (0-1) with donor 1}
   \item{donor2}{numeric kinship (0-1) with donor 2}
   \item{donor3}{numeric kinship (0-1) with donor 3}
+  \item{donor4}{numeric kinship (0-1) with donor 4}
+  \item{donor5}{numeric kinship (0-1) with donor 5}
+  \item{donor6}{numeric kinship (0-1) with donor 6}
 }
 }
 \usage{

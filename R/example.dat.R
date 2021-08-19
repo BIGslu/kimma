@@ -2,7 +2,7 @@
 #'
 #' @format Formal class 'DGEList' [package "edgeR"] with 1 slot:
 #' \enumerate{
-#' \item \strong{counts} A matrix with 1000 rows and 6 columns
+#' \item \strong{counts} A matrix with 1000 rows and 12 columns
 #' \describe{
 #'   \item{rownames}{character. ENSEMBL gene ID.}
 #'   \item{lib1}{integer. Counts in library 1.}
@@ -11,9 +11,15 @@
 #'   \item{lib4}{integer. Counts in library 4.}
 #'   \item{lib5}{integer. Counts in library 5.}
 #'   \item{lib6}{integer. Counts in library 6.}
+#'   \item{lib7}{integer. Counts in library 7.}
+#'   \item{lib8}{integer. Counts in library 8.}
+#'   \item{lib9}{integer. Counts in library 9.}
+#'   \item{lib10}{integer. Counts in library 10.}
+#'   \item{lib11}{integer. Counts in library 11.}
+#'   \item{lib12}{integer. Counts in library 12.}
 #'       }
 #'
-#' \item \strong{samples} A data frame with 6 rows and 7 columns
+#' \item \strong{samples} A data frame with 12 rows and 9 columns
 #' \describe{
 #'   \item{group}{factor. No grouping was provided. All = 1.}
 #'   \item{lib.size}{numeric. Total library size for this 1000 gene subset.}
@@ -21,7 +27,8 @@
 #'   \item{libID}{character. Unique library ID. Matches column names in counts.}
 #'   \item{donorID}{character. Donor ID.}
 #'   \item{median_cv_coverage}{numeric. Median coefficient of variation of coverage. Quality metric for sequencing libraries calculated from original full data set.}
-#'   \item{virus}{character. A for media samples with no virus. B for virus-infected samples.}
+#'   \item{virus}{Factor. Media samples with no virus ("none") vs virus-infected samples ("HRV").}
+#'   \item{asthma}{Character. Asthma vs healthy.}
 #'       }
 #'
 #' \item \strong{genes} A data frame with 1000 rows and 5 columns
