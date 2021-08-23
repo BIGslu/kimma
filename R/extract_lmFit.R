@@ -25,7 +25,7 @@
 #' # Run limma contrasts model
 #' design <- model.matrix(~ 0 + virus, data = example.voom$targets)
 #' fit <- limma::lmFit(example.voom$E, design)
-#' contrast.mat <- limma::makeContrasts(virusB-virusA, levels = design)
+#' contrast.mat <- limma::makeContrasts(virusHRV-virusnone, levels = design)
 #' fit <- eBayes(contrasts.fit(fit, contrast.mat))
 #'
 #' ## Get contrast results
