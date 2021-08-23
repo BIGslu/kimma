@@ -9,7 +9,7 @@ kimma_lmekin(model.lme, to.model.gene, gene, kin.subset)
 \arguments{
 \item{model.lme}{Character model created in kmFit}
 
-\item{to.model.gene}{Data frame formatted in kmFit}
+\item{to.model.gene}{Data frame formatted in kmFit, subset to gene of interest}
 
 \item{gene}{Character of gene to model}
 

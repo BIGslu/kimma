@@ -4,12 +4,12 @@
 \alias{kimma_lm}
 \title{Run kimma linear model}
 \usage{
-kimma_lm(model.lm, to.model.gene, gene, contrast.mat, model)
+kimma_lm(model.lm, to.model.gene, gene)
 }
 \arguments{
 \item{model.lm}{Character model created in kmFit}
 
-\item{to.model.gene}{Data frame formatted in kmFit}
+\item{to.model.gene}{Data frame formatted in kmFit, subset to gene of interest}
 
 \item{gene}{Character of gene to model}
 }

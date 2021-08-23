@@ -4,14 +4,14 @@
 \alias{kmFit_contrast}
 \title{Run pairwise model comparisons with emmeans}
 \usage{
-kmFit_contrast(fit, contrast.vars, contrast.list)
+kmFit_contrast(fit, contrast.var, to.model.gene)
 }
 \arguments{
 \item{fit}{model fit from lm( ) or lmer( )}
 
-\item{contrast.vars}{character vector of variables to test}
+\item{contrast.var}{Character vector of variable in model to run contrasts of}
 
-\item{contrast.list}{contrast matrix formatted as list}
+\item{to.model.gene}{Formatted data from kimma_cleaning( ), subset to gene of interest}
 }
 \value{
 data frame with contrast model results

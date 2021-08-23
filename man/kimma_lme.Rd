@@ -4,12 +4,12 @@
 \alias{kimma_lme}
 \title{Run kimma linear mixed effects model}
 \usage{
-kimma_lme(model.lme, to.model.gene, gene, contrast.mat, model)
+kimma_lme(model.lme, to.model.gene, gene)
 }
 \arguments{
 \item{model.lme}{Character model created in kmFit}
 
-\item{to.model.gene}{Data frame formatted in kmFit}
+\item{to.model.gene}{Data frame formatted in kmFit, subset to gene of interest}
 
 \item{gene}{Character of gene to model}
 }

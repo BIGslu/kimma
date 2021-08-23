@@ -1,7 +1,7 @@
 #' Run kimma linear mixed effects model with kinship
 #'
 #' @param model.lme Character model created in kmFit
-#' @param to.model.gene Data frame formatted in kmFit
+#' @param to.model.gene Data frame formatted in kmFit, subset to gene of interest
 #' @param gene Character of gene to model
 #' @param kin.subset Pairwise kinship matrix
 #'

@@ -1,13 +1,13 @@
 #' Run kimma linear model
 #'
 #' @param model.lm Character model created in kmFit
-#' @param to.model.gene Data frame formatted in kmFit
+#' @param to.model.gene Data frame formatted in kmFit, subset to gene of interest
 #' @param gene Character of gene to model
 #'
 #' @return Linear model results data frame for 1 gene
 #' @keywords internal
 
-kimma_lm <- function(model.lm, to.model.gene, gene, contrast.mat, model){
+kimma_lm <- function(model.lm, to.model.gene, gene){
     #Place holder LM results
     p.lm <- NaN
     sigma.lm <- 0
