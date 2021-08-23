@@ -20,7 +20,7 @@ kmFit(
   run.lme = FALSE,
   run.lmekin = FALSE,
   run.contrast = FALSE,
-  contrast.mat = NULL,
+  contrast.var = NULL,
   processors = 1,
   p.method = "BH"
 )
@@ -56,9 +56,9 @@ kmFit(
 
 \item{run.contrast}{Logical if should run pairwise contrasts. If no matrix provided, all possible pairwise comparisons are completed.}
 
-\item{contrast.mat}{Numeric contrast matrix created limma::makeContrasts( )}
+\item{contrast.var}{Character vector of variable in model to run contrasts of. Interaction terms must be specified as "var1:var2". If NULL (default), all contrasts for all variables in the model are run}
 
-\item{processors}{Numeric processor to run in parallel}
+\item{processors}{Numeric processors to run in parallel}
 
 \item{p.method}{Character of FDR adjustment method. Values as in p.adjust( )}
 }
@@ -80,14 +80,21 @@ Run lmekin and corresponding lm or lme without kinship of gene expression in RNA
 kmFit(dat = example.voom,
       patientID = "donorID", libraryID = "libID",
       run.lme = TRUE,
-      subset.var = list("donorID"), subset.lvl = list(c("donor1","donor2")),
+      subset.var = list("asthma"), subset.lvl = list(c("asthma")),
       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
       model = "~ virus + (1|donorID)")
 # Pairwise contrasts
 kmFit(dat = example.voom,
       patientID = "donorID", libraryID = "libID",
-      kin = example.kin,
       run.lme = TRUE, run.contrast = TRUE,
       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
-      model = "~ virus + (1|donorID)")
+      model = "~ virus+asthma * median_cv_coverage + (1|donorID)",
+      contrast.var=c("virus","asthma:median_cv_coverage"))
+
+kmFit(dat = example.voom, kin = example.kin,
+      patientID = "donorID", libraryID = "libID",
+      run.lmekin = TRUE, run.contrast = TRUE,
+      subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
+      model = "~ virus*asthma + (1|donorID)",
+      contrast.var=c("virus","virus:asthma"))
 }

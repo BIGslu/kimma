@@ -1,32 +1,55 @@
 #' Run pairwise model comparisons with emmeans
 #'
 #' @param fit model fit from lm( ) or lmer( )
-#' @param contrast.vars character vector of variables to test
-#' @param contrast.list contrast matrix formatted as list
+#' @param contrast.var Character vector of variable in model to run contrasts of
+#' @param to.model.gene Formatted data from kimma_cleaning( ), subset to gene of interest
 #'
 #' @return data frame with contrast model results
 #' @keywords internal
 
-kmFit_contrast <- function(fit, contrast.vars, contrast.list){
-  contrast.lme <- data.frame()
+kmFit_contrast <- function(fit, contrast.var, to.model.gene){
+  contrast.i <- term <- p.value <- NULL
+  contrast.result <- data.frame()
 
-  if(is.null(contrast.list)){
-    ##All contrasts in variables
-    for(var.i in contrast.vars){
-      contrast.lme <- emmeans::emmeans(fit, var.i) %>%
-        emmeans::contrast(method="pairwise") %>%
-        broom::tidy() %>%
-        dplyr::bind_rows(contrast.lme)
-      }
-    } else if(!is.null(contrast.list)){
-      ##From model matrix
-      for(var.i in contrast.vars){
-        contrast.lme <- emmeans::emmeans(fit, var.i) %>%
-          emmeans::contrast(contrast.list) %>%
+ #Fit variables in contrast.var
+  for(contrast.i in contrast.var){
+    contrast.result.temp <- NULL
+    #Class
+    i.split <- strsplit(contrast.i, split=":")[[1]]
+    contrast.is.numeric <- unlist(lapply(to.model.gene[,i.split], is.numeric))
+
+    #If any numeric
+    if(any(contrast.is.numeric)){
+      contrast.result.temp <- tryCatch({
+        emmeans::emtrends(fit, adjust="none",var=i.split[contrast.is.numeric],
+                          stats::as.formula(paste("pairwise~", i.split[!contrast.is.numeric],
+                                           sep="")))$contrasts %>%
           broom::tidy() %>%
-          dplyr::bind_rows(contrast.lme)
-      }}
+          dplyr::mutate(term = gsub(":","*", contrast.i))
+        }, error=function(e){ return(NULL) })
 
-  return(contrast.lme)
+      #if model ran, add to results
+      if(is.data.frame(contrast.result.temp)){
+        contrast.result <- contrast.result.temp %>%
+          dplyr::bind_rows(contrast.result)
+        }
+    } else {
+      #If not numeric
+      contrast.result.temp <- tryCatch({
+        emmeans::emmeans(fit, adjust="none",
+                         stats::as.formula(paste("pairwise~", contrast.i,sep="")))$contrasts %>%
+          broom::tidy() %>%
+          dplyr::mutate(term = gsub(":","*", contrast.i))
+      }, error=function(e){ return(NULL) })
+
+      #if model ran, add to results
+      if(is.data.frame(contrast.result.temp)){
+        contrast.result <- contrast.result.temp %>%
+          dplyr::bind_rows(contrast.result)
+      }
+        }}
+  contrast.result.format <- contrast.result %>%
+    dplyr::rename(variable=term, pval=p.value)
+  return(contrast.result.format)
 }
 

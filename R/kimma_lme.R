@@ -1,13 +1,13 @@
 #' Run kimma linear mixed effects model
 #'
 #' @param model.lme Character model created in kmFit
-#' @param to.model.gene Data frame formatted in kmFit
+#' @param to.model.gene Data frame formatted in kmFit, subset to gene of interest
 #' @param gene Character of gene to model
 #'
 #' @return Linear model effect results data frame for 1 gene
 #' @keywords internal
 
-kimma_lme <- function(model.lme, to.model.gene, gene, contrast.mat, model){
+kimma_lme <- function(model.lme, to.model.gene, gene){
     rowname <- NULL
     #Place holder LME results
     p.lme <- NaN
@@ -26,14 +26,25 @@ kimma_lme <- function(model.lme, to.model.gene, gene, contrast.mat, model){
     sigma.lme <- stats::sigma(fit.lme)
 
     #Extract results
-    results.lme <- data.frame(
-      model = rep("lme", nrow(p.lme)),    #Label model as lme
-      gene = rep(gene, nrow(p.lme)),      #gene name
-      variable = p.lme$term,              #variables in model
-      estimate = est.lme$Estimate,        #estimate in model
-      pval = p.lme$p.value,               #P-value
-      sigma = rep(sigma.lme, nrow(p.lme)))#sigma
-
+    #If no 3+ level variables
+    if(nrow(p.lme)==nrow(est.lme)){
+      results.lme <- data.frame(
+        model = "lme",                      #Label model as lme
+        gene = gene,                        #gene name
+        variable = p.lme$term,              #variables in model
+        estimate = est.lme$Estimate,        #estimate in model
+        pval = p.lme$p.value,               #P-value
+        sigma = sigma.lme)                 #sigma
+    } else {
+      #If 3+ variable
+      results.lme <- data.frame(
+        model = "lme",                      #Label model as lme
+        gene = gene,                        #gene name
+        variable = p.lme$term,              #variables in model
+        estimate = "seeContrasts",          #estimate in model
+        pval = p.lme$p.value,               #P-value
+        sigma = sigma.lme)                  #sigma
+    }
     results.lme.ls <- list()
     results.lme.ls[["fit"]] <- fit.lme
     results.lme.ls[["results"]] <- results.lme

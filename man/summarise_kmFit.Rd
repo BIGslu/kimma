@@ -39,6 +39,6 @@ fdr <- kmFit(dat = example.voom,
       model = "~ virus + (1|donorID)")
 
 # Summarise results
-fdr.summary <- summarise_kmFit(fdr = fdr, fdr.cutoff = c(0.05, 0.5), FCgroup = TRUE)
+summarise_kmFit(fdr = fdr$lmekin, fdr.cutoff = c(0.05, 0.5), FCgroup = TRUE)
 
 }

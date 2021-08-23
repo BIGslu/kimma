@@ -17,8 +17,8 @@
 #' @param run.lme Logical if should run lme model without kinship
 #' @param run.lmekin Logical if should run lmekin model with kinship
 #' @param run.contrast Logical if should run pairwise contrasts. If no matrix provided, all possible pairwise comparisons are completed.
-#' @param contrast.mat Numeric contrast matrix created limma::makeContrasts( )
-#' @param processors Numeric processor to run in parallel
+#' @param contrast.var Character vector of variable in model to run contrasts of. Interaction terms must be specified as "var1:var2". If NULL (default), all contrasts for all variables in the model are run
+#' @param processors Numeric processors to run in parallel
 #' @param p.method Character of FDR adjustment method. Values as in p.adjust( )
 #'
 #' @return Dataframe with model fit and significance for each gene
@@ -37,25 +37,32 @@
 #' kmFit(dat = example.voom,
 #'       patientID = "donorID", libraryID = "libID",
 #'       run.lme = TRUE,
-#'       subset.var = list("donorID"), subset.lvl = list(c("donor1","donor2")),
+#'       subset.var = list("asthma"), subset.lvl = list(c("asthma")),
 #'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
 #'       model = "~ virus + (1|donorID)")
 #' # Pairwise contrasts
 #' kmFit(dat = example.voom,
 #'       patientID = "donorID", libraryID = "libID",
-#'       kin = example.kin,
 #'       run.lme = TRUE, run.contrast = TRUE,
 #'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
-#'       model = "~ virus + (1|donorID)")
+#'       model = "~ virus+asthma * median_cv_coverage + (1|donorID)",
+#'       contrast.var=c("virus","asthma:median_cv_coverage"))
+#'
+#' kmFit(dat = example.voom, kin = example.kin,
+#'       patientID = "donorID", libraryID = "libID",
+#'       run.lmekin = TRUE, run.contrast = TRUE,
+#'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
+#'       model = "~ virus*asthma + (1|donorID)",
+#'       contrast.var=c("virus","virus:asthma"))
 
 kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                   counts=NULL, meta=NULL, genes=NULL,
                   subset.var = NULL, subset.lvl = NULL, subset.genes = NULL,
                   model, run.lm = FALSE, run.lme = FALSE, run.lmekin = FALSE,
-                  run.contrast = FALSE, contrast.mat = NULL,
+                  run.contrast = FALSE, contrast.var = NULL,
                   processors = 1, p.method = "BH"){
 
-  rowname <- libID <- variable <- pval <- group <- i <- V1 <- V2 <- combo <- term <- p.value <- estimate <- contrast <- NULL
+  rowname <- libID <- variable <- pval <- group <- i <- V1 <- V2 <- combo <- term <- p.value <- estimate <- contrast <- contrast.i <- NULL
 
   #Log start time
   old <- Sys.time()
@@ -76,36 +83,40 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     stop("Kinship matrix is required to run lmekin")}
   if(!run.lm & !run.lme & !run.lmekin & !run.contrast){
     stop("At least 1 model type must be selected. Please set one run parameter to TRUE.")}
-  if(!run.lm & !run.lme & !run.lmekin){
-    if(run.contrast){
-      stop("Contrast models must be run with an accompanying linear model.")}}
+  if(!run.lm & !run.lme & !run.lmekin & run.contrast){
+      stop("Contrast models must be run with an accompanying linear model.")}
 
   ###### Data #####
   print("Format data")
   to.model.ls <- kimma_cleaning(dat, kin, patientID, libraryID,
                              counts, meta, genes,
                              subset.var, subset.lvl, subset.genes)
+
   #Make formulae. as.formula does not work
   if(grepl("\\|", model)){
-    model.temp <- gsub(" ", "", model)
-    model.temp <- strsplit(model.temp, split = "\\+\\(1")[[1]][1]
+    model.temp <- strsplit(gsub(" ", "", model), split = "\\+\\(1")[[1]][1]
     model.lm <- paste("expression", model.temp, sep="")
   } else {
     model.lm <- paste("expression", model, sep="")
   }
   model.lme <- paste("expression", model, sep="")
 
-  #If pairwise contrasts requested
-  if(run.contrast | !is.null(contrast.mat)){
-    model.temp <- strsplit(model, split = "\\(1")[[1]][1]
-    model.temp <- gsub("~| ", "", model.temp)
-    contrast.vars <- strsplit(model.temp, split = "\\+")[[1]]
-  }
+  #If no contrast variable set, us all
+  if(run.contrast & is.null(contrast.var)){
+    contrast.temp <- strsplit(gsub(" |~", "", model), split = "\\+\\(1")[[1]][1]
+    #main term
+    contrast.main <- strsplit(contrast.temp, split = "\\+|\\*")[[1]]
+    #interaction term
+    if(grepl("\\*",model)){
+      contrast.interact <- strsplit(contrast.temp, split = "\\+")[[1]]
+      contrast.interact <- contrast.interact[grepl("\\*",contrast.interact)]
+      #Check for triple interactions
+      if(any(stringr::str_count(contrast.interact, "\\*") > 1)){
+        stop("Contrasts of triple interactions are not supported.")}
+      contrast.interact <- gsub("\\*",":", contrast.interact)
+    }
 
-  if(!is.null(contrast.mat)){
-    contrast.list <- as.list(as.data.frame(contrast.mat))
-  } else {
-    contrast.list <- NULL
+    contrast.var <- c(contrast.main, contrast.interact)
   }
 
   ###### Run models ######
@@ -162,68 +173,25 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
 
     if(run.contrast){
       if(!is.null(results.lm.ls)){
-        contrast.lm <- kmFit_contrast(results.lm.ls[["fit"]], contrast.vars, contrast.list)%>%
+        contrast.lm <- kmFit_contrast(results.lm.ls[["fit"]], contrast.var, to.model.gene)%>%
           dplyr::mutate(model="lm.contrast")
       }
 
       if(!is.null(results.lme.ls)){
-        contrast.lme <- kmFit_contrast(results.lme.ls[["fit"]], contrast.vars, contrast.list) %>%
+        contrast.lme <- kmFit_contrast(results.lme.ls[["fit"]], contrast.var, to.model.gene) %>%
           dplyr::mutate(model="lme.contrast")
       }
 
       if(!is.null(results.kin.ls)){
-        #emmeans does not work for lmekin object. Instead, run pairwise contrasts as subsets
-        for(var.i in contrast.vars){
-          var.class <- unlist(to.model.gene[,var.i])
-          #only run on categorical variables
-          if(is.character(var.class) | is.factor(var.class)){
-          model.contrast <- paste("expression~",var.i, "+(1|", patientID, ")", sep="")
-
-          #list all possible combos
-          contrast.combo <- as.data.frame(t(utils::combn(unlist(
-            unique(to.model.gene[,var.i])), m=2))) %>%
-            dplyr::mutate(combo = paste(var.i, V2, " - ",var.i, V1, sep=""))
-
-          #if contrast matrix provided, remove unused combos
-          if(!is.null(contrast.mat)){
-            contrast.combo <- contrast.combo %>%
-              dplyr::filter(combo %in% colnames(contrast.mat))
-            }
-
-          if(nrow(contrast.combo)>0){
-          for(row.i in 1:nrow(contrast.combo)){
-            #filter data to each pairwise comparison of interest
-            to.model.gene.contrast <- dplyr::filter(to.model.gene,
-                                                    get(var.i) %in% unlist(contrast.combo[row.i,]))
-
-            to.keep <- unique(unlist(to.model.gene.contrast[,patientID]))
-            kin.contrast <- to.model.ls[["kin.subset"]][rownames(to.model.ls[["kin.subset"]]) %in%
-                                                          to.keep, to.keep]
-
-            contrast.kin.temp <- tryCatch({
-              kimma_lmekin(model.contrast, to.model.gene.contrast, gene, kin.contrast)
-              }, error=function(e){})
-
-            contrast.kin <- contrast.kin.temp[["results"]] %>%
-              dplyr::filter(variable != "(Intercept)") %>%
-              dplyr::mutate(variable = var.i,
-                            contrast = contrast.combo[row.i, "combo"],
-                            model = "lmekin.contrast") %>%
-              dplyr::bind_rows(contrast.kin)
-          }
-            }
-          }
-        }
+        contrast.kin <- kmFit_contrast_kin(contrast.var, to.model.gene,
+                                           patientID, to.model.ls, gene) %>%
+          dplyr::mutate(model="lmekin.contrast")
       }
-
       #Combine contrast results
-      contrast.results <- contrast.lm %>%
-        dplyr::bind_rows(contrast.lme) %>%
-        dplyr::rename(variable=term, pval=p.value) %>%
+      contrast.results <- dplyr::bind_rows(contrast.lm, contrast.lme, contrast.kin) %>%
         dplyr::mutate(gene=gene) %>%
-        dplyr::bind_rows(contrast.kin)  %>%
         dplyr::select(model, gene, variable, contrast, estimate, pval, estimate)
-    }
+      }
 
     #### Combine results #####
     #All models for this gene
@@ -232,10 +200,11 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
       dplyr::bind_rows(results.kin.ls[["results"]]) %>%
       dplyr::bind_rows(contrast.results)
 
-    #This gene to all previous gene results
+    #Add this gene to all previous gene results
     fit.results <- dplyr::bind_rows(results, fit.results)
   })
 
+  print("Format results")
   #### Calculate FDR ####
   if(run.contrast){
     kmFit.results <- fit.results %>%
@@ -252,12 +221,11 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
       dplyr::ungroup()
   }
 
+  #### Separate results into a list ####
+  kmFit.ls <- list()
+  for(result.i in unique(kmFit.results$model)){
+    kmFit.ls[[result.i]] <- dplyr::filter(kmFit.results, model==result.i)
+  }
   #### Save ####
-  return(kmFit.results)
-
-  ###### Fin ######
-  print("All models complete")
-  #Print total time to run
-  new <- Sys.time() - old
-  print(new)
+  return(kmFit.ls)
 }
