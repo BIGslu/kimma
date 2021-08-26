@@ -31,7 +31,7 @@
 #' # kmFit(dat = example.voom,
 #' #       patientID = "donorID", libraryID = "libID",
 #' #       kin = example.kin, run.lmekin = TRUE,
-#' #       model = "~ virus + (1|donorID)")
+#' #       model = "~ virus + (1|donorID)", processors = 6)
 #'
 #' # Subset samples and genes
 #' kmFit(dat = example.voom,
@@ -70,7 +70,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
 
   ###### Parallel ######
   #setup parallel processors
-  doParallel::registerDoParallel(processors)
+  doMC::registerDoMC(processors)
 
   ###### Check common input parameter errors #####
   if(is.null(subset.var) & !is.null(subset.lvl)){

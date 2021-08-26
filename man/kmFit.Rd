@@ -74,7 +74,7 @@ Run lmekin and corresponding lm or lme without kinship of gene expression in RNA
 # kmFit(dat = example.voom,
 #       patientID = "donorID", libraryID = "libID",
 #       kin = example.kin, run.lmekin = TRUE,
-#       model = "~ virus + (1|donorID)")
+#       model = "~ virus + (1|donorID)", processors = 6)
 
 # Subset samples and genes
 kmFit(dat = example.voom,
