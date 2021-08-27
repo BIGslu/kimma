@@ -62,11 +62,10 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                   run.contrast = FALSE, contrast.var = NULL,
                   processors = 1, p.method = "BH"){
 
-  rowname <- libID <- variable <- pval <- group <- i <- V1 <- V2 <- combo <- term <- p.value <- estimate <- contrast <- contrast.i <- NULL
+  rowname <- libID <- variable <- pval <- group <- gene <- V1 <- V2 <- combo <- term <- p.value <- estimate <- contrast <- contrast.i <- NULL
 
   ###### Parallel ######
   #setup parallel processors
-  #doMC::registerDoMC(processors)
   cl <- parallel::makeCluster(processors)
 
   ###### Check common input parameter errors #####
@@ -132,16 +131,13 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
 
   #Loop through each gene
   fit.results <- data.table::rbindlist(fill=TRUE,
-                    foreach::foreach(i=1:length(unique(to.model.ls[["to.model"]]$rowname)),
+                    foreach::foreach(gene=unique(to.model.ls[["to.model"]]$rowname),
                                      .packages = c("dplyr","magrittr","stats","broom","lme4",
                                                    "car","tibble","coxme","utils","emmeans",
                                                    "data.table","foreach","doParallel"),
                                      .export = c("kimma_lm","kimma_lme","kimma_lmekin",
                                                  "kmFit_contrast","kmFit_contrast_kin")) %dopar% {
     #### Prepare data ####
-    #Get gene name
-    gene <- unique(to.model.ls[["to.model"]]$rowname)[i]
-
     #Filter data to gene
     to.model.gene <- to.model.ls[["to.model"]] %>%
       dplyr::filter(rowname == gene) %>%
