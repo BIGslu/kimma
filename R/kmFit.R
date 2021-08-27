@@ -123,6 +123,8 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     contrast.var <- c(contrast.main, contrast.interact)
   }
 
+  #If contrast variables given, force run contrast model
+  if(!is.null(contrast.var)){run.contrast <- TRUE}
 
   ###### Run models ######
   #create blank df to hold results
