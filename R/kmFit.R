@@ -197,7 +197,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
       }
       #Combine contrast results
       contrast.results <- dplyr::bind_rows(contrast.lm, contrast.lme, contrast.kin) %>%
-        dplyr::mutate(gene=gene) %>%
+        dplyr::mutate(gene=gene, estimate=as.character(estimate)) %>%
         dplyr::select(model, gene, variable, contrast, estimate, pval, estimate)
       }
 
@@ -232,6 +232,11 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
   kmFit.ls <- list()
   for(result.i in unique(kmFit.results$model)){
     kmFit.ls[[result.i]] <- dplyr::filter(kmFit.results, model==result.i)
+    #Turn estimate numeric if needed
+    if(all(unique(kmFit.ls[[result.i]]$estimate) != "seeContrasts")){
+      kmFit.ls[[result.i]] <- dplyr::filter(kmFit.results, model==result.i) %>%
+        dplyr::mutate(estimate=as.numeric(estimate))
+    }
   }
   #### Save ####
   return(kmFit.ls)
