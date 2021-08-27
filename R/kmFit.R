@@ -203,13 +203,10 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
 
     #### Combine results #####
     #All models for this gene
-    results <- results.lm.ls[["results"]] %>%
+    fit.results <- results.lm.ls[["results"]] %>%
       dplyr::bind_rows(results.lme.ls[["results"]]) %>%
       dplyr::bind_rows(results.kin.ls[["results"]]) %>%
       dplyr::bind_rows(contrast.results)
-
-    #Add this gene to all previous gene results
-    fit.results <- dplyr::bind_rows(results, fit.results)
   })
   parallel::stopCluster(cl)
 
