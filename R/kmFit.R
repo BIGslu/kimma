@@ -70,6 +70,10 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
   cl <- parallel::makeCluster(processors)
 
   ###### Check common input parameter errors #####
+  if(!is.null(dat) & !(libraryID %in% colnames(dat$targets))){
+      stop("LibraryID column not found in dat$targets.")}
+  if(!is.null(meta) & !(libraryID %in% colnames(meta))){
+      stop("LibraryID column not found in meta.")}
   if(is.null(subset.var) & !is.null(subset.lvl)){
     stop("Sample subsetting has been selected. Please also provide subset.var")}
   if(!is.null(subset.var) & is.null(subset.lvl)){
@@ -84,7 +88,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
       stop("Contrast models must be run with an accompanying linear model.")}
 
   ###### Data #####
-  print("Format data")
+  #print("Format data")
   to.model.ls <- kimma_cleaning(dat, kin, patientID, libraryID,
                              counts, meta, genes,
                              subset.var, subset.lvl, subset.genes)
@@ -96,7 +100,11 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
   } else {
     model.lm <- paste("expression", model, sep="")
   }
-  model.lme <- paste("expression", model, sep="")
+  model.lme <- paste("expression", gsub(" ", "", model), sep="")
+
+  #Model message
+  if(run.lm){ message(paste("lm model:",model.lm))}
+  if(run.lme | run.lmekin){ message(paste("lme/lmekin model:",model.lme))}
 
   #If no contrast variable set, us all
   if(run.contrast & is.null(contrast.var)){
@@ -116,9 +124,8 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     contrast.var <- c(contrast.main, contrast.interact)
   }
 
-  ###### Run models ######
-  print("Run models")
 
+  ###### Run models ######
   #create blank df to hold results
   fit.results <- data.frame()
   doParallel::registerDoParallel(cl)
@@ -208,7 +215,8 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
   })
   parallel::stopCluster(cl)
 
-  print("Format results")
+  #print("Format results")
+  message(paste(length(unique(to.model.ls[["to.model"]]$rowname)), "genes complete"))
   #### Calculate FDR ####
   if(run.contrast){
     kmFit.results <- fit.results %>%
