@@ -21,7 +21,7 @@ kmFit(
   run.lmekin = FALSE,
   run.contrast = FALSE,
   contrast.var = NULL,
-  processors = 1,
+  processors = NULL,
   p.method = "BH"
 )
 }
@@ -58,7 +58,7 @@ kmFit(
 
 \item{contrast.var}{Character vector of variable in model to run contrasts of. Interaction terms must be specified as "var1:var2". If NULL (default), all contrasts for all variables in the model are run}
 
-\item{processors}{Numeric processors to run in parallel}
+\item{processors}{Numeric processors to run in parallel. Default is 2 less than the total available}
 
 \item{p.method}{Character of FDR adjustment method. Values as in p.adjust( )}
 }

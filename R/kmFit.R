@@ -18,7 +18,7 @@
 #' @param run.lmekin Logical if should run lmekin model with kinship
 #' @param run.contrast Logical if should run pairwise contrasts. If no matrix provided, all possible pairwise comparisons are completed.
 #' @param contrast.var Character vector of variable in model to run contrasts of. Interaction terms must be specified as "var1:var2". If NULL (default), all contrasts for all variables in the model are run
-#' @param processors Numeric processors to run in parallel
+#' @param processors Numeric processors to run in parallel. Default is 2 less than the total available
 #' @param p.method Character of FDR adjustment method. Values as in p.adjust( )
 #'
 #' @return Dataframe with model fit and significance for each gene
@@ -60,13 +60,28 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                   subset.var = NULL, subset.lvl = NULL, subset.genes = NULL,
                   model, run.lm = FALSE, run.lme = FALSE, run.lmekin = FALSE,
                   run.contrast = FALSE, contrast.var = NULL,
-                  processors = 1, p.method = "BH"){
+                  processors = NULL, p.method = "BH"){
 
   rowname <- libID <- variable <- pval <- group <- gene <- V1 <- V2 <- combo <- term <- p.value <- estimate <- contrast <- contrast.i <- NULL
 
   ###### Parallel ######
   #setup parallel processors
-  cl <- parallel::makeCluster(processors)
+  chk <- Sys.getenv("_R_CHECK_LIMIT_CORES_", "")
+
+  if (nzchar(chk) && chk == "TRUE") {
+    #Use 2 in CRAN/Travis/AppVeyor
+    processors.to.use <- 2
+  } else if (is.null(processors)){
+    #Use 2 less than total if not user defined
+    processors.to.use <- parallel::detectCores()-2
+    if(processors.to.use == 0){
+      stop("Error processors: Default resulted in 0. Please correct.")}
+  } else {
+    #Use user defined number
+    processors.to.use <- processors
+  }
+
+  cl <- parallel::makeCluster(processors.to.use)
 
   ###### Check common input parameter errors #####
   if(!is.null(dat) & !(libraryID %in% colnames(dat$targets))){
