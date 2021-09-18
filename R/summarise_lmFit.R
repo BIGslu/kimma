@@ -16,10 +16,10 @@
 #' fit <- limma::eBayes(limma::lmFit(example.voom$E, design))
 #'
 #' ## Get results
-#' fdr <- extract_lmFit(design = design, fit = fit)
+#' model_results <- extract_lmFit(design = design, fit = fit)
 #'
 #' # Summarise results
-#' fdr.summary <- summarise_lmFit(fdr = fdr, fdr.cutoff = c(0.05, 0.5), FCgroup = TRUE)
+#' fdr.summary <- summarise_lmFit(fdr = model_results, fdr.cutoff = c(0.05, 0.5), FCgroup = TRUE)
 #'
 
 summarise_lmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),

@@ -31,7 +31,7 @@ Summarise number of significant genes at various FDR cutoffs. Can split by up/do
 }
 \examples{
 # Run kimma model
-fdr <- kmFit(dat = example.voom,
+model_results <- kmFit(dat = example.voom,
       patientID = "donorID", libraryID = "libID",
       kin = example.kin,
       run.lme = TRUE, run.lmekin=TRUE,
@@ -39,6 +39,6 @@ fdr <- kmFit(dat = example.voom,
       model = "~ virus + (1|donorID)")
 
 # Summarise results
-summarise_kmFit(fdr = fdr$lmekin, fdr.cutoff = c(0.05, 0.5), FCgroup = TRUE)
+summarise_kmFit(fdr = model_results$lmekin, fdr.cutoff = c(0.05, 0.5), FCgroup = TRUE)
 
 }

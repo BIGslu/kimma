@@ -13,7 +13,7 @@
 #'
 #' @examples
 #' # Run kimma model
-#' fdr <- kmFit(dat = example.voom,
+#' model_results <- kmFit(dat = example.voom,
 #'       patientID = "donorID", libraryID = "libID",
 #'       kin = example.kin,
 #'       run.lme = TRUE, run.lmekin=TRUE,
@@ -21,7 +21,7 @@
 #'       model = "~ virus + (1|donorID)")
 #'
 #' # Summarise results
-#' summarise_kmFit(fdr = fdr$lmekin, fdr.cutoff = c(0.05, 0.5), FCgroup = TRUE)
+#' summarise_kmFit(fdr = model_results$lmekin, fdr.cutoff = c(0.05, 0.5), FCgroup = TRUE)
 #'
 
 summarise_kmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
