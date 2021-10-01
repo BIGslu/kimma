@@ -133,6 +133,8 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
       if(any(stringr::str_count(contrast.interact, "\\*") > 1)){
         stop("Contrasts of triple interactions are not supported.")}
       contrast.interact <- gsub("\\*",":", contrast.interact)
+    } else {
+      contrast.interact <- NULL
     }
 
     contrast.var <- c(contrast.main, contrast.interact)
