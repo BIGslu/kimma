@@ -15,19 +15,28 @@ targets <- dat.pDC.voom$targets %>%
 
 E <- count[,c("geneName", targets$libID)]
 
+count.filter <- count %>%
+  select(geneName, all_of(targets$libID))
+
 #de-identify
 targets$libID <- paste("lib",1:12,sep="")
 rownames(targets) <- paste("lib",1:12,sep="")
 colnames(E) <- c("geneName", paste("lib",1:12,sep=""))
+colnames(count.filter) <- c("geneName", paste("lib",1:12,sep=""))
 
+set.seed(546)
 targets <- targets %>%
-  mutate(donorID = recode(donorID, "AC3"="donor4","AC4"="donor5","AC5"="donor6"))
+  mutate(donorID = recode(donorID, "AC3"="donor4","AC4"="donor5","AC5"="donor6"),
+         batch = floor(runif(12, 1, 3)))
 
 #Subset genes
 set.seed(546)
 genes <- dat.pDC.voom$genes[sample(1:nrow(dat.pDC.voom$E), 1000, replace=FALSE),]
 
 E <- E[E$geneName %in% genes$geneName, ]
+
+count.filter <- count.filter %>%
+  filter(geneName %in% genes$geneName)
 
 #Move rownames
 rownames(E) <- E$geneName
@@ -51,11 +60,13 @@ kin.example <- data.frame(rowname = c("donor1","donor2","donor3","donor4","donor
   tibble::column_to_rownames() %>% as.matrix()
 
 #Rename
+example.count <- count.filter
 example.dat <- dat.example
 example.voom <- dat.voom.example
 example.kin <- kin.example
 
 #Add to package
+usethis::use_data(example.count, overwrite = TRUE)
 usethis::use_data(example.dat, overwrite = TRUE)
 usethis::use_data(example.voom, overwrite = TRUE)
 usethis::use_data(example.kin, overwrite = TRUE)

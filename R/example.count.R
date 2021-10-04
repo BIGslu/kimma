@@ -1,0 +1,26 @@
+#' kimma example count table.
+#'
+#' @format A data frame with 1000 rows and 13 columns
+#' \describe{
+#'   \item{geneName}{character. ENSEMBL gene ID.}
+#'   \item{lib1}{numeric. Raw counts in library 1.}
+#'   \item{lib2}{numeric. Raw counts in library 2.}
+#'   \item{lib3}{numeric. Raw counts in library 3.}
+#'   \item{lib4}{numeric. Raw counts in library 4.}
+#'   \item{lib5}{numeric. Raw counts in library 5.}
+#'   \item{lib6}{numeric. Raw counts in library 6.}
+#'   \item{lib7}{numeric. Raw counts in library 7.}
+#'   \item{lib8}{numeric. Raw counts in library 8.}
+#'   \item{lib9}{numeric. Raw counts in library 9.}
+#'   \item{lib10}{numeric. Raw counts in library 10.}
+#'   \item{lib11}{numeric. Raw counts in library 11.}
+#'   \item{lib12}{numeric. Raw counts in library 12.}
+#'       }
+#'
+#' @source \url{https://github.com/altman-lab/P259_pDC_public}
+#' @references Dill-McFarland et al. 2021. Eosinophil-mediated suppression and Anti-IL-5 enhancement of plasmacytoid dendritic cell interferon responses in asthma. J Allergy Clin Immunol. In revision
+#' @description A limma EList data set containing normalized log2 RNA-seq counts. RNA-seq of human dendritic cells cultured with and without virus. Samples from 3 donors and a random subset of 1000 genes were selected. Counts are TMM normalized log2 counts per million (CPM).
+#' @docType data
+#' @name example.count
+#' @keywords datasets
+"example.count"
