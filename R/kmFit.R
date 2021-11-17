@@ -258,22 +258,28 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
   })
   parallel::stopCluster(cl)
 
-  #print("Format results")
-  message(paste(length(unique(to.model.ls[["to.model"]]$rowname)), "genes complete"))
-  #### Calculate FDR ####
-  if(run.contrast){
-    kmFit.results <- fit.results %>%
-      #Within model and variable
-      dplyr::group_by(model, variable, contrast) %>%
-      dplyr::mutate(FDR=stats::p.adjust(pval, method=p.method)) %>%
-      dplyr::ungroup() %>%
-      dplyr::mutate(contrast = gsub("contrast","",contrast))
-  }else{
-    kmFit.results <- fit.results %>%
-      #Within model and variable
-      dplyr::group_by(model, variable) %>%
-      dplyr::mutate(FDR=stats::p.adjust(pval, method=p.method)) %>%
-      dplyr::ungroup()
+  #### Completion messages ####
+  all <- length(unique(to.model.ls[["to.model"]]$rowname))
+  message(paste(all, "genes complete."))
+
+  if("message" %in% colnames(fit.results)){
+    fail <- fit.results %>%
+      tidyr::drop_na(message) %>%
+      dplyr::distinct(gene, message) %>% nrow()
+
+    message(paste(fail, "genes failed one or more models. See results[['model_error']]"))
+
+    #move message to separate df
+    error.results <- fit.results %>%
+      dplyr::filter(!is.na(message)) %>%
+      dplyr::distinct(model, gene, message)
+    fit.results <- fit.results %>%
+      dplyr::filter(is.na(message)) %>%
+      dplyr::select(-message)
+
+  } else {
+    message("No genes failed.")
+    error.results <- NULL
   }
 
   #### Separate results into a list ####
