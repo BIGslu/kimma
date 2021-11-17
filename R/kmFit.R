@@ -282,16 +282,44 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     error.results <- NULL
   }
 
-  #### Separate results into a list ####
+  #### Final formatting ####
   kmFit.ls <- list()
-  for(result.i in unique(kmFit.results$model)){
-    kmFit.ls[[result.i]] <- dplyr::filter(kmFit.results, model==result.i)
-    #Turn estimate numeric if needed
-    if(all(unique(kmFit.ls[[result.i]]$estimate) != "seeContrasts")){
-      kmFit.ls[[result.i]] <- dplyr::filter(kmFit.results, model==result.i) %>%
-        dplyr::mutate(estimate=as.numeric(estimate))
+
+  if(nrow(fit.results) > 0 ){
+    # Calculate FDR
+    if(run.contrast){
+      kmFit.results <- fit.results %>%
+        #Within model and variable
+        dplyr::group_by(model, variable, contrast) %>%
+        dplyr::mutate(FDR=stats::p.adjust(pval, method=p.method)) %>%
+        dplyr::ungroup() %>%
+        dplyr::mutate(contrast = gsub("contrast","",contrast))
+    }else{
+      kmFit.results <- fit.results %>%
+        #Within model and variable
+        dplyr::group_by(model, variable) %>%
+        dplyr::mutate(FDR=stats::p.adjust(pval, method=p.method)) %>%
+        dplyr::ungroup()
+    }
+    # Split into list
+    for(result.i in unique(kmFit.results$model)){
+      kmFit.ls[[result.i]] <- dplyr::filter(kmFit.results, model==result.i)
+      #Turn estimate numeric if needed
+      estimates <- unique(kmFit.ls[[result.i]]$estimate)
+      estimates <- estimates[!is.na(estimates)]
+      if(all(estimates != "seeContrasts")){
+        kmFit.ls[[result.i]] <- dplyr::filter(kmFit.results, model==result.i) %>%
+          dplyr::mutate(estimate=as.numeric(estimate))
+      }
     }
   }
+
+ # Split error messages into list object
+  if(!is.null(error.results)){
+    for(result.i in unique(error.results$model)){
+      kmFit.ls[[paste(result.i,"error",sep="_")]] <- dplyr::filter(error.results, model==result.i)
+    }}
+
   #### Save ####
   return(kmFit.ls)
 }
