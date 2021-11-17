@@ -27,11 +27,10 @@
 #'
 #' @examples
 #' # All samples and all genes
-#' # Not run
-#' # kmFit(dat = example.voom,
-#' #       patientID = "donorID", libraryID = "libID",
-#' #       kin = example.kin, run.lmekin = TRUE,
-#' #       model = "~ virus + (1|donorID)", processors = 6)
+#' kmFit(dat = example.voom,
+#'       patientID = "donorID", libraryID = "libID",
+#'       kin = example.kin, run.lmekin = TRUE,
+#'       model = "~ virus + (1|donorID)")
 #'
 #' # Subset samples and genes
 #' kmFit(dat = example.voom,
@@ -54,6 +53,13 @@
 #'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
 #'       model = "~ virus*asthma + (1|donorID)",
 #'       contrast.var=c("virus","virus:asthma"))
+#'
+#' # Model with failed genes
+#' kmFit(dat = example.voom,
+#'       patientID = "donorID", libraryID = "libID",
+#'       kin = example.kin, run.lmekin = TRUE,
+#'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
+#'       model = "~ virus*asthma + lib.size + norm.factors + median_cv_coverage + donorID+(1|donorID)")
 
 kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                   counts=NULL, meta=NULL, genes=NULL,
