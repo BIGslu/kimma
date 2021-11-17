@@ -1,0 +1,12 @@
+citHeader("To cite kimma in publications use:")
+
+citEntry(
+  entry    = "Manual",
+  title    = "kimma: kinship in mixed model analysis of RNA-seq",
+  author   = "Kimberly A Dill-McFarland",
+  note     = "R package v1.0.1",
+  year     = "2021",
+  doi      = "10.5281/zenodo.5655784",
+  url      = "https://github.com/BIGslu/kimma",
+  textVersion = "Dill-McFarland, K.A. 2021. kimma: Kinship In Mixed Model Analysis of RNA-seq. R package v1.0.1. doi: 10.5281/zenodo.5655784"
+)

@@ -10,6 +10,6 @@ Encoding: UTF-8
 LazyData: true
 biocViews: 
 Imports: broom, car, coxme, data.table, doParallel, dplyr, edgeR, emmeans, forcats, foreach, ggplot2, limma, lme4, magrittr, readr, stats, stringr, tibble, tidyr, tidyselect
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Depends: 
     R (>= 2.10)
