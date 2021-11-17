@@ -2,10 +2,11 @@ citEntry(entry="Manual",
     title = "kimma: Kinship In Mixed Model Analysis of RNA-seq",
     author = person(first="Kimberly",middle="A",last="Dill-McFarland"),
     year = {2021},
-    doi = 10.5281/zenodo.5655784,
-    note = https://github.com/BIGslu/kimma,
+    doi = {10.5281/zenodo.5655784},
+    note = {https://github.com/BIGslu/kimma},
 	textVersion = 
-    paste("Dill-McFarland, K.A. 2021. kimma: Kinship In Mixed Model Analysis of RNA-seq",
+    paste("Dill-McFarland, K.A. 2021. kimma: Kinship In Mixed Model Analysis of RNA-seq.",
+    	"R package.",
          "doi: 10.5281/zenodo.5655784")
     )
 
