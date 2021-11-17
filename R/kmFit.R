@@ -165,11 +165,17 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     #### LM model #####
     #Run linear model without kinship
     results.lm.ls <- NULL
+
     if(run.lm){
     #Wrap model run in error catch to allow loop to continue even if a single model fails
      results.lm.ls <- tryCatch({
        kimma_lm(model.lm, to.model.gene, gene)
-     }, error=function(e){})
+     }, error=function(e){
+       results.lm.ls[["error"]] <- data.frame(model="lm",
+                                               gene=gene,
+                                               message=conditionMessage(e))
+       return(results.lm.ls)
+     })
     }
 
     #### LME model #####
@@ -178,7 +184,12 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
       #Wrap model run in error catch to allow loop to continue even if a single model fails
       results.lme.ls <- tryCatch({
         kimma_lme(model.lme, to.model.gene, gene)
-        }, error=function(e){})
+        }, error=function(e){
+          results.lme.ls[["error"]] <- data.frame(model="lme",
+                                                  gene=gene,
+                                                  message=conditionMessage(e))
+          return(results.lme.ls)
+        })
     }
 
     ##### Kinship model ######
@@ -187,7 +198,12 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
       #Wrap model run in error catch to allow loop to continue even if a single model fails
       results.kin.ls <- tryCatch({
         kimma_lmekin(model.lme, to.model.gene, gene, to.model.ls[["kin.subset"]])
-        }, error=function(e){})
+        }, error=function(e){
+          results.kin.ls[["error"]] <- data.frame(model="lmekin",
+                                                  gene=gene,
+                                                  message=conditionMessage(e))
+          return(results.kin.ls)
+        })
     }
 
     #### Contrasts ####
@@ -235,7 +251,10 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     fit.results <- results.lm.ls[["results"]] %>%
       dplyr::bind_rows(results.lme.ls[["results"]]) %>%
       dplyr::bind_rows(results.kin.ls[["results"]]) %>%
-      dplyr::bind_rows(contrast.results)
+      dplyr::bind_rows(contrast.results) %>%
+      dplyr::bind_rows(results.lm.ls[["error"]]) %>%
+      dplyr::bind_rows(results.lme.ls[["error"]]) %>%
+      dplyr::bind_rows(results.kin.ls[["error"]])
   })
   parallel::stopCluster(cl)
 
