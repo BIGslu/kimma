@@ -57,7 +57,7 @@
 #' # Model with failed genes
 #' kmFit(dat = example.voom,
 #'       patientID = "donorID", libraryID = "libID",
-#'       kin = example.kin, run.lmekin = TRUE,
+#'       kin = example.kin, run.lmekin = TRUE, run.lm = TRUE,
 #'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
 #'       model = "~ virus*asthma + lib.size + norm.factors + median_cv_coverage + donorID+(1|donorID)")
 
