@@ -21,7 +21,8 @@
 #'       model = "~ virus + (1|donorID)")
 #'
 #' # Summarise results
-#' summarise_kmFit(fdr = model_results$lmekin, fdr.cutoff = c(0.05, 0.5), FCgroup = TRUE)
+#' summarise_kmFit(fdr = model_results$lmekin, fdr.cutoff = c(0.01, 0.5), FCgroup = TRUE)
+#' summarise_kmFit(fdr = model_results$lmekin, fdr.cutoff = c(0.001))
 #'
 
 summarise_kmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
@@ -29,12 +30,17 @@ summarise_kmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
   estimate <- variable <- FDR <- gene <- group <- n <- model <- NULL
   if(intercept){
     fdr.filter <- fdr %>%
-      dplyr::mutate(FCgroup = ifelse(estimate<0,"down","up"))
+      dplyr::mutate(variable=factor(variable)) %>%
+      dplyr::mutate(FCgroup = ifelse(estimate<0,"down","up"),
+                    FCgroup = factor(FCgroup),
+                    model = factor(model))
 
   } else{
     fdr.filter <- dplyr::filter(fdr, variable != '(Intercept)') %>%
-      dplyr::mutate(FCgroup = ifelse(estimate<0,"down","up")) %>%
-      droplevels()
+      dplyr::mutate(variable=factor(variable)) %>%
+      dplyr::mutate(FCgroup = ifelse(estimate<0,"down","up"),
+                    FCgroup = factor(FCgroup),
+                    model = factor(model))
   }
 
   if(FCgroup & contrast){
@@ -61,8 +67,7 @@ summarise_kmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
 
       result <- dplyr::bind_rows(result, result.temp)
     }
-  }
-  else if(FCgroup){
+  } else if(FCgroup){
     #Blank df for results
     result <- data.frame()
 
@@ -85,8 +90,7 @@ summarise_kmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
 
       result <- dplyr::bind_rows(result, result.temp)
     }
-  }
-  else if(contrast){
+  } else if(contrast){
     #Blank df for results
     result <- data.frame()
 
@@ -110,8 +114,7 @@ summarise_kmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
                       contrast = gsub("contrast","",contrast))
 
       result <- dplyr::bind_rows(result, result.temp)
-    }}
-  else {
+    }} else {
     #Blank df for results
     result <- data.frame()
 
@@ -122,7 +125,8 @@ summarise_kmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
         dplyr::filter(FDR <= FDR.i) %>%
         dplyr::distinct(model, gene) %>%
         dplyr::mutate(variable = "total (nonredundant)") %>%
-        dplyr::count(model, variable, .drop = FALSE)
+        dplyr::count(model, variable, .drop = FALSE)%>%
+        dplyr::mutate(variable = "total (nonredundant)")
 
       #Summarize signif genes per variable at various levels
       group.temp <- fdr.filter %>%
@@ -133,23 +137,28 @@ summarise_kmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
       if(nrow(total.temp)==0){
         result.temp <- data.frame(variable=c(unique(fdr.filter$variable),
                                              "total (nonredundant)"),
-                                 n=0,
-                                 model=unique(fdr.filter$model),
-                                 group=name.fdr)
+                                  n=0,
+                                  model=unique(fdr.filter$model),
+                                  group=name.fdr)
       } else {
         result.temp <- dplyr::bind_rows(total.temp, group.temp) %>%
           dplyr::mutate(group = name.fdr)
       }
       result <- dplyr::bind_rows(result, result.temp)
     }
-    }
+  }
 
   #Format to wide output
+  if("total (nonredundant)" %in% result$variable){
   result.format <- tidyr::pivot_wider(result, names_from = group, values_from = n) %>%
-    dplyr::mutate(variable = forcats::fct_relevel(factor(variable),
+    dplyr::mutate(variable = forcats::fct_relevel(variable,
                                                   "total (nonredundant)",
                                                   after=Inf)) %>%
     dplyr::arrange(model, variable)
+  } else{
+    result.format <- tidyr::pivot_wider(result, names_from = group, values_from = n) %>%
+      dplyr::arrange(model, variable)
+  }
 
   return(result.format)
 }
