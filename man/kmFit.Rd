@@ -70,11 +70,10 @@ Run lmekin and corresponding lm or lme without kinship of gene expression in RNA
 }
 \examples{
 # All samples and all genes
-# Not run
-# kmFit(dat = example.voom,
-#       patientID = "donorID", libraryID = "libID",
-#       kin = example.kin, run.lmekin = TRUE,
-#       model = "~ virus + (1|donorID)", processors = 6)
+kmFit(dat = example.voom,
+      patientID = "donorID", libraryID = "libID",
+      kin = example.kin, run.lmekin = TRUE,
+      model = "~ virus + (1|donorID)")
 
 # Subset samples and genes
 kmFit(dat = example.voom,
@@ -97,4 +96,11 @@ kmFit(dat = example.voom, kin = example.kin,
       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
       model = "~ virus*asthma + (1|donorID)",
       contrast.var=c("virus","virus:asthma"))
+
+# Model with failed genes
+kmFit(dat = example.voom,
+      patientID = "donorID", libraryID = "libID",
+      kin = example.kin, run.lmekin = TRUE, run.lm = TRUE,
+      subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
+      model = "~ virus*asthma + lib.size + norm.factors + median_cv_coverage + donorID+(1|donorID)")
 }

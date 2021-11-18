@@ -27,11 +27,10 @@
 #'
 #' @examples
 #' # All samples and all genes
-#' # Not run
-#' # kmFit(dat = example.voom,
-#' #       patientID = "donorID", libraryID = "libID",
-#' #       kin = example.kin, run.lmekin = TRUE,
-#' #       model = "~ virus + (1|donorID)", processors = 6)
+#' kmFit(dat = example.voom,
+#'       patientID = "donorID", libraryID = "libID",
+#'       kin = example.kin, run.lmekin = TRUE,
+#'       model = "~ virus + (1|donorID)")
 #'
 #' # Subset samples and genes
 #' kmFit(dat = example.voom,
@@ -54,6 +53,13 @@
 #'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
 #'       model = "~ virus*asthma + (1|donorID)",
 #'       contrast.var=c("virus","virus:asthma"))
+#'
+#' # Model with failed genes
+#' kmFit(dat = example.voom,
+#'       patientID = "donorID", libraryID = "libID",
+#'       kin = example.kin, run.lmekin = TRUE, run.lm = TRUE,
+#'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
+#'       model = "~ virus*asthma + lib.size + norm.factors + median_cv_coverage + donorID+(1|donorID)")
 
 kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                   counts=NULL, meta=NULL, genes=NULL,
@@ -165,11 +171,17 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     #### LM model #####
     #Run linear model without kinship
     results.lm.ls <- NULL
+
     if(run.lm){
     #Wrap model run in error catch to allow loop to continue even if a single model fails
      results.lm.ls <- tryCatch({
        kimma_lm(model.lm, to.model.gene, gene)
-     }, error=function(e){})
+     }, error=function(e){
+       results.lm.ls[["error"]] <- data.frame(model="lm",
+                                               gene=gene,
+                                               message=conditionMessage(e))
+       return(results.lm.ls)
+     })
     }
 
     #### LME model #####
@@ -178,7 +190,12 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
       #Wrap model run in error catch to allow loop to continue even if a single model fails
       results.lme.ls <- tryCatch({
         kimma_lme(model.lme, to.model.gene, gene)
-        }, error=function(e){})
+        }, error=function(e){
+          results.lme.ls[["error"]] <- data.frame(model="lme",
+                                                  gene=gene,
+                                                  message=conditionMessage(e))
+          return(results.lme.ls)
+        })
     }
 
     ##### Kinship model ######
@@ -187,7 +204,12 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
       #Wrap model run in error catch to allow loop to continue even if a single model fails
       results.kin.ls <- tryCatch({
         kimma_lmekin(model.lme, to.model.gene, gene, to.model.ls[["kin.subset"]])
-        }, error=function(e){})
+        }, error=function(e){
+          results.kin.ls[["error"]] <- data.frame(model="lmekin",
+                                                  gene=gene,
+                                                  message=conditionMessage(e))
+          return(results.kin.ls)
+        })
     }
 
     #### Contrasts ####
@@ -235,38 +257,75 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     fit.results <- results.lm.ls[["results"]] %>%
       dplyr::bind_rows(results.lme.ls[["results"]]) %>%
       dplyr::bind_rows(results.kin.ls[["results"]]) %>%
-      dplyr::bind_rows(contrast.results)
+      dplyr::bind_rows(contrast.results) %>%
+      dplyr::bind_rows(results.lm.ls[["error"]]) %>%
+      dplyr::bind_rows(results.lme.ls[["error"]]) %>%
+      dplyr::bind_rows(results.kin.ls[["error"]])
   })
   parallel::stopCluster(cl)
 
-  #print("Format results")
-  message(paste(length(unique(to.model.ls[["to.model"]]$rowname)), "genes complete"))
-  #### Calculate FDR ####
-  if(run.contrast){
-    kmFit.results <- fit.results %>%
-      #Within model and variable
-      dplyr::group_by(model, variable, contrast) %>%
-      dplyr::mutate(FDR=stats::p.adjust(pval, method=p.method)) %>%
-      dplyr::ungroup() %>%
-      dplyr::mutate(contrast = gsub("contrast","",contrast))
-  }else{
-    kmFit.results <- fit.results %>%
-      #Within model and variable
-      dplyr::group_by(model, variable) %>%
-      dplyr::mutate(FDR=stats::p.adjust(pval, method=p.method)) %>%
-      dplyr::ungroup()
+  #### Completion messages ####
+  all <- length(unique(to.model.ls[["to.model"]]$rowname))
+  message(paste(all, "genes complete."))
+
+  if("message" %in% colnames(fit.results)){
+    fail <- fit.results %>%
+      tidyr::drop_na(message) %>%
+      dplyr::distinct(gene, message) %>% nrow()
+
+    message(paste(fail, "genes failed one or more models. See results[['model_error']]"))
+
+    #move message to separate df
+    error.results <- fit.results %>%
+      dplyr::filter(!is.na(message)) %>%
+      dplyr::distinct(model, gene, message)
+    fit.results <- fit.results %>%
+      dplyr::filter(is.na(message)) %>%
+      dplyr::select(-message)
+
+  } else {
+    message("No genes failed.")
+    error.results <- NULL
   }
 
-  #### Separate results into a list ####
+  #### Final formatting ####
   kmFit.ls <- list()
-  for(result.i in unique(kmFit.results$model)){
-    kmFit.ls[[result.i]] <- dplyr::filter(kmFit.results, model==result.i)
-    #Turn estimate numeric if needed
-    if(all(unique(kmFit.ls[[result.i]]$estimate) != "seeContrasts")){
-      kmFit.ls[[result.i]] <- dplyr::filter(kmFit.results, model==result.i) %>%
-        dplyr::mutate(estimate=as.numeric(estimate))
+
+  if(nrow(fit.results) > 0 ){
+    # Calculate FDR
+    if(run.contrast){
+      kmFit.results <- fit.results %>%
+        #Within model and variable
+        dplyr::group_by(model, variable, contrast) %>%
+        dplyr::mutate(FDR=stats::p.adjust(pval, method=p.method)) %>%
+        dplyr::ungroup() %>%
+        dplyr::mutate(contrast = gsub("contrast","",contrast))
+    }else{
+      kmFit.results <- fit.results %>%
+        #Within model and variable
+        dplyr::group_by(model, variable) %>%
+        dplyr::mutate(FDR=stats::p.adjust(pval, method=p.method)) %>%
+        dplyr::ungroup()
+    }
+    # Split into list
+    for(result.i in unique(kmFit.results$model)){
+      kmFit.ls[[result.i]] <- dplyr::filter(kmFit.results, model==result.i)
+      #Turn estimate numeric if needed
+      estimates <- unique(kmFit.ls[[result.i]]$estimate)
+      estimates <- estimates[!is.na(estimates)]
+      if(all(estimates != "seeContrasts")){
+        kmFit.ls[[result.i]] <- dplyr::filter(kmFit.results, model==result.i) %>%
+          dplyr::mutate(estimate=as.numeric(estimate))
+      }
     }
   }
+
+ # Split error messages into list object
+  if(!is.null(error.results)){
+    for(result.i in unique(error.results$model)){
+      kmFit.ls[[paste(result.i,"error",sep="_")]] <- dplyr::filter(error.results, model==result.i)
+    }}
+
   #### Save ####
   return(kmFit.ls)
 }
