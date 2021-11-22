@@ -70,10 +70,11 @@ Run lmekin and corresponding lm or lme without kinship of gene expression in RNA
 }
 \examples{
 # All samples and all genes
-kmFit(dat = example.voom,
-      patientID = "donorID", libraryID = "libID",
-      kin = example.kin, run.lmekin = TRUE,
-      model = "~ virus + (1|donorID)")
+# Not run
+# kmFit(dat = example.voom,
+#       patientID = "donorID", libraryID = "libID",
+#       kin = example.kin, run.lmekin = TRUE,
+#       model = "~ virus + (1|donorID)")
 
 # Subset samples and genes
 kmFit(dat = example.voom,
