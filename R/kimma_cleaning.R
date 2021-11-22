@@ -104,19 +104,11 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
       dplyr::arrange(rowname) %>%
       tibble::column_to_rownames()
 
-    if(patientID == libraryID){
-      #Compute number of samples to run in models
-      rna.no <- dat.subset$targets %>%
-        dplyr::distinct(libID) %>% nrow()
-      kin.no <- to.model %>%
-        dplyr::distinct(libID) %>% nrow()
-    } else{
-      #Compute number of samples to run in models
-      rna.no <- dat.subset$targets %>%
-        dplyr::distinct(get(patientID)) %>% nrow()
-      kin.no <- to.model %>%
-        dplyr::distinct(get(patientID)) %>% nrow()
-    }
+    #Compute number of samples to run in models
+    rna.no <- dat.subset$targets %>%
+      dplyr::distinct(get(patientID)) %>% nrow()
+    kin.no <- to.model %>%
+      dplyr::distinct(get(patientID)) %>% nrow()
 
     message(paste("Running models on", kin.no, "individuals.",
                   rna.no-kin.no, "individuals missing kinship data."))
