@@ -85,18 +85,21 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
   }
 
   ###### Format data for modeling ####
+  # Convert IDs if they are the same
+  if(patientID == libraryID){ to.modelID <- "libID" } else{ to.modelID <- patientID }
+
   if(!is.null(kin)){
     #Combine expression data (E) and sample metadata (targets)
     to.model <- dat.subset$E %>%
       tidyr::pivot_longer(-rowname, names_to = "libID", values_to = "expression") %>%
       dplyr::inner_join(dat.subset$targets, by=c("libID"=libraryID)) %>%
       #Remove samples missing kinship
-      dplyr::filter(get(patientID) %in% colnames(kin)) %>%
-      dplyr::arrange(get(patientID))
+      dplyr::filter(get(to.modelID) %in% colnames(kin)) %>%
+      dplyr::arrange(get(to.modelID))
 
     #Remove samples from kinship missing expression data
     #Order kinship as in to.model
-    to.keep <- unique(unlist(to.model[,patientID]))
+    to.keep <- unique(unlist(to.model[,to.modelID]))
     kin.subset <- as.data.frame(kin) %>%
       tibble::rownames_to_column() %>%
       dplyr::filter(rowname %in% to.keep) %>%
@@ -104,19 +107,11 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
       dplyr::arrange(rowname) %>%
       tibble::column_to_rownames()
 
-    if(patientID == libraryID){
-      #Compute number of samples to run in models
-      rna.no <- dat.subset$targets %>%
-        dplyr::distinct(libID) %>% nrow()
-      kin.no <- to.model %>%
-        dplyr::distinct(libID) %>% nrow()
-    } else{
-      #Compute number of samples to run in models
+    #Compute number of samples to run in models
       rna.no <- dat.subset$targets %>%
         dplyr::distinct(get(patientID)) %>% nrow()
       kin.no <- to.model %>%
-        dplyr::distinct(get(patientID)) %>% nrow()
-    }
+        dplyr::distinct(get(to.modelID)) %>% nrow()
 
     message(paste("Running models on", kin.no, "individuals.",
                   rna.no-kin.no, "individuals missing kinship data."))
@@ -127,14 +122,8 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
       dplyr::inner_join(dat.subset$targets, by=c("libID"=libraryID))
 
     kin.subset <- NULL
-    #Compute number of samples to run in models
-    if(patientID == libraryID){
-      rna.no <- to.model %>%
-        dplyr::distinct(libID) %>% nrow()
-    } else {
-      rna.no <- to.model %>%
+    rna.no <- to.model %>%
         dplyr::distinct(get(patientID)) %>% nrow()
-    }
 
     message(paste("Running models on", rna.no, "individuals. No kinship provided."))
   }
