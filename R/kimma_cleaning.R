@@ -123,7 +123,7 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
 
     kin.subset <- NULL
     rna.no <- to.model %>%
-        dplyr::distinct(get(patientID)) %>% nrow()
+        dplyr::distinct(get(to.modelID)) %>% nrow()
 
     message(paste("Running models on", rna.no, "individuals. No kinship provided."))
   }
