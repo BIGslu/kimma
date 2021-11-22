@@ -7,6 +7,7 @@
 summarise_lmFit(
   fdr,
   fdr.cutoff = c(0.05, 0.1, 0.2, 0.3, 0.4, 0.5),
+  p.cutoff = NULL,
   FCgroup = FALSE,
   intercept = FALSE
 )
@@ -15,6 +16,8 @@ summarise_lmFit(
 \item{fdr}{data.frame output by kimma::extract_lmFit( )}
 
 \item{fdr.cutoff}{numeric vector of FDR cutoffs to summarise at}
+
+\item{p.cutoff}{numeric vector of P-value cutodds to summarise at. No FDR summary given if p.cutoff is provided}
 
 \item{FCgroup}{logical if should separate summary by up/down fold change groups}
 
@@ -35,6 +38,6 @@ fit <- limma::eBayes(limma::lmFit(example.voom$E, design))
 model_results <- extract_lmFit(design = design, fit = fit)
 
 # Summarise results
-fdr.summary <- summarise_lmFit(fdr = model_results, fdr.cutoff = c(0.05, 0.5), FCgroup = TRUE)
+summarise_lmFit(fdr = model_results, fdr.cutoff = c(0.05, 0.5), FCgroup = TRUE)
 
 }

@@ -4,6 +4,7 @@
 #'
 #' @param fdr data.frame output by kimma::extract_lmFit( )
 #' @param fdr.cutoff numeric vector of FDR cutoffs to summarise at
+#' @param p.cutoff numeric vector of P-value cutodds to summarise at. No FDR summary given if p.cutoff is provided
 #' @param FCgroup logical if should separate summary by up/down fold change groups
 #' @param intercept logical if should include intercept variable in summary
 #'
@@ -19,10 +20,11 @@
 #' model_results <- extract_lmFit(design = design, fit = fit)
 #'
 #' # Summarise results
-#' fdr.summary <- summarise_lmFit(fdr = model_results, fdr.cutoff = c(0.05, 0.5), FCgroup = TRUE)
+#' summarise_lmFit(fdr = model_results, fdr.cutoff = c(0.05, 0.5), FCgroup = TRUE)
 #'
 
 summarise_lmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
+                            p.cutoff = NULL,
                             FCgroup = FALSE, intercept = FALSE){
   adj.P.Val <- geneName <- group <- n <- variable <- NULL
   if(intercept){
@@ -32,7 +34,10 @@ summarise_lmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
       droplevels()
   }
 
-  if(FCgroup){
+  # Use p-values if specified
+  if(!is.null(p.cutoff)){ fdr.cutoff <- p.cutoff }
+
+    if(FCgroup){
     #Blank df for results
     result <- data.frame()
 
@@ -93,6 +98,12 @@ summarise_lmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
     dplyr::mutate(variable = forcats::fct_relevel(factor(variable), "total (nonredundant)",
                                                   after=Inf)) %>%
     dplyr::arrange(variable)
+
+  #rename for P-value if specified
+  if(!is.null(p.cutoff)) {
+    result.format <- result.format %>%
+      dplyr::rename_all(~gsub("fdr_","p_",.))
+  }
 
   return(result.format)
 }

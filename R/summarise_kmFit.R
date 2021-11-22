@@ -4,6 +4,7 @@
 #'
 #' @param fdr data.frame output by kimma::kmFit( )
 #' @param fdr.cutoff numeric vector of FDR cutoffs to summarise at
+#' @param p.cutoff numeric vector of P-value cutodds to summarise at. No FDR summary given if p.cutoff is provided
 #' @param contrast logical if should separate summary by pairwise contrasts within variables
 #' @param FCgroup logical if should separate summary by up/down fold change groups
 #' @param intercept logical if should include intercept variable in summary
@@ -26,8 +27,10 @@
 #'
 
 summarise_kmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
+                            p.cutoff = NULL,
                             contrast = FALSE, FCgroup = FALSE, intercept = FALSE){
   estimate <- variable <- FDR <- gene <- group <- n <- model <- NULL
+
   if(intercept){
     fdr.filter <- fdr %>%
       dplyr::mutate(variable=factor(variable)) %>%
@@ -42,6 +45,9 @@ summarise_kmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
                     FCgroup = factor(FCgroup),
                     model = factor(model))
   }
+
+  # Use p-values if specified
+  if(!is.null(p.cutoff)){ fdr.cutoff <- p.cutoff }
 
   if(FCgroup & contrast){
     #Blank df for results
@@ -158,6 +164,12 @@ summarise_kmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
   } else{
     result.format <- tidyr::pivot_wider(result, names_from = group, values_from = n) %>%
       dplyr::arrange(model, variable)
+  }
+
+  #rename for P-value if specified
+  if(!is.null(p.cutoff)) {
+    result.format <- result.format %>%
+      dplyr::rename_all(~gsub("fdr_","p_",.))
   }
 
   return(result.format)
