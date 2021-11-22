@@ -50,7 +50,7 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
 
     #Put in list
     dat.format$E <- counts.format
-    dat.format$targets <- meta
+    dat.format$targets <- meta.format
     dat.format$genes <- genes
   } else {
     dat.format <- dat
@@ -120,8 +120,13 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
 
     kin.subset <- NULL
     #Compute number of samples to run in models
-    rna.no <- to.model %>%
-      dplyr::distinct(get(patientID)) %>% nrow()
+    if(patientID == libraryID){
+      rna.no <- to.model %>%
+        dplyr::distinct(libID) %>% nrow()
+    } else {
+      rna.no <- to.model %>%
+        dplyr::distinct(get(patientID)) %>% nrow()
+    }
 
     message(paste("Running models on", rna.no, "individuals. No kinship provided."))
   }
