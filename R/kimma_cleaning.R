@@ -21,7 +21,7 @@
 kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                            counts=NULL, meta=NULL, genes=NULL,
                            subset.var = NULL, subset.lvl = NULL, subset.genes = NULL){
-  i <- rowname <- NULL
+  i <- rowname <- libID <- NULL
   #If data are NOT a voom EList, create a mock version
   if(is.null(dat)) {
     dat.format <- list()
