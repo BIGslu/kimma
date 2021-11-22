@@ -85,7 +85,7 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
   }
 
   ###### Format data for modeling ####
-  # Convert IDs if they are the same
+  # Convert IDs if they are the same variable
   if(patientID == libraryID){ to.modelID <- "libID" } else{ to.modelID <- patientID }
 
   if(!is.null(kin)){
@@ -127,6 +127,9 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
 
     message(paste("Running models on", rna.no, "individuals. No kinship provided."))
   }
+
+  #Put back ptID if was renamed as libID
+  if(!(patientID %in% colnames(to.model))){ to.model[[patientID]] <- to.model$libID }
 
   #Combine for saving
   to.model.ls <- list()
