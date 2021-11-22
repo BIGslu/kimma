@@ -7,6 +7,7 @@
 summarise_kmFit(
   fdr,
   fdr.cutoff = c(0.05, 0.1, 0.2, 0.3, 0.4, 0.5),
+  p.cutoff = NULL,
   contrast = FALSE,
   FCgroup = FALSE,
   intercept = FALSE
@@ -16,6 +17,8 @@ summarise_kmFit(
 \item{fdr}{data.frame output by kimma::kmFit( )}
 
 \item{fdr.cutoff}{numeric vector of FDR cutoffs to summarise at}
+
+\item{p.cutoff}{numeric vector of P-value cutodds to summarise at. No FDR summary given if p.cutoff is provided}
 
 \item{contrast}{logical if should separate summary by pairwise contrasts within variables}
 
