@@ -26,7 +26,7 @@
 summarise_lmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
                             p.cutoff = NULL,
                             FCgroup = FALSE, intercept = FALSE){
-  adj.P.Val <- geneName <- group <- n <- variable <- NULL
+  adj.P.Val <- geneName <- group <- n <- variable <- fdr.var <- NULL
   if(intercept){
     fdr.filter <- fdr
   } else{
@@ -35,7 +35,12 @@ summarise_lmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
   }
 
   # Use p-values if specified
-  if(!is.null(p.cutoff)){ fdr.cutoff <- p.cutoff }
+  if(!is.null(p.cutoff)){
+    fdr.cutoff <- p.cutoff
+    fdr.var <- "P.Value"
+  } else {
+    fdr.var <- "adj.P.Val"
+  }
 
     if(FCgroup){
     #Blank df for results
@@ -45,14 +50,14 @@ summarise_lmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
       name.fdr <- paste("fdr",FDR.i, sep="_")
       #Calculate total, nonredundant signif genes at different levels
       total.temp <- fdr.filter %>%
-        dplyr::filter(adj.P.Val <= FDR.i) %>%
+        dplyr::filter(get(fdr.var) <= FDR.i) %>%
         dplyr::distinct(geneName, FCgroup) %>%
         dplyr::count(FCgroup, .drop = FALSE) %>%
         dplyr::mutate(variable = "total (nonredundant)")
 
       #Summarize signif genes per variable at various levels
       group.temp <- fdr.filter %>%
-        dplyr::filter(adj.P.Val <= FDR.i) %>%
+        dplyr::filter(get(fdr.var) <= FDR.i) %>%
         dplyr::count(variable, FCgroup, .drop = FALSE)
 
       result.temp <- dplyr::bind_rows(total.temp, group.temp) %>%
@@ -68,14 +73,14 @@ summarise_lmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
         name.fdr <- paste("fdr",FDR.i, sep="_")
         #Calculate total, nonredundant signif genes at different levels
         total.temp <- fdr.filter %>%
-          dplyr::filter(adj.P.Val <= FDR.i) %>%
+          dplyr::filter(get(fdr.var) <= FDR.i) %>%
           dplyr::distinct(geneName) %>%
           dplyr::mutate(variable = "total (nonredundant)") %>%
           dplyr::count(variable, .drop = FALSE)
 
         #Summarize signif genes per variable at various levels
         group.temp <- fdr.filter %>%
-          dplyr::filter(adj.P.Val <= FDR.i) %>%
+          dplyr::filter(get(fdr.var) <= FDR.i) %>%
           dplyr::count(variable, .drop = FALSE)
 
         #If 0 genes, make zero df
