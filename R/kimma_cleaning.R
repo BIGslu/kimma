@@ -75,7 +75,7 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
                                           get(subset.var[[i]]) %in% subset.lvl[[i]])
 
       dat.subset$E <- dplyr::select(as.data.frame(dat.subset$E),rowname,
-                                    tidyselect::all_of(dat.subset$targets$libID))
+                                    tidyselect::all_of(dat.subset$targets%>% dplyr::select(tidyselect::all_of(libraryID))%>%unlist()%>%as.character()))
     }
   }
 
