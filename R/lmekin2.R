@@ -36,7 +36,7 @@ lmekin2 <- function(formula,  data,
 
   method <- match.arg(method)
 
-  temp <- call('model.frame', formula= subbar(formula))
+  temp <- call('model.frame', formula= coxme:::subbar(formula))
   for (i in c('data', 'subset', 'weights', 'na.action'))
     if (!is.null(Call[[i]])) temp[[i]] <- Call[[i]]
   m <- eval.parent(temp)
