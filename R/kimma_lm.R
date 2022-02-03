@@ -3,18 +3,25 @@
 #' @param model.lm Character model created in kmFit
 #' @param to.model.gene Data frame formatted in kmFit, subset to gene of interest
 #' @param gene Character of gene to model
+#' @param use.weights Logical if gene specific weights should be used in model. Default is FALSE
 #'
 #' @return Linear model results data frame for 1 gene
 #' @keywords internal
 
-kimma_lm <- function(model.lm, to.model.gene, gene){
+kimma_lm <- function(model.lm, to.model.gene, gene, use.weights){
     #Place holder LM results
     p.lm <- NaN
     sigma.lm <- 0
     results.lm <- NULL
+    .GlobalEnv$to.model.gene <- to.model.gene
 
     #Fit model
-    fit.lm <- stats::lm(model.lm, data=to.model.gene)
+    if(use.weights){
+      fit.lm <- stats::lm(model.lm, data=to.model.gene, weights=to.model.gene$weight)
+    } else{
+      fit.lm <- stats::lm(model.lm, data=to.model.gene, weights=NULL)
+    }
+
     p.lm <- broom::tidy(fit.lm)
     sigma.lm <- stats::sigma(fit.lm)
 

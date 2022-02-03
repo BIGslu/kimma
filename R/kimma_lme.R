@@ -3,19 +3,26 @@
 #' @param model.lme Character model created in kmFit
 #' @param to.model.gene Data frame formatted in kmFit, subset to gene of interest
 #' @param gene Character of gene to model
+#' @param use.weights Logical if gene specific weights should be used in model. Default is FALSE
 #'
 #' @return Linear model effect results data frame for 1 gene
 #' @keywords internal
 
-kimma_lme <- function(model.lme, to.model.gene, gene){
+kimma_lme <- function(model.lme, to.model.gene, gene, use.weights){
     rowname <- NULL
     #Place holder LME results
     p.lme <- NaN
     sigma.lme <- 0
     results.lme <- NULL
+    .GlobalEnv$to.model.gene <- to.model.gene
 
     #Fit LME model
-    fit.lme <- lme4::lmer(model.lme, data=to.model.gene)
+    if(use.weights){
+      fit.lme <- lme4::lmer(model.lme, data=to.model.gene, weights=to.model.gene$weight)
+    } else{
+      fit.lme <- lme4::lmer(model.lme, data=to.model.gene, weights=NULL)
+    }
+
     #Estimate P-value
     p.lme <- broom::tidy(car::Anova(fit.lme))
     #Get estimates
