@@ -62,8 +62,8 @@ lmekin2 <- function(formula,  data,
   }
 
   if (missing(control)) control <- lmekin.control(...)
-  flist <- formula1(formula)
-  if (hasAbar(flist$fixed))
+  flist <- coxme:::formula1(formula)
+  if (coxme:::hasAbar(flist$fixed))
     stop("Invalid formula: a '|' outside of a valid random effects term")
 
   special <- c("strata", "cluster")
@@ -230,7 +230,7 @@ lmekin2 <- function(formula,  data,
   itheta <-  NULL   #initial values of parameters to iterate over
 
   for (i in 1:nrandom) {
-    f2 <- formula2(flist$random[[i]])
+    f2 <- coxme:::formula2(flist$random[[i]])
     if (f2$intercept & f2$group==1)
       stop(paste("Error in random term ", i,
                  ": Random intercepts require a grouping variable", sep=''))
