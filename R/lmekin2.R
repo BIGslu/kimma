@@ -63,7 +63,7 @@ lmekin2 <- function(formula,  data,
   else if (any(weights <=0))
     stop("Negative or zero weights are not allowed")
 
-  offset <- model.offset(m)
+  offset <- stats::model.offset(m)
   if (length(offset)==0) offset <- rep(0., n)
 
   # Check for penalized terms; the most likely is pspline
@@ -73,17 +73,17 @@ lmekin2 <- function(formula,  data,
   }
 
   if (missing(control)) control <- lmekin.control(...)
-  flist <- coxme:::formula1(formula)
-  if (coxme:::hasAbar(flist$fixed))
+  flist <- formula1(formula)
+  if (hasAbar(flist$fixed))
     stop("Invalid formula: a '|' outside of a valid random effects term")
 
   special <- c("strata", "cluster")
-  Terms <- terms(flist$fixed, special)
+  Terms <- stats::terms(flist$fixed, special)
   if (length(attr(Terms, "specials")$strata))
     stop ("A strata term is invalid in lmekin")
   if (length(attr(Terms, "specials")$cluster))
     stop ("A cluster term is invalid in lmekin")
-  X <- model.matrix(Terms, m)
+  X <- stats::model.matrix(Terms, m)
   nrandom <- length(flist$random)
   if (nrandom ==0) stop("No random effects terms found")
   vparm <- vector('list', nrandom)
@@ -126,7 +126,7 @@ lmekin2 <- function(formula,  data,
         }
       }
     }
-    while(length(varlist) < nrandom) varlist <- c(varlist, list(coxmeFull()))
+    while(length(varlist) < nrandom) varlist <- c(varlist, list(coxme::coxmeFull()))
   }
 
 
@@ -157,7 +157,7 @@ lmekin2 <- function(formula,  data,
 
   getcmat <- function(x, mf) {
     if (is.null(x) || x==1) return(NULL)
-    Terms <- terms(eval(call("~", x)))
+    Terms <- stats::terms(eval(call("~", x)))
     attr(Terms, 'intercept') <- 0  #ignore any "1+" that is present
 
     varnames <-  attr(Terms, 'term.labels')
@@ -165,9 +165,9 @@ lmekin2 <- function(formula,  data,
     if (any(ftemp)) {
       clist <- lapply(mf[varnames[ftemp]],
                       function(x) diag(length(levels(x))))
-      model.matrix(Terms, mf, contrasts.arg =clist)
+      stats::model.matrix(Terms, mf, contrasts.arg =clist)
     }
-    else model.matrix(Terms, mf)
+    else stats::model.matrix(Terms, mf)
   }
   getGroupNames <- function(x) {
     if (is.call(x) && x[[1]]==as.name('/'))
@@ -241,7 +241,7 @@ lmekin2 <- function(formula,  data,
   itheta <-  NULL   #initial values of parameters to iterate over
 
   for (i in 1:nrandom) {
-    f2 <- coxme:::formula2(flist$random[[i]])
+    f2 <- formula2(flist$random[[i]])
     if (f2$intercept & f2$group==1)
       stop(paste("Error in random term ", i,
                  ": Random intercepts require a grouping variable", sep=''))
@@ -302,7 +302,7 @@ lmekin2 <- function(formula,  data,
     if (length(dd) !=2 || any(dd != rep(ncoef[1,1]+ncoef[1,2], 2)))
       stop("Incorrect dimensions for generated penalty matrix, term 1")
     if (!inherits(tmat, 'bdsmatrix'))
-      tmat <- bdsmatrix(blocksize=integer(0), blocks=numeric(0), rmat=tmat)
+      tmat <- bdsmatrix::bdsmatrix(blocksize=integer(0), blocks=numeric(0), rmat=tmat)
     if (nrandom ==1) return(tmat)
 
     # Need to build up the matrix by pasting up a composite R
@@ -362,11 +362,11 @@ lmekin2 <- function(formula,  data,
       indx1 <- indx1 + ncoef[i,1]
       indx2 <- indx2 + ncoef[i,2]
     }
-    bdsmatrix(blocksize=tmat@blocksize, blocks=tmat@blocks, rmat=R)
+    bdsmatrix::bdsmatrix(blocksize=tmat@blocksize, blocks=tmat@blocks, rmat=R)
   }
   #Define Z^* and X^*
   itemp <- split(row(fmat), fmat)
-  zstar1 <- new("dgCMatrix",
+  zstar1 <- methods::new("dgCMatrix",
                 i= as.integer(unlist(itemp) -1),
                 p= as.integer(c(0, cumsum(unlist(lapply(itemp, length))))),
                 Dim=as.integer(c(n, max(fmat))),
@@ -375,7 +375,7 @@ lmekin2 <- function(formula,  data,
                 factors=list())
   if (length(zmat) >0)  {
     # there were random slopes as well
-    zstar1 <- cbind(zstar1, as(Matrix(zmat), "dgCMatrix"))
+    zstar1 <- cbind(zstar1, methods::as(Matrix(zmat), "dgCMatrix"))
   }
 
   nfrail <- ncol(zstar1)
@@ -391,7 +391,7 @@ lmekin2 <- function(formula,  data,
 
   logfun <- function(theta, best=0) {
     vmat <- kfun(theta, varlist, vparm, ntheta, ncoef)
-    Delta <- t(solve(chol(as(vmat, "dsCMatrix"), pivot=FALSE)))
+    Delta <- t(solve(chol(methods::as(vmat, "dsCMatrix"), pivot=FALSE)))
     zstar <- rbind(zstar1, Delta)
     qr1 <- qr(zstar)
     dd <- mydiag(qr1)
@@ -437,7 +437,7 @@ lmekin2 <- function(formula,  data,
     theta <- mfit$par
   }
   vmat <-  kfun(theta, varlist, vparm, ntheta, ncoef)
-  Delta <- t(solve(chol(as(vmat, "dsCMatrix"), pivot=FALSE)))
+  Delta <- t(solve(chol(methods::as(vmat, "dsCMatrix"), pivot=FALSE)))
   zstar <- rbind(zstar1, Delta)
   qr1 <- qr(zstar)
   dd <- mydiag(qr1)
@@ -477,7 +477,7 @@ lmekin2 <- function(formula,  data,
   # Debugging code, set the argument to TRUE only during testing
   if (FALSE) {
     # Compute the alternate way (assumes limited reordering)
-    zx <- cbind(zstar, as(xstar, class(zstar)))
+    zx <- cbind(zstar, methods::as(xstar, class(zstar)))
     qr3 <- qr(zx)
     cvec3 <- qr.qty(qr3, ystar)[-(1:(nvar+nfrail))]
     if (method=="ML")  dd3 <- (diag(myqrr(qr3)))[1:nfrail]
@@ -540,6 +540,6 @@ lmekin2 <- function(formula,  data,
   fit
 }
 residuals.lmekin <- function(object, ...) {
-  if (length(object$na.action)) naresid(object$.na.action, object$residuals)
+  if (length(object$na.action)) stats::naresid(object$.na.action, object$residuals)
   else object$residuals
 }
