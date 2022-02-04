@@ -4,20 +4,31 @@
 #' @param to.model.gene Data frame formatted in kmFit, subset to gene of interest
 #' @param gene Character of gene to model
 #' @param kin.subset Pairwise kinship matrix
+#' @param use.weights Logical if gene specific weights should be used in model. Default is FALSE
 #'
 #' @return Linear model effect with kinship results data frame for 1 gene
 #' @keywords internal
 
-kimma_lmekin <- function(model.lme, to.model.gene, gene, kin.subset){
+kimma_lmekin <- function(model.lme, to.model.gene, gene, kin.subset, use.weights){
     #Place holder LMEKIN results
     p.kin <- NaN
     sigma.kin <- 0
     results.kin <- NULL
+    .GlobalEnv$to.model.gene <- to.model.gene
 
     #Fit LMEKIN model
-    fit.kin <- coxme::lmekin(stats::as.formula(model.lme),
-                             data=to.model.gene, varlist=as.matrix(kin.subset))
-    #Calulate stats
+    if(use.weights){
+      fit.kin <- coxme::lmekin(stats::as.formula(model.lme),
+                               data=to.model.gene, varlist=as.matrix(kin.subset),
+                               weights=to.model.gene$weight)
+    } else{
+      fit.kin <- coxme::lmekin(stats::as.formula(model.lme),
+                               data=to.model.gene, varlist=as.matrix(kin.subset),
+                               weights=NULL)
+    }
+
+
+    #Calculate stats
     beta <- fit.kin$coefficients$fixed
     nvar <- length(beta)
     nfrail <- nrow(fit.kin$var) - nvar
