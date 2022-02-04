@@ -12,10 +12,12 @@ kmFit(
   counts = NULL,
   meta = NULL,
   genes = NULL,
+  weights = NULL,
   subset.var = NULL,
   subset.lvl = NULL,
   subset.genes = NULL,
   model,
+  use.weights = FALSE,
   run.lm = FALSE,
   run.lme = FALSE,
   run.lmekin = FALSE,
@@ -40,6 +42,8 @@ kmFit(
 
 \item{genes}{Matrix or data frame of gene metadata.}
 
+\item{weights}{Matrix of data frame of gene specific weights. Usually calculated with limma::voomWithQualityWeights().}
+
 \item{subset.var}{Character list of variable name(s) to filter data by.}
 
 \item{subset.lvl}{Character list of variable value(s) or level(s) to filter data to. Must match order of subset.var}
@@ -47,6 +51,8 @@ kmFit(
 \item{subset.genes}{Character vector of genes to include in models.}
 
 \item{model}{Character vector of model starting with ~ Should include (1|patientID) if mixed effects will be run}
+
+\item{use.weights}{Logical if gene specific weights should be used in model. Default is FALSE}
 
 \item{run.lm}{Logical if should run lm model without kinship}
 
@@ -70,20 +76,23 @@ Run lmekin and corresponding lm or lme without kinship of gene expression in RNA
 }
 \examples{
 # All samples and all genes
-# Not run
+## Not run
 # kmFit(dat = example.voom,
-#       patientID = "donorID", libraryID = "libID",
-#       kin = example.kin, run.lmekin = TRUE,
-#       model = "~ virus + (1|donorID)")
+#     patientID = "donorID", libraryID = "libID",
+#     kin = example.kin, run.lmekin = TRUE,
+#     model = "~ virus + (1|donorID)")
 
 # Subset samples and genes
+## Also with weights
 kmFit(dat = example.voom,
       patientID = "donorID", libraryID = "libID",
-      run.lme = TRUE,
+      run.lm = TRUE, use.weights = TRUE,
       subset.var = list("asthma"), subset.lvl = list(c("asthma")),
       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
       model = "~ virus + (1|donorID)")
+
 # Pairwise contrasts
+## No interaction
 kmFit(dat = example.voom,
       patientID = "donorID", libraryID = "libID",
       run.lme = TRUE, run.contrast = TRUE,
@@ -91,6 +100,7 @@ kmFit(dat = example.voom,
       model = "~ virus+asthma * median_cv_coverage + (1|donorID)",
       contrast.var=c("virus","asthma:median_cv_coverage"))
 
+## With interaction
 kmFit(dat = example.voom, kin = example.kin,
       patientID = "donorID", libraryID = "libID",
       run.lmekin = TRUE, run.contrast = TRUE,

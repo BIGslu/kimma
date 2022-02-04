@@ -4,7 +4,14 @@
 \alias{kmFit_contrast_kin}
 \title{Run pairwise model comparisons within lmekin model}
 \usage{
-kmFit_contrast_kin(contrast.var, to.model.gene, patientID, to.model.ls, gene)
+kmFit_contrast_kin(
+  contrast.var,
+  to.model.gene,
+  patientID,
+  to.model.ls,
+  gene,
+  use.weights
+)
 }
 \arguments{
 \item{contrast.var}{Character vector of variable in model to run contrasts of}

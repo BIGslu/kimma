@@ -12,6 +12,7 @@ kimma_cleaning(
   counts = NULL,
   meta = NULL,
   genes = NULL,
+  weights = NULL,
   subset.var = NULL,
   subset.lvl = NULL,
   subset.genes = NULL
@@ -32,7 +33,9 @@ Alternate data if not using EList object}
 
 \item{meta}{Matrix or data frame of sample and individual metadata.}
 
-\item{genes}{Matrix or data frame of gene metadata.
+\item{genes}{Matrix or data frame of gene metadata.}
+
+\item{weights}{Matrix or data frame of gene specific weights
 
 Subset data (optional)}
 

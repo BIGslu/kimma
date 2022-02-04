@@ -9,10 +9,12 @@
 #' @param counts Matrix of normalized expression. Rows are genes, columns are libraries.
 #' @param meta Matrix or data frame of sample and individual metadata.
 #' @param genes Matrix or data frame of gene metadata.
+#' @param weights Matrix of data frame of gene specific weights. Usually calculated with limma::voomWithQualityWeights().
 #' @param subset.var Character list of variable name(s) to filter data by.
 #' @param subset.lvl Character list of variable value(s) or level(s) to filter data to. Must match order of subset.var
 #' @param subset.genes Character vector of genes to include in models.
 #' @param model Character vector of model starting with ~ Should include (1|patientID) if mixed effects will be run
+#' @param use.weights Logical if gene specific weights should be used in model. Default is FALSE
 #' @param run.lm Logical if should run lm model without kinship
 #' @param run.lme Logical if should run lme model without kinship
 #' @param run.lmekin Logical if should run lmekin model with kinship
@@ -27,20 +29,24 @@
 #'
 #' @examples
 #' # All samples and all genes
-#' # Not run
+#' ## Not run
 #' # kmFit(dat = example.voom,
-#' #       patientID = "donorID", libraryID = "libID",
-#' #       kin = example.kin, run.lmekin = TRUE,
-#' #       model = "~ virus + (1|donorID)")
+#' #     patientID = "donorID", libraryID = "libID",
+#' #     kin = example.kin, run.lmekin = TRUE,
+#' #     model = "~ virus + (1|donorID)")
 #'
 #' # Subset samples and genes
+#' ## Also with weights
 #' kmFit(dat = example.voom,
 #'       patientID = "donorID", libraryID = "libID",
-#'       run.lme = TRUE,
+#'       run.lm = TRUE,
+#'       use.weights = TRUE,
 #'       subset.var = list("asthma"), subset.lvl = list(c("asthma")),
 #'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
 #'       model = "~ virus + (1|donorID)")
+#'
 #' # Pairwise contrasts
+#' ## No interaction
 #' kmFit(dat = example.voom,
 #'       patientID = "donorID", libraryID = "libID",
 #'       run.lme = TRUE, run.contrast = TRUE,
@@ -48,6 +54,7 @@
 #'       model = "~ virus+asthma * median_cv_coverage + (1|donorID)",
 #'       contrast.var=c("virus","asthma:median_cv_coverage"))
 #'
+#' ## With interaction
 #' kmFit(dat = example.voom, kin = example.kin,
 #'       patientID = "donorID", libraryID = "libID",
 #'       run.lmekin = TRUE, run.contrast = TRUE,
@@ -63,13 +70,14 @@
 #'       model = "~ virus*asthma + lib.size + norm.factors + median_cv_coverage + donorID+(1|donorID)")
 
 kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
-                  counts=NULL, meta=NULL, genes=NULL,
+                  counts=NULL, meta=NULL, genes=NULL, weights=NULL,
                   subset.var = NULL, subset.lvl = NULL, subset.genes = NULL,
-                  model, run.lm = FALSE, run.lme = FALSE, run.lmekin = FALSE,
+                  model, use.weights=FALSE,
+                  run.lm = FALSE, run.lme = FALSE, run.lmekin = FALSE,
                   run.contrast = FALSE, contrast.var = NULL,
                   processors = NULL, p.method = "BH"){
 
-  rowname <- libID <- variable <- pval <- group <- gene <- V1 <- V2 <- combo <- term <- p.value <- estimate <- contrast <- contrast.i <- NULL
+  rowname <- libID <- variable <- pval <- group <- gene <- V1 <- V2 <- combo <- term <- p.value <- estimate <- contrast <- contrast.i <- weights.gene <- NULL
 
   ###### Parallel ######
   #setup parallel processors
@@ -107,13 +115,16 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     stop("At least 1 model type must be selected. Please set one run parameter to TRUE.")}
   if(!run.lm & !run.lme & !run.lmekin & run.contrast){
       stop("Contrast models must be run with an accompanying linear model.")}
+  if(use.weights & is.null(weights) & is.null(dat$weights)){
+    stop("When use.weights is TRUE, must provide gene weights is dat object or separate data frame.")
+  }
 
   ###### Data #####
-  #print("Format data")
   to.model.ls <- kimma_cleaning(dat, kin, patientID, libraryID,
-                             counts, meta, genes,
+                             counts, meta, genes, weights,
                              subset.var, subset.lvl, subset.genes)
 
+  ###### Formulae #####
   #Make formulae. as.formula does not work
   if(grepl("\\|", model)){
     model.temp <- strsplit(gsub(" ", "", model), split = "\\+\\(1")[[1]][1]
@@ -162,7 +173,8 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                                                    "car","tibble","coxme","utils","emmeans",
                                                    "data.table","foreach","doParallel"),
                                      .export = c("kimma_lm","kimma_lme","kimma_lmekin",
-                                                 "kmFit_contrast","kmFit_contrast_kin")) %dopar% {
+                                                 "kmFit_contrast","kmFit_contrast_kin",
+                                                 "lmekin2")) %dopar% {
     #### Prepare data ####
     #Filter data to gene
     to.model.gene <- to.model.ls[["to.model"]] %>%
@@ -176,7 +188,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     if(run.lm){
     #Wrap model run in error catch to allow loop to continue even if a single model fails
      results.lm.ls <- tryCatch({
-       kimma_lm(model.lm, to.model.gene, gene)
+       kimma_lm(model.lm, to.model.gene, gene, use.weights)
      }, error=function(e){
        results.lm.ls[["error"]] <- data.frame(model="lm",
                                                gene=gene,
@@ -190,7 +202,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     if(run.lme){
       #Wrap model run in error catch to allow loop to continue even if a single model fails
       results.lme.ls <- tryCatch({
-        kimma_lme(model.lme, to.model.gene, gene)
+        kimma_lme(model.lme, to.model.gene, gene, use.weights)
         }, error=function(e){
           results.lme.ls[["error"]] <- data.frame(model="lme",
                                                   gene=gene,
@@ -204,7 +216,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     if(run.lmekin){
       #Wrap model run in error catch to allow loop to continue even if a single model fails
       results.kin.ls <- tryCatch({
-        kimma_lmekin(model.lme, to.model.gene, gene, to.model.ls[["kin.subset"]])
+        kimma_lmekin(model.lme, to.model.gene, gene, to.model.ls[["kin.subset"]], use.weights)
         }, error=function(e){
           results.kin.ls[["error"]] <- data.frame(model="lmekin",
                                                   gene=gene,
@@ -232,7 +244,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
 
       if(!is.null(results.kin.ls)){
         contrast.kin <- kmFit_contrast_kin(contrast.var, to.model.gene,
-                                           patientID, to.model.ls, gene) %>%
+                                           patientID, to.model.ls, gene, use.weights) %>%
           dplyr::mutate(model="lmekin.contrast")
       }
       #Combine contrast results

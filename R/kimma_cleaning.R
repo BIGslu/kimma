@@ -10,6 +10,7 @@
 #' @param counts Matrix of normalized expression. Rows are genes, columns are libraries.
 #' @param meta Matrix or data frame of sample and individual metadata.
 #' @param genes Matrix or data frame of gene metadata.
+#' @param weights Matrix or data frame of gene specific weights
 #'
 #' Subset data (optional)
 #' @param subset.var Character list of variable name(s) to filter data by.
@@ -19,7 +20,7 @@
 #' @keywords internal
 
 kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
-                           counts=NULL, meta=NULL, genes=NULL,
+                           counts=NULL, meta=NULL, genes=NULL, weights=NULL,
                            subset.var = NULL, subset.lvl = NULL, subset.genes = NULL){
   i <- rowname <- libID <- NULL
   #If data are NOT a voom EList, create a mock version
@@ -45,15 +46,53 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
 
     #Metadata
     ##Remove samples not in expression data
-    meta.format <- meta %>%
+    meta.format <- as.data.frame(meta) %>%
       dplyr::filter(get(libraryID) %in% colnames(counts.format))
+
+    #Weights if provided
+    if(!is.null(weights)){
+      weights.format <- as.data.frame(weights)
+      if(rownames(counts)[1]!=1){
+        rownames(weights.format) <- rownames(counts)
+        colnames(weights.format) <- colnames(counts)
+      } else {
+        rownames(weights.format) <- as.data.frame(counts) %>%
+          dplyr::select_if(is.character) %>% unlist(use.names = FALSE)
+        colnames(weights.format) <- colnames(counts)[-1]
+      }
+
+      weights.format <- weights.format[order(rownames(weights.format)),
+                                       colnames(counts.format)]
+    } else{
+      weights.format <- NULL
+    }
 
     #Put in list
     dat.format$E <- counts.format
     dat.format$targets <- meta.format
     dat.format$genes <- genes
+    dat.format$weights <- weights.format
   } else {
     dat.format <- dat
+
+    #Format weights from voom object
+    if(!is.null(dat$weights)){
+      weights.format <- as.data.frame(dat$weights)
+      if(rownames(dat$E)[1]!=1){
+        rownames(weights.format) <- rownames(dat$E)
+        colnames(weights.format) <- colnames(dat$E)
+      } else {
+        rownames(weights.format) <- as.data.frame(dat$E) %>%
+          dplyr::select_if(is.character) %>% unlist(use.names = FALSE)
+        colnames(weights.format) <- colnames(dat$E)[-1]
+      }
+      dat.format$weights <- weights.format[order(rownames(weights.format)),
+                                            colnames(dat$E)]
+    } else {
+      dat.format$weights <- NULL
+    }
+
+
   }
 
   #Format data
@@ -65,6 +104,13 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
     colnames(dat.format$E)[1] <- "rowname"
   }
 
+  if(!is.null(dat.format$weights) & is.numeric(dat.format$weights[,1])){
+    dat.format$weights <- tibble::rownames_to_column(dat.format$weights)
+  } else if(!is.null(dat.format$weights)){
+    #Rename 1st column
+    colnames(dat.format$weights)[1] <- "rowname"
+  }
+
   ###### Subset to variable of interest if selected ######
   dat.subset <- dat.format
 
@@ -74,14 +120,26 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
       dat.subset$targets <- dplyr::filter(dat.subset$targets,
                                           get(subset.var[[i]]) %in% subset.lvl[[i]])
 
-      dat.subset$E <- dplyr::select(as.data.frame(dat.subset$E),rowname,
-                                    tidyselect::all_of(dat.subset$targets%>% dplyr::select(tidyselect::all_of(libraryID))%>%unlist()%>%as.character()))
+      dat.subset$E <- dplyr::select(as.data.frame(dat.subset$E),
+                                    rowname,
+                                    tidyselect::all_of(dat.subset$targets[,libraryID]))
+
+      if(!is.null(dat.subset$weights)){
+        dat.subset$weights <- dplyr::select(as.data.frame(dat.subset$weights),
+                                            rowname,
+                                            tidyselect::all_of(dat.subset$targets[,libraryID]))
+      }
     }
   }
 
   #Subset genes
   if(!is.null(subset.genes)){
-    dat.subset$E <- dplyr::filter(as.data.frame(dat.subset$E), rowname %in% subset.genes)
+    dat.subset$E <- dplyr::filter(as.data.frame(dat.subset$E),
+                                  rowname %in% subset.genes)
+    if(!is.null(dat.subset$weights)){
+      dat.subset$weights <- dplyr::filter(as.data.frame(dat.subset$weights),
+                                          rowname %in% subset.genes)
+    }
   }
 
   ###### Format data for modeling ####
@@ -97,6 +155,17 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
       dplyr::filter(get(to.modelID) %in% colnames(kin)) %>%
       dplyr::arrange(get(to.modelID))
 
+    #Add weights if available
+    if(!is.null(dat.subset$weights)){
+      to.model <- to.model %>%
+        dplyr::left_join(tidyr::pivot_longer(dat.subset$weights, -rowname,
+                                             names_to = "libID", values_to = "weight"),
+                         by=c("rowname", "libID"))
+    } else{
+      to.model <- to.model %>%
+        dplyr::mutate(weight = NA)
+    }
+
     #Remove samples from kinship missing expression data
     #Order kinship as in to.model
     to.keep <- unique(unlist(to.model[,to.modelID]))
@@ -108,10 +177,10 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
       tibble::column_to_rownames()
 
     #Compute number of samples to run in models
-      rna.no <- dat.subset$targets %>%
-        dplyr::distinct(get(patientID)) %>% nrow()
-      kin.no <- to.model %>%
-        dplyr::distinct(get(to.modelID)) %>% nrow()
+    rna.no <- dat.subset$targets %>%
+      dplyr::distinct(get(patientID)) %>% nrow()
+    kin.no <- to.model %>%
+      dplyr::distinct(get(to.modelID)) %>% nrow()
 
     message(paste("Running models on", kin.no, "individuals.",
                   rna.no-kin.no, "individuals missing kinship data."))
@@ -121,9 +190,22 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
       tidyr::pivot_longer(-rowname, names_to = "libID", values_to = "expression") %>%
       dplyr::inner_join(dat.subset$targets, by=c("libID"=libraryID))
 
+    #Add weights if available
+    if(!is.null(dat.subset$weights)){
+      to.model <- to.model %>%
+        dplyr::left_join(tidyr::pivot_longer(dat.subset$weights, -rowname,
+                                             names_to = "libID", values_to = "weight"),
+                         by=c("rowname", "libID"))
+    } else{
+      to.model <- to.model %>%
+        dplyr::mutate(weight = NA)
+    }
+
     kin.subset <- NULL
+
     rna.no <- to.model %>%
         dplyr::distinct(get(to.modelID)) %>% nrow()
+
 
     message(paste("Running models on", rna.no, "individuals. No kinship provided."))
   }
