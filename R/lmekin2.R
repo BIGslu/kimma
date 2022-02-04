@@ -93,9 +93,8 @@ lmekin2 <- function(formula,  data,
   }
   if (missing(varlist) || is.null(varlist)) {
     varlist <- vector('list', nrandom)
-    for (i in 1:nrandom) varlist[[i]] <- coxmeFull() #default
-  }
-  else {
+    for (i in 1:nrandom) varlist[[i]] <- coxme::coxmeFull() #default
+  } else {
     if (is.function(varlist)) varlist <- varlist()
     if (inherits(varlist, 'coxmevar')) varlist <- list(varlist)
     else if (ismat(varlist))
@@ -182,8 +181,7 @@ lmekin2 <- function(formula,  data,
     if (any(indx==0)) stop(paste("Invalid grouping factor", varname[indx==0]))
     else data.frame(lapply(mf[indx], as.factor))
   }
-  if (missing(vinit) || is.null(vinit)) vinit <- vector('list', nrandom)
-  else {
+  if (missing(vinit) || is.null(vinit)) vinit <- vector('list', nrandom) else {
     if (nrandom==1) {
       if (is.numeric(vinit)) vinit <- list(vinit)
       else if (is.list(vinit)) vinit <- list(unlist(vinit))
@@ -206,8 +204,7 @@ lmekin2 <- function(formula,  data,
     }
   }
 
-  if (missing(vfixed) || is.null(vfixed)) vfixed <- vector('list', nrandom)
-  else {
+  if (missing(vfixed) || is.null(vfixed)) vfixed <- vector('list', nrandom) else {
     if (nrandom==1) {
       if (is.numeric(vfixed)) vfixed <- list(vfixed)
       else if (is.list(vfixed)) vfixed <- list(unlist(vfixed))
@@ -380,9 +377,11 @@ lmekin2 <- function(formula,  data,
 
   nfrail <- ncol(zstar1)
   nvar <- ncol(X)
-  if (nvar == 0)  xstar <- NULL  #model with no covariates
-  else xstar <- rbind(Matrix(X, sparse=FALSE),
-                      matrix(0., nrow=nfrail, ncol=ncol(X)))
+  if (nvar == 0)  {
+    #model with no covariates
+    xstar <- NULL}  else{
+      xstar <- rbind(Matrix(X, sparse=FALSE),
+                      matrix(0., nrow=nfrail, ncol=ncol(X)))}
   ystar <- c(Y, rep(0.0, nfrail))
   mydiag <- function(x) {
     if (class(x)=="sparseQR") diag(x@R)
@@ -410,8 +409,9 @@ lmekin2 <- function(formula,  data,
   }
 
   nstart <- sapply(itheta, length)
-  if (length(nstart) ==0) theta <- NULL #no thetas to solve for
-  else {
+  if (length(nstart) ==0) {
+    #no thetas to solve for
+    theta <- NULL} else {
     #iteration is required
     #make a matrix of all possible starting estimtes
     testvals <- do.call(expand.grid, itheta)
@@ -447,9 +447,8 @@ lmekin2 <- function(formula,  data,
   if (is.null(xstar)) { #No X covariates
     rcoef <- qr.coef(qr1, ystar)
     yhat <- qr.fitted(qr1, ystar)
-  }
-  else {
     qtx <- qr.qty(qr1, xstar)
+  } else {
     qr2 <- qr(qtx[-(1:nfrail),,drop=F])
     if (method!="ML") dd <- c(dd, mydiag(qr2))
 
@@ -457,8 +456,7 @@ lmekin2 <- function(formula,  data,
     yresid <- ystar - xstar %*% fcoef
     rcoef <- qr.coef(qr1, yresid)
     cvec <- qr.qty(qr2, cvec)[-(1:nvar)] #residual part
-    if (class(qr2)=="sparseQR") varmat <- chol2inv(qr2@R)
-    else varmat <- chol2inv(qr.R(qr2))
+    if (class(qr2)=="sparseQR") {varmat <- chol2inv(qr2@R)} else {varmat <- chol2inv(qr.R(qr2))}
     yhat <- as.vector(zstar1 %*% rcoef + X %*% fcoef) #kill any names
   }
 
@@ -466,8 +464,7 @@ lmekin2 <- function(formula,  data,
     sigma2 <- sum(cvec^2)/n  #MLE estimate
     loglik <- sum(log(abs(diag(Delta)))) -
       (sum(log(abs(dd))) + .5*n*(log(2*pi) +1 + log(sigma2)))
-  }
-  else {
+  } else {
     np <- length(cvec)  # n-p
     sigma2 <- mean(cvec^2)  # divide by n-p
     loglik <- sum(log(abs(diag(Delta)))) -
@@ -515,8 +512,7 @@ lmekin2 <- function(formula,  data,
                  sigma=sqrt(sigma2),
                  n=n,
                  call=Call)
-  }
-  else fit <- list(coefficients=list(fixed=NULL, random=random.coef),
+  } else fit <- list(coefficients=list(fixed=NULL, random=random.coef),
                    vcoef=newtheta,
                    residuals=Y - yhat,
                    method=method,
@@ -539,6 +535,7 @@ lmekin2 <- function(formula,  data,
   class(fit) <- "lmekin"
   fit
 }
+
 residuals.lmekin <- function(object, ...) {
   if (length(object$na.action)) stats::naresid(object$.na.action, object$residuals)
   else object$residuals
