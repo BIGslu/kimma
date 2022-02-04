@@ -39,7 +39,8 @@
 #' ## Also with weights
 #' kmFit(dat = example.voom,
 #'       patientID = "donorID", libraryID = "libID",
-#'       run.lm = TRUE, use.weights = TRUE,
+#'       run.lm = TRUE,
+#'       use.weights = TRUE,
 #'       subset.var = list("asthma"), subset.lvl = list(c("asthma")),
 #'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
 #'       model = "~ virus + (1|donorID)")
@@ -170,8 +171,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                     foreach::foreach(gene=unique(to.model.ls[["to.model"]]$rowname),
                                      .packages = c("dplyr","magrittr","stats","broom","lme4",
                                                    "car","tibble","coxme","utils","emmeans",
-                                                   "data.table","foreach","doParallel",
-                                                   "kimma"),
+                                                   "data.table","foreach","doParallel"),
                                      .export = c("kimma_lm","kimma_lme","kimma_lmekin",
                                                  "kmFit_contrast","kmFit_contrast_kin",
                                                  "lmekin2")) %dopar% {
