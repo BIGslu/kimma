@@ -20,6 +20,7 @@ lmekin2 <- function(formula,  data,
   Matrix <- Matrix::Matrix
 ##############################################
 
+  m <- Y <- n <- NULL
 
   Call <- match.call()
   sparse <- c(1,0)  #needed for compatablily with coxme code
@@ -39,7 +40,6 @@ lmekin2 <- function(formula,  data,
     # Add parens to the random formula and paste it on
     formula[[j]] <- call('+', formula[[j]], call('(', random[[2]]))
   }
-
   if (!missing(variance)) {
     warning("The variance argument of lmekin is depreciated")
     vfixed <- variance
@@ -47,21 +47,23 @@ lmekin2 <- function(formula,  data,
 
   method <- match.arg(method)
 
-  temp <- call('model.frame', formula= coxme:::subbar(formula))
-  for (i in c('data', 'subset', 'weights', 'na.action'))
-    if (!is.null(Call[[i]])) temp[[i]] <- Call[[i]]
-  m <- eval.parent(temp)
-
-  Y <- model.extract(m, "response")
+  ####### Set weights as user input #######
+  # temp <- call('model.frame', formula= subbar(formula))
+  # for (i in c('data', 'subset', 'weights', 'na.action'))
+  #   if (!is.null(Call[[i]])) temp[[i]] <- Call[[i]]
+  # m <- eval.parent(temp)
+  m <- stats::model.frame(formula = subbar(formula), data=data, weights=weights)
+  Y <- stats::model.extract(m, "response")
   n <- length(Y)
   if (n==0) stop("data has no observations")
 
-#### CHANGE MADE HERE ####
-  weights <- weights
-##########################
-  if (length(weights) ==0) weights <- rep(1.0, n)
-  else if (any(weights <=0))
-    stop("Negative or zero weights are not allowed")
+  # if (length(weights) ==0){
+  #   m <- stats::model.frame(formula = subbar(formula), data=data, weights=rep(1.0, nrow(m)))
+  #   Y <- stats::model.extract(m, "response")
+  #   n <- length(Y)
+  # }
+  if (any(weights <=0)) { stop("Negative or zero weights are not allowed") }
+  ######################################
 
   offset <- stats::model.offset(m)
   if (length(offset)==0) offset <- rep(0., n)
