@@ -4,7 +4,7 @@
 \alias{kimma_lmekin}
 \title{Run kimma linear mixed effects model with kinship}
 \usage{
-kimma_lmekin(model.lme, to.model.gene, gene, kin.subset)
+kimma_lmekin(model.lme, to.model.gene, gene, kin.subset, use.weights)
 }
 \arguments{
 \item{model.lme}{Character model created in kmFit}
@@ -14,6 +14,8 @@ kimma_lmekin(model.lme, to.model.gene, gene, kin.subset)
 \item{gene}{Character of gene to model}
 
 \item{kin.subset}{Pairwise kinship matrix}
+
+\item{use.weights}{Logical if gene specific weights should be used in model. Default is FALSE}
 }
 \value{
 Linear model effect with kinship results data frame for 1 gene

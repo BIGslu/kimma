@@ -9,7 +9,7 @@
 #' @return data frame with contrast model results
 #' @keywords internal
 
-kmFit_contrast_kin <- function(contrast.var, to.model.gene, patientID, to.model.ls, gene){
+kmFit_contrast_kin <- function(contrast.var, to.model.gene, patientID, to.model.ls, gene, use.weights){
   contrast.kin <- contrast.i <- V1 <- V2 <- variable <- contrast <- NULL
   #emmeans does not work for lmekin object. Instead, run pairwise contrasts as subsets
   for(contrast.i in contrast.var){
@@ -49,7 +49,7 @@ kmFit_contrast_kin <- function(contrast.var, to.model.gene, patientID, to.model.
                                                           to.keep, to.keep]
 
             contrast.kin.temp <- tryCatch({
-              kimma_lmekin(model.contrast, to.model.gene.contrast, gene, kin.contrast)
+              kimma_lmekin(model.contrast, to.model.gene.contrast, gene, kin.contrast, use.weights)
             }, error=function(e){})
 
             if(!is.null(contrast.kin.temp)){
