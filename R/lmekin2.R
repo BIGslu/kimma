@@ -398,7 +398,7 @@ lmekin2 <- function(formula,  data,
     dd <- mydiag(qr1)
     cvec <- as.vector(qr.qty(qr1, ystar))[-(1:nfrail)]  #residual part
     if (nvar >0) {  # have covariates
-      qr2 <- qr(qr.qty(qr1, xstar)[-(1:nfrail),])
+      qr2 <- qr(qr.qty(qr1, as.matrix(xstar))[-(1:nfrail),])
       cvec <- qr.qty(qr2, cvec)[-(1:nvar)]  #residual part
       if (method!= "ML") dd <- c(dd, mydiag(qr2))
     }
@@ -449,8 +449,8 @@ lmekin2 <- function(formula,  data,
   if (is.null(xstar)) { #No X covariates
     rcoef <- qr.coef(qr1, ystar)
     yhat <- qr.fitted(qr1, ystar)
-    qtx <- qr.qty(qr1, xstar)
   } else {
+    qtx <- qr.qty(qr1, as.matrix(xstar))
     qr2 <- qr(qtx[-(1:nfrail),,drop=F])
     if (method!="ML") dd <- c(dd, mydiag(qr2))
 
