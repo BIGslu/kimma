@@ -9,6 +9,17 @@ lmekin2 <- function(formula,  data,
                    method=c("ML", "REML"),
                    x=FALSE, y=FALSE, model=FALSE,
                    random, fixed, variance,  ...) {
+####### Set functions from within coxme ######
+  formula1 <- coxme:::formula1
+  formula2 <- coxme:::formula2
+  findIntercept <- coxme:::findIntercept
+  hasAbar <- coxme:::hasAbar
+  subbar <- coxme:::subbar
+  coxmeMlist <- coxme::coxmeMlist
+  lmekin.control <- coxme::lmekin.control
+  Matrix <- Matrix::Matrix
+##############################################
+
 
   Call <- match.call()
   sparse <- c(1,0)  #needed for compatablily with coxme code
