@@ -9,7 +9,8 @@
 #' @return data frame with contrast model results
 #' @keywords internal
 
-kmFit_contrast_kin <- function(contrast.var, to.model.gene, patientID, to.model.ls, gene, use.weights){
+kmFit_contrast_kin <- function(contrast.var, to.model.gene, patientID,
+                               to.model.ls, gene, use.weights){
   contrast.kin <- contrast.i <- V1 <- V2 <- variable <- contrast <- NULL
   #emmeans does not work for lmekin object. Instead, run pairwise contrasts as subsets
   for(contrast.i in contrast.var){
@@ -59,7 +60,8 @@ kmFit_contrast_kin <- function(contrast.var, to.model.gene, patientID, to.model.
                             contrast = contrast.combo[row.i, "combo"],
                             model = "lmekin.contrast") %>%
               dplyr::mutate(contrast = gsub(contrast.i,"",contrast)) %>%
-              dplyr::bind_rows(contrast.kin)}}
+              dplyr::bind_rows(contrast.kin)
+            }}
           }
     }
   }

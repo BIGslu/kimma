@@ -27,7 +27,6 @@ kimma_lmekin <- function(model.lme, to.model.gene, gene, kin.subset, use.weights
                                weights=NULL)
     }
 
-
     #Calculate stats
     beta <- fit.kin$coefficients$fixed
     nvar <- length(beta)

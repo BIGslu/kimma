@@ -184,7 +184,6 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     #### LM model #####
     #Run linear model without kinship
     results.lm.ls <- NULL
-
     if(run.lm){
     #Wrap model run in error catch to allow loop to continue even if a single model fails
      results.lm.ls <- tryCatch({
@@ -216,7 +215,8 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     if(run.lmekin){
       #Wrap model run in error catch to allow loop to continue even if a single model fails
       results.kin.ls <- tryCatch({
-        kimma_lmekin(model.lme, to.model.gene, gene, to.model.ls[["kin.subset"]], use.weights)
+        kimma_lmekin(model.lme, to.model.gene, gene, to.model.ls[["kin.subset"]],
+                     use.weights)
         }, error=function(e){
           results.kin.ls[["error"]] <- data.frame(model="lmekin",
                                                   gene=gene,
@@ -264,7 +264,6 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
       results.lme.ls[["results"]]$estimate <- as.character(results.lme.ls[["results"]]$estimate)
       results.kin.ls[["results"]]$estimate <- as.character(results.kin.ls[["results"]]$estimate)
       contrast.results$estimate <- as.character(contrast.results$estimate)
-
     }
 
     fit.results <- results.lm.ls[["results"]] %>%
@@ -336,7 +335,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
  # Split error messages into list object
   if(!is.null(error.results)){
     for(result.i in unique(error.results$model)){
-      kmFit.ls[[paste(result.i,"error",sep="_")]] <- dplyr::filter(error.results, model==result.i)
+      kmFit.ls[[paste(result.i,"error",sep=".")]] <- dplyr::filter(error.results, model==result.i)
     }}
 
   #### Save ####
