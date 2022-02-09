@@ -325,14 +325,17 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     }
     # Split into list
     for(result.i in unique(kmFit.results$model)){
-      kmFit.ls[[result.i]] <- dplyr::filter(kmFit.results, model==result.i)
+      result.temp <- dplyr::filter(kmFit.results, model==result.i)
       #Turn estimate numeric if needed
       estimates <- unique(kmFit.ls[[result.i]]$estimate)
       estimates <- estimates[!is.na(estimates)]
       if(all(estimates != "seeContrasts")){
-        kmFit.ls[[result.i]] <- dplyr::filter(kmFit.results, model==result.i) %>%
+        result.temp <- dplyr::filter(kmFit.results, model==result.i) %>%
           dplyr::mutate(estimate=as.numeric(estimate))
       }
+
+      kmFit.ls[[result.i]] <- result.temp %>%
+        dplyr::select_if(function(x) any(!is.na(x)))
     }
   }
 
