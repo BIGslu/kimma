@@ -297,7 +297,10 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
       dplyr::bind_rows(contrast.results) %>%
       dplyr::bind_rows(results.lm.ls[["error"]]) %>%
       dplyr::bind_rows(results.lme.ls[["error"]]) %>%
-      dplyr::bind_rows(results.kin.ls[["error"]])
+      dplyr::bind_rows(results.kin.ls[["error"]]) %>%
+      dplyr::bind_rows(results.lm.ls[["metrics"]]) %>%
+      dplyr::bind_rows(results.lme.ls[["metrics"]]) %>%
+      dplyr::bind_rows(results.kin.ls[["metrics"]])
   })
   parallel::stopCluster(cl)
 
