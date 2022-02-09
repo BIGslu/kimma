@@ -23,7 +23,6 @@ kimma_lm <- function(model.lm, to.model.gene, gene, use.weights){
     }
 
     p.lm <- broom::tidy(fit.lm)
-    sigma.lm <- stats::sigma(fit.lm)
 
     #Extract results
     results.lm <- data.frame(
@@ -31,11 +30,22 @@ kimma_lm <- function(model.lm, to.model.gene, gene, use.weights){
       gene = rep(gene, nrow(p.lm)),     #gene name
       variable = p.lm$term,             #variables in model
       estimate = p.lm$estimate,         #estimates in model
-      pval = p.lm$p.value,              #P-value
-      sigma = rep(sigma.lm, nrow(p.lm)))#sigma
+      pval = p.lm$p.value)              #P-value
+
+    #Model fit metrics
+    fit.metrics <- data.frame(
+      model="lm.fit",
+      gene=gene,
+      sigma = stats::sigma(fit.lm),
+      AIC = stats::AIC(fit.lm),
+      BIC = stats::BIC(fit.lm),
+      Rsq = summary(fit.lm)$r.squared,
+      adj_Rsq = summary(fit.lm)$adj.r.squared
+    )
 
     results.lm.ls <- list()
     results.lm.ls[["fit"]] <- fit.lm
+    results.lm.ls[["metrics"]] <- fit.metrics
     results.lm.ls[["results"]] <- results.lm
     return(results.lm.ls)
 }

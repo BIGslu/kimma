@@ -40,8 +40,7 @@ kimma_lme <- function(model.lme, to.model.gene, gene, use.weights){
         gene = gene,                        #gene name
         variable = p.lme$term,              #variables in model
         estimate = est.lme$Estimate,        #estimate in model
-        pval = p.lme$p.value,               #P-value
-        sigma = sigma.lme)                 #sigma
+        pval = p.lme$p.value)               #P-value
     } else {
       #If 3+ variable
       results.lme <- data.frame(
@@ -49,11 +48,37 @@ kimma_lme <- function(model.lme, to.model.gene, gene, use.weights){
         gene = gene,                        #gene name
         variable = p.lme$term,              #variables in model
         estimate = "seeContrasts",          #estimate in model
-        pval = p.lme$p.value,               #P-value
-        sigma = sigma.lme)                  #sigma
+        pval = p.lme$p.value)               #P-value
     }
+
+    #Calculate R-squared
+    if(use.weights){
+      null <- stats::glm(formula = expression ~ 1, data = to.model.gene,
+                  weights = to.model.gene$weight)
+    } else{
+      null <- stats::glm(formula = expression ~ 1, data = to.model.gene)
+    }
+
+    L0 <- as.vector(stats::logLik(null))
+    L1 <- as.vector(stats::logLik(fit.lme))
+    n <- stats::nobs(fit.lme)
+    ret <- 1 - exp(-2 / n * (L1 - L0))
+    max.r2 <- 1 - exp(2 / n * L0)
+
+    #Model fit metrics
+    fit.metrics <- data.frame(
+      model="lme.fit",
+      gene=gene,
+      sigma = stats::sigma(fit.lme),
+      AIC = stats::AIC(fit.lme),
+      BIC = stats::BIC(fit.lme),
+      Rsq = ret,
+      adj_Rsq = ret / max.r2
+    )
+
     results.lme.ls <- list()
     results.lme.ls[["fit"]] <- fit.lme
+    results.lme.ls[["metrics"]] <- fit.metrics
     results.lme.ls[["results"]] <- results.lme
     return(results.lme.ls)
 
