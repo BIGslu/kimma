@@ -236,21 +236,42 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     contrast.results <- NULL
 
     if(run.contrast){
-      if(!is.null(results.lm.ls)){
-        contrast.lm <- kmFit_contrast(results.lm.ls[["fit"]], contrast.var, to.model.gene)%>%
-          dplyr::mutate(model="lm.contrast")
+      if(!is.null(results.lm.ls[["results"]])){
+        contrast.lm <- tryCatch({
+          kmFit_contrast(results.lm.ls[["fit"]], contrast.var, to.model.gene)%>%
+            dplyr::mutate(model="lm.contrast")
+        }, error=function(e){
+          contrast.lm.error <- data.frame(model="lm.contrast",
+                                     gene=gene,
+                                     message=conditionMessage(e))
+          return(contrast.lm.error)
+        })
       }
 
-      if(!is.null(results.lme.ls)){
-        contrast.lme <- kmFit_contrast(results.lme.ls[["fit"]], contrast.var, to.model.gene) %>%
-          dplyr::mutate(model="lme.contrast")
+      if(!is.null(results.lme.ls[["results"]])){
+        contrast.lme <- tryCatch({
+          kmFit_contrast(results.lme.ls[["fit"]], contrast.var, to.model.gene) %>%
+            dplyr::mutate(model="lme.contrast")
+        }, error=function(e){
+          contrast.lme <- data.frame(model="lme.contrast",
+                                     gene=gene,
+                                     message=conditionMessage(e))
+          return(contrast.lme.error)
+        })
       }
 
-      if(!is.null(results.kin.ls)){
-        contrast.kin <- kmFit_contrast_kin(contrast.var, to.model.gene,
-                                           patientID, to.model.ls, gene, use.weights) %>%
-          dplyr::mutate(model="lmekin.contrast")
+      if(!is.null(results.kin.ls[["results"]])){
+        contrast.kin <- tryCatch({
+          kmFit_contrast_kin(contrast.var, to.model.gene, patientID,
+                             to.model.ls, gene, use.weights)
+        }, error=function(e){
+          contrast.kin.error <- data.frame(model="lmekin.contrast",
+                                                  gene=gene,
+                                                  message=conditionMessage(e))
+          return(contrast.kin.error)
+        })
       }
+
       #Combine contrast results
       contrast.results <- dplyr::bind_rows(contrast.lm, contrast.lme, contrast.kin) %>%
         dplyr::mutate(gene=gene) %>%
