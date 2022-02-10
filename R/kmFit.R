@@ -220,7 +220,8 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     if(run.lmekin){
       #Wrap model run in error catch to allow loop to continue even if a single model fails
       results.kin.ls <- tryCatch({
-        kimma_lmekin(model.lme, to.model.gene, gene, to.model.ls[["kin.subset"]], use.weights)
+        kimma_lmekin(model.lme, to.model.gene, gene, to.model.ls[["kin.subset"]],
+                     use.weights)
         }, error=function(e){
           results.kin.ls[["error"]] <- data.frame(model="lmekin",
                                                   gene=gene,
@@ -236,39 +237,58 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     contrast.results <- NULL
 
     if(run.contrast){
-      if(!is.null(results.lm.ls)){
-        contrast.lm <- kmFit_contrast(results.lm.ls[["fit"]], contrast.var, to.model.gene)%>%
-          dplyr::mutate(model="lm.contrast")
+      if(!is.null(results.lm.ls[["results"]])){
+        contrast.lm <- tryCatch({
+          kmFit_contrast(results.lm.ls[["fit"]], contrast.var, to.model.gene)%>%
+            dplyr::mutate(model="lm.contrast")
+        }, error=function(e){
+          contrast.lm.error <- data.frame(model="lm.contrast",
+                                     gene=gene,
+                                     message=conditionMessage(e))
+          return(contrast.lm.error)
+        })
       }
 
-      if(!is.null(results.lme.ls)){
-        contrast.lme <- kmFit_contrast(results.lme.ls[["fit"]], contrast.var, to.model.gene) %>%
-          dplyr::mutate(model="lme.contrast")
+      if(!is.null(results.lme.ls[["results"]])){
+        contrast.lme <- tryCatch({
+          kmFit_contrast(results.lme.ls[["fit"]], contrast.var, to.model.gene) %>%
+            dplyr::mutate(model="lme.contrast")
+        }, error=function(e){
+          contrast.lme.error <- data.frame(model="lme.contrast",
+                                     gene=gene,
+                                     message=conditionMessage(e))
+          return(contrast.lme.error)
+        })
       }
 
-      if(!is.null(results.kin.ls)){
-        contrast.kin <- kmFit_contrast_kin(contrast.var, to.model.gene,
-                                           patientID, to.model.ls, gene, use.weights) %>%
-          dplyr::mutate(model="lmekin.contrast")
+      if(!is.null(results.kin.ls[["results"]])){
+        contrast.kin <- tryCatch({
+          kmFit_contrast_kin(contrast.var, to.model.gene, patientID,
+                             to.model.ls, gene, use.weights)
+        }, error=function(e){
+          contrast.kin.error <- data.frame(model="lmekin.contrast",
+                                                  gene=gene,
+                                                  message=conditionMessage(e))
+          return(contrast.kin.error)
+        })
       }
+
       #Combine contrast results
       contrast.results <- dplyr::bind_rows(contrast.lm, contrast.lme, contrast.kin) %>%
-        dplyr::mutate(gene=gene) %>%
-        dplyr::select(model, gene, variable, contrast, estimate, pval, estimate)
+        dplyr::mutate(gene=gene)
       }
 
     #### Combine results #####
     #All models for this gene
     #If any estimate are character (seeContrasts), force for merging
-    if(is.character(results.lm.ls[["results"]]$estimate) |
-       is.character(results.lme.ls[["results"]]$estimate) |
-       is.character(results.kin.ls[["results"]]$estimate) |
-       is.character(contrast.results$estimate)){
+    if(any(is.character(results.lm.ls[["results"]]$estimate),
+       is.character(results.lme.ls[["results"]]$estimate),
+       is.character(results.kin.ls[["results"]]$estimate),
+       is.character(contrast.results$estimate))){
       results.lm.ls[["results"]]$estimate <- as.character(results.lm.ls[["results"]]$estimate)
       results.lme.ls[["results"]]$estimate <- as.character(results.lme.ls[["results"]]$estimate)
       results.kin.ls[["results"]]$estimate <- as.character(results.kin.ls[["results"]]$estimate)
       contrast.results$estimate <- as.character(contrast.results$estimate)
-
     }
 
     fit.results <- results.lm.ls[["results"]] %>%
@@ -277,7 +297,10 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
       dplyr::bind_rows(contrast.results) %>%
       dplyr::bind_rows(results.lm.ls[["error"]]) %>%
       dplyr::bind_rows(results.lme.ls[["error"]]) %>%
-      dplyr::bind_rows(results.kin.ls[["error"]])
+      dplyr::bind_rows(results.kin.ls[["error"]]) %>%
+      dplyr::bind_rows(results.lm.ls[["metrics"]]) %>%
+      dplyr::bind_rows(results.lme.ls[["metrics"]]) %>%
+      dplyr::bind_rows(results.kin.ls[["metrics"]])
   })
   parallel::stopCluster(cl)
 
@@ -326,21 +349,24 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     }
     # Split into list
     for(result.i in unique(kmFit.results$model)){
-      kmFit.ls[[result.i]] <- dplyr::filter(kmFit.results, model==result.i)
+      result.temp <- dplyr::filter(kmFit.results, model==result.i)
       #Turn estimate numeric if needed
       estimates <- unique(kmFit.ls[[result.i]]$estimate)
       estimates <- estimates[!is.na(estimates)]
       if(all(estimates != "seeContrasts")){
-        kmFit.ls[[result.i]] <- dplyr::filter(kmFit.results, model==result.i) %>%
+        result.temp <- dplyr::filter(kmFit.results, model==result.i) %>%
           dplyr::mutate(estimate=as.numeric(estimate))
       }
+
+      kmFit.ls[[result.i]] <- result.temp %>%
+        dplyr::select_if(function(x) any(!is.na(x)))
     }
   }
 
  # Split error messages into list object
   if(!is.null(error.results)){
     for(result.i in unique(error.results$model)){
-      kmFit.ls[[paste(result.i,"error",sep="_")]] <- dplyr::filter(error.results, model==result.i)
+      kmFit.ls[[paste(result.i,"error",sep=".")]] <- dplyr::filter(error.results, model==result.i)
     }}
 
   #### Save ####
