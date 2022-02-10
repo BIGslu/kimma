@@ -253,7 +253,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
           kmFit_contrast(results.lme.ls[["fit"]], contrast.var, to.model.gene) %>%
             dplyr::mutate(model="lme.contrast")
         }, error=function(e){
-          contrast.lme <- data.frame(model="lme.contrast",
+          contrast.lme.error <- data.frame(model="lme.contrast",
                                      gene=gene,
                                      message=conditionMessage(e))
           return(contrast.lme.error)
