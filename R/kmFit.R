@@ -274,17 +274,16 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
 
       #Combine contrast results
       contrast.results <- dplyr::bind_rows(contrast.lm, contrast.lme, contrast.kin) %>%
-        dplyr::mutate(gene=gene) %>%
-        dplyr::select(model, gene, variable, contrast, estimate, pval, estimate)
+        dplyr::mutate(gene=gene)
       }
 
     #### Combine results #####
     #All models for this gene
     #If any estimate are character (seeContrasts), force for merging
-    if(is.character(results.lm.ls[["results"]]$estimate) |
-       is.character(results.lme.ls[["results"]]$estimate) |
-       is.character(results.kin.ls[["results"]]$estimate) |
-       is.character(contrast.results$estimate)){
+    if(any(is.character(results.lm.ls[["results"]]$estimate),
+       is.character(results.lme.ls[["results"]]$estimate),
+       is.character(results.kin.ls[["results"]]$estimate),
+       is.character(contrast.results$estimate))){
       results.lm.ls[["results"]]$estimate <- as.character(results.lm.ls[["results"]]$estimate)
       results.lme.ls[["results"]]$estimate <- as.character(results.lme.ls[["results"]]$estimate)
       results.kin.ls[["results"]]$estimate <- as.character(results.kin.ls[["results"]]$estimate)
