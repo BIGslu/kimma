@@ -23,7 +23,12 @@
 #' @param processors Numeric processors to run in parallel. Default is 2 less than the total available
 #' @param p.method Character of FDR adjustment method. Values as in p.adjust( )
 #'
-#' @return Dataframe with model fit and significance for each gene
+#' @return List of data frames including
+#'    - lm/lme/lmekin: model estimates and significance
+#'    - *.contrast: model estimates and significance for pairwise contrasts with variables in the original model
+#'    - *.fit: model fit metrics such as sigma, AIC, BIC, R-squared
+#'    - *.error: error messages for genes that failed model fitting
+#'
 #' @importFrom foreach %dopar%
 #' @export
 #'
@@ -184,7 +189,6 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     #### LM model #####
     #Run linear model without kinship
     results.lm.ls <- NULL
-
     if(run.lm){
     #Wrap model run in error catch to allow loop to continue even if a single model fails
      results.lm.ls <- tryCatch({

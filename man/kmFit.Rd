@@ -86,7 +86,8 @@ Run lmekin and corresponding lm or lme without kinship of gene expression in RNA
 ## Also with weights
 kmFit(dat = example.voom,
       patientID = "donorID", libraryID = "libID",
-      run.lm = TRUE, use.weights = TRUE,
+      run.lm = TRUE,
+      use.weights = TRUE,
       subset.var = list("asthma"), subset.lvl = list(c("asthma")),
       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
       model = "~ virus + (1|donorID)")
