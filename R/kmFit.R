@@ -351,9 +351,9 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     for(result.i in unique(kmFit.results$model)){
       result.temp <- dplyr::filter(kmFit.results, model==result.i)
       #Turn estimate numeric if needed
-      estimates <- unique(kmFit.ls[[result.i]]$estimate)
+      estimates <- unique(result.temp$estimate)
       estimates <- estimates[!is.na(estimates)]
-      if(all(estimates != "seeContrasts")){
+      if(all(estimates != "seeContrasts") & !is.null(estimates)){
         result.temp <- dplyr::filter(kmFit.results, model==result.i) %>%
           dplyr::mutate(estimate=as.numeric(estimate))
       }
