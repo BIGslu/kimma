@@ -335,11 +335,10 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     if(run.contrast){
       kmFit.results <- fit.results %>%
         #Within model and variable
-        # dplyr::group_by(model, variable, contrast) %>%
-        dplyr::group_by(model, variable) %>%
+        dplyr::group_by(model, variable, contrast) %>%
         dplyr::mutate(FDR=stats::p.adjust(pval, method=p.method)) %>%
-        dplyr::ungroup() #%>%
-        # dplyr::mutate(contrast = gsub("contrast","",contrast))
+        dplyr::ungroup() %>%
+        dplyr::mutate(contrast = gsub("contrast","",contrast))
     }else{
       kmFit.results <- fit.results %>%
         #Within model and variable
