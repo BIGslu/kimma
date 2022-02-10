@@ -23,6 +23,8 @@ kmFit_contrast_kin(
 \item{to.model.ls}{Formatted data from kimma_cleaning( )}
 
 \item{gene}{Character name of gene of interest}
+
+\item{use.weights}{Logical if gene specific weights should be used in model}
 }
 \value{
 data frame with contrast model results
