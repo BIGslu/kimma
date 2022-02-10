@@ -69,7 +69,11 @@ kmFit(
 \item{p.method}{Character of FDR adjustment method. Values as in p.adjust( )}
 }
 \value{
-Dataframe with model fit and significance for each gene
+List of data frames including
+   - lm/lme/lmekin: model estimates and significance
+   - *.contrast: model estimates and significance for pairwise contrasts with variables in the original model
+   - *.fit: model fit metrics such as sigma, AIC, BIC, R-squared
+   - *.error: error messages for genes that failed model fitting
 }
 \description{
 Run lmekin and corresponding lm or lme without kinship of gene expression in RNA-seq data
@@ -86,7 +90,8 @@ Run lmekin and corresponding lm or lme without kinship of gene expression in RNA
 ## Also with weights
 kmFit(dat = example.voom,
       patientID = "donorID", libraryID = "libID",
-      run.lm = TRUE, use.weights = TRUE,
+      run.lm = TRUE,
+      use.weights = TRUE,
       subset.var = list("asthma"), subset.lvl = list(c("asthma")),
       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
       model = "~ virus + (1|donorID)")
