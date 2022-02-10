@@ -56,9 +56,8 @@ kmFit_contrast_kin <- function(contrast.var, to.model.gene, patientID,
             kin.contrast <- to.model.ls[["kin.subset"]][rownames(to.model.ls[["kin.subset"]]) %in%
                                                           to.keep, to.keep]
 
-            contrast.kin.temp <- tryCatch({
-              kimma_lmekin(model.contrast, to.model.gene.contrast, gene, kin.contrast, use.weights)
-            }, error=function(e){})
+            contrast.kin.temp <- kimma_lmekin(model.contrast, to.model.contrast.gene,
+                                              gene, kin.contrast, use.weights)
 
             if(!is.null(contrast.kin.temp)){
             contrast.kin <- contrast.kin.temp[["results"]] %>%
