@@ -159,11 +159,11 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
     if(!is.null(dat.subset$weights)){
       to.model <- to.model %>%
         dplyr::left_join(tidyr::pivot_longer(dat.subset$weights, -rowname,
-                                             names_to = "libID", values_to = "weight"),
+                                             names_to = "libID", values_to = "gene_weight"),
                          by=c("rowname", "libID"))
     } else{
       to.model <- to.model %>%
-        dplyr::mutate(weight = NA)
+        dplyr::mutate(gene_weight = NA)
     }
 
     #Remove samples from kinship missing expression data
@@ -194,11 +194,11 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
     if(!is.null(dat.subset$weights)){
       to.model <- to.model %>%
         dplyr::left_join(tidyr::pivot_longer(dat.subset$weights, -rowname,
-                                             names_to = "libID", values_to = "weight"),
+                                             names_to = "libID", values_to = "gene_weight"),
                          by=c("rowname", "libID"))
     } else{
       to.model <- to.model %>%
-        dplyr::mutate(weight = NA)
+        dplyr::mutate(gene_weight = NA)
     }
 
     kin.subset <- NULL

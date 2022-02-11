@@ -18,7 +18,7 @@ kimma_lme <- function(model.lme, to.model.gene, gene, use.weights){
 
     #Fit LME model
     if(use.weights){
-      fit.lme <- lme4::lmer(model.lme, data=to.model.gene, weights=to.model.gene$weight)
+      fit.lme <- lme4::lmer(model.lme, data=to.model.gene, weights=to.model.gene$gene_weight)
     } else{
       fit.lme <- lme4::lmer(model.lme, data=to.model.gene, weights=NULL)
     }
@@ -54,7 +54,7 @@ kimma_lme <- function(model.lme, to.model.gene, gene, use.weights){
     #Calculate R-squared
     if(use.weights){
       null <- stats::glm(formula = expression ~ 1, data = to.model.gene,
-                  weights = to.model.gene$weight)
+                  weights = to.model.gene$gene_weight)
     } else{
       null <- stats::glm(formula = expression ~ 1, data = to.model.gene)
     }

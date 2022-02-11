@@ -17,7 +17,7 @@ kimma_lm <- function(model.lm, to.model.gene, gene, use.weights){
 
     #Fit model
     if(use.weights){
-      fit.lm <- stats::lm(model.lm, data=to.model.gene, weights=to.model.gene$weight)
+      fit.lm <- stats::lm(model.lm, data=to.model.gene, weights=to.model.gene$gene_weight)
     } else{
       fit.lm <- stats::lm(model.lm, data=to.model.gene, weights=NULL)
     }

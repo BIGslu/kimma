@@ -56,7 +56,7 @@
 #'       patientID = "donorID", libraryID = "libID",
 #'       run.lme = TRUE, run.contrast = TRUE,
 #'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
-#'       model = "~ virus+asthma * median_cv_coverage + (1|donorID)",
+#'       model = "~ virus + asthma * median_cv_coverage + (1|donorID)",
 #'       contrast.var=c("virus","asthma:median_cv_coverage"))
 #'
 #' ## With interaction
@@ -122,6 +122,9 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
       stop("Contrast models must be run with an accompanying linear model.")}
   if(use.weights & is.null(weights) & is.null(dat$weights)){
     stop("When use.weights is TRUE, must provide gene weights is dat object or separate data frame.")
+  }
+  if("gene_weight" %in% c(colnames(meta), colnames(dat$targets))){
+    stop("Variable gene_weight is present in meta or dat$targets. This name is used for model weights. Please change variable name in your data.")
   }
 
   ###### Data #####
