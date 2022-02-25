@@ -177,13 +177,27 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
       tibble::column_to_rownames()
 
     #Compute number of samples to run in models
-    rna.no <- dat.subset$targets %>%
-      dplyr::distinct(get(patientID)) %>% nrow()
-    kin.no <- to.model %>%
-      dplyr::distinct(get(to.modelID)) %>% nrow()
+    if(patientID %in% colnames(dat.subset$targets)){
+      rna.no <- dat.subset$targets %>%
+        dplyr::distinct(get(patientID)) %>% nrow()
+      kin.no <- to.model %>%
+        dplyr::distinct(get(to.modelID)) %>% nrow()
 
-    message(paste("Running models on", kin.no, "individuals.",
-                  rna.no-kin.no, "individuals missing kinship data."))
+      message(paste("Running models on", kin.no, "individuals.",
+                    rna.no-kin.no, "individuals missing kinship data."))
+    } else if(libraryID %in% colnames(dat.subset$targets)){
+      rna.no <- dat.subset$targets %>%
+        dplyr::distinct(get(libraryID)) %>% nrow()
+      kin.no <- to.model %>%
+        dplyr::distinct(get(libraryID)) %>% nrow()
+
+      message(paste("Running models on", kin.no, "libraries.",
+                    rna.no-kin.no, "libraries missing kinship data."))
+    } else{
+      stop("Neither patientID nor libraryID found in dat. Please provide at least one.")
+    }
+
+
   }else{
     #Combine expression data (E) and sample metadata (targets)
     to.model <- dat.subset$E %>%
@@ -203,10 +217,19 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
 
     kin.subset <- NULL
 
-    rna.no <- to.model %>%
-      dplyr::distinct(get(patientID)) %>% nrow()
+    if(patientID %in% colnames(dat.subset$targets)){
+      rna.no <- to.model %>%
+        dplyr::distinct(get(patientID)) %>% nrow()
 
-    message(paste("Running models on", rna.no, "individuals. No kinship provided."))
+      message(paste("Running models on", rna.no, "individuals. No kinship provided."))
+    } else if(libraryID %in% colnames(dat.subset$targets)){
+      rna.no <- to.model %>%
+        dplyr::distinct(get(libraryID)) %>% nrow()
+
+      message(paste("Running models on", rna.no, "libraries. No kinship provided."))
+    } else{
+      stop("Neither patientID nor libraryID found in dat. Please provide at least one.")
+    }
   }
 
   #Put back ptID if was renamed as libID
