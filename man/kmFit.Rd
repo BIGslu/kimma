@@ -102,7 +102,7 @@ kmFit(dat = example.voom,
       patientID = "donorID", libraryID = "libID",
       run.lme = TRUE, run.contrast = TRUE,
       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
-      model = "~ virus+asthma * median_cv_coverage + (1|donorID)",
+      model = "~ virus + asthma * median_cv_coverage + (1|donorID)",
       contrast.var=c("virus","asthma:median_cv_coverage"))
 
 ## With interaction

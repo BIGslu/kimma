@@ -20,11 +20,12 @@ kimma_lmekin <- function(model.lme, to.model.gene, gene, kin.subset, use.weights
     if(use.weights){
       fit.kin <- coxme::lmekin(stats::as.formula(model.lme),
                                data=to.model.gene, varlist=as.matrix(kin.subset),
-                               weights=to.model.gene$gene_weight)
+                               weights=to.model.gene$gene_weight,
+                               method="REML")
     } else{
       fit.kin <- coxme::lmekin(stats::as.formula(model.lme),
                                data=to.model.gene, varlist=as.matrix(kin.subset),
-                               weights=NULL)
+                               weights=NULL, method="REML")
     }
 
     #Calculate stats
