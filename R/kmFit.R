@@ -310,14 +310,14 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
 
   #### Completion messages ####
   all <- length(unique(to.model.ls[["to.model"]]$rowname))
-  message(paste(all, "genes complete."))
+  message("Complete: ", all, " genes")
 
   if("message" %in% colnames(fit.results)){
     fail <- fit.results %>%
       tidyr::drop_na(message) %>%
       dplyr::distinct(gene, message) %>% nrow()
 
-    message(paste(fail, "genes failed one or more models. See results[['model_error']]"))
+    message("Failed: ", fail, " genes. See results[['model_error']]")
 
     #move message to separate df
     error.results <- fit.results %>%
@@ -328,7 +328,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
       dplyr::select(-message)
 
   } else {
-    message("No genes failed.")
+    message("Failed: 0 genes")
     error.results <- NULL
   }
 
