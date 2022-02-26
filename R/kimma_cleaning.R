@@ -16,12 +16,14 @@
 #' @param subset.var Character list of variable name(s) to filter data by.
 #' @param subset.lvl Character list of variable value(s) or level(s) to filter data to. Must match order of subset.var
 #' @param subset.genes Character vector of genes to include in models.
+#' @param model.lm Character vector of simple linear model version of model provided
 #' @return Data frame formatted for use in kmFit
 #' @keywords internal
 
 kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                            counts=NULL, meta=NULL, genes=NULL, weights=NULL,
-                           subset.var = NULL, subset.lvl = NULL, subset.genes = NULL){
+                           subset.var = NULL, subset.lvl = NULL, subset.genes = NULL,
+                           model.lm = NULL){
   i <- rowname <- libID <- NULL
   #If data are NOT a voom EList, create a mock version
   if(is.null(dat)) {
@@ -176,29 +178,44 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
       dplyr::arrange(rowname) %>%
       tibble::column_to_rownames()
 
-    #Compute number of samples to run in models
+    #Total samples messages
+    ##total libraries
+    lib.no <- nrow(dat.subset$targets)
+
+    ##total donors
     if(patientID %in% colnames(dat.subset$targets)){
-      rna.no <- dat.subset$targets %>%
+      pt.no <- dat.subset$targets %>%
         dplyr::distinct(get(patientID)) %>% nrow()
-      kin.no <- to.model %>%
-        dplyr::distinct(get(to.modelID)) %>% nrow()
-
-      message(paste("Running models on", kin.no, "individuals.",
-                    rna.no-kin.no, "individuals missing kinship data."))
-    } else if(libraryID %in% colnames(dat.subset$targets)){
-      rna.no <- dat.subset$targets %>%
-        dplyr::distinct(get(libraryID)) %>% nrow()
-      kin.no <- to.model %>%
-        dplyr::distinct(get(libraryID)) %>% nrow()
-
-      message(paste("Running models on", kin.no, "libraries.",
-                    rna.no-kin.no, "libraries missing kinship data."))
-    } else{
-      stop("Neither patientID nor libraryID found in dat. Please provide at least one.")
+      message("Input: ", lib.no, " libraries from ", pt.no, " unique patients")
+    } else {
+      message("Input: ",lib.no, " libraries")
     }
 
+    ## Missing data
+    ## Missing kinship
+    kin.no <- to.model %>%
+      dplyr::distinct(get(libraryID)) %>% nrow()
+    kin.miss <- lib.no-kin.no
 
-  }else{
+    if(kin.miss > 0 ){
+      message("- ", kin.miss, " libraries missing kinship")
+    }
+
+    ##Missing other variables
+    all_vars <- gsub("expression~", "", model.lm)
+    all_vars <- unique(strsplit(all_vars, "\\+|\\*|:")[[1]])
+
+    complete <- to.model %>%
+      dplyr::select(tidyselect::all_of(c(libraryID, all_vars))) %>%
+      dplyr::distinct() %>%
+      tidyr::drop_na() %>% nrow()
+
+    miss.no <- lib.no-complete
+    if(miss.no>0){
+      message("- ", miss.no, " libraries missing fixed effect variable(s)") }
+
+    message("Model: ",lib.no-kin.miss-miss.no, " libraries")
+  } else{
     #Combine expression data (E) and sample metadata (targets)
     to.model <- dat.subset$E %>%
       tidyr::pivot_longer(-rowname, names_to = "libID", values_to = "expression") %>%
@@ -217,19 +234,31 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
 
     kin.subset <- NULL
 
+    #Total samples messages
+    ##total libraries
+    lib.no <- nrow(dat.subset$targets)
+
+    ##total donors
     if(patientID %in% colnames(dat.subset$targets)){
-      rna.no <- to.model %>%
+      pt.no <- dat.subset$targets %>%
         dplyr::distinct(get(patientID)) %>% nrow()
-
-      message(paste("Running models on", rna.no, "individuals. No kinship provided."))
-    } else if(libraryID %in% colnames(dat.subset$targets)){
-      rna.no <- to.model %>%
-        dplyr::distinct(get(libraryID)) %>% nrow()
-
-      message(paste("Running models on", rna.no, "libraries. No kinship provided."))
-    } else{
-      stop("Neither patientID nor libraryID found in dat. Please provide at least one.")
+      message("Input: ", lib.no, " libraries from ", pt.no, " unique patients")
+    } else {
+      message("Input: ", lib.no, " libraries")
     }
+
+    ## Missing data
+    all_vars <- gsub("expression~", "", model.lm)
+    all_vars <- unique(strsplit(all_vars, "\\+|\\*|:")[[1]])
+
+    complete <- to.model %>%
+      dplyr::select(tidyselect::all_of(c(libraryID, all_vars))) %>%
+      dplyr::distinct() %>%
+      tidyr::drop_na() %>% nrow()
+
+    miss.no <- lib.no-complete
+    if(miss.no>0){message("- ", miss.no, " libraries missing fixed effect variable(s)") }
+    message("Model: ", lib.no-miss.no, " libraries")
   }
 
   #Put back ptID if was renamed as libID
