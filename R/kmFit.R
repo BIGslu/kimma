@@ -105,9 +105,13 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
 
   ###### Check common input parameter errors #####
   if(!is.null(dat) & !(libraryID %in% colnames(dat$targets))){
-      stop("LibraryID column not found in dat$targets.")}
+      stop("libraryID column not found in dat$targets.")}
   if(!is.null(meta) & !(libraryID %in% colnames(meta))){
-      stop("LibraryID column not found in meta.")}
+      stop("libraryID column not found in meta.")}
+  if(!is.null(dat) & !(patientID %in% colnames(dat$targets))){
+    stop("patientID column not found in dat$targets.")}
+  if(!is.null(meta) & !(patientID %in% colnames(meta))){
+    stop("patientID column not found in meta.")}
   if(is.null(subset.var) & !is.null(subset.lvl)){
     stop("Sample subsetting has been selected. Please also provide subset.var")}
   if(!is.null(subset.var) & is.null(subset.lvl)){
@@ -127,11 +131,6 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     stop("Variable gene_weight is present in meta or dat$targets. This name is used for model weights. Please change variable name in your data.")
   }
 
-  ###### Data #####
-  to.model.ls <- kimma_cleaning(dat, kin, patientID, libraryID,
-                             counts, meta, genes, weights,
-                             subset.var, subset.lvl, subset.genes)
-
   ###### Formulae #####
   #Make formulae. as.formula does not work
   if(grepl("\\|", model)){
@@ -139,6 +138,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     model.lm <- paste("expression", model.temp, sep="")
   } else {
     model.lm <- paste("expression", model, sep="")
+    model.lm <- gsub(" ","",model.lm)
   }
   model.lme <- paste("expression", gsub(" ", "", model), sep="")
 
@@ -168,6 +168,12 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
 
   #If contrast variables given, force run contrast model
   if(!is.null(contrast.var)){run.contrast <- TRUE}
+
+  ###### Data #####
+  to.model.ls <- kimma_cleaning(dat, kin, patientID, libraryID,
+                                counts, meta, genes, weights,
+                                subset.var, subset.lvl, subset.genes,
+                                model.lm)
 
   ###### Run models ######
   #create blank df to hold results
@@ -309,14 +315,14 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
 
   #### Completion messages ####
   all <- length(unique(to.model.ls[["to.model"]]$rowname))
-  message(paste(all, "genes complete."))
+  message("Complete: ", all, " genes")
 
   if("message" %in% colnames(fit.results)){
     fail <- fit.results %>%
       tidyr::drop_na(message) %>%
       dplyr::distinct(gene, message) %>% nrow()
 
-    message(paste(fail, "genes failed one or more models. See results[['model_error']]"))
+    message("Failed: ", fail, " genes. See results[['model_error']]")
 
     #move message to separate df
     error.results <- fit.results %>%
@@ -327,7 +333,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
       dplyr::select(-message)
 
   } else {
-    message("No genes failed.")
+    message("Failed: 0 genes")
     error.results <- NULL
   }
 

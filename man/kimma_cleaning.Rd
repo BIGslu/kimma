@@ -15,7 +15,8 @@ kimma_cleaning(
   weights = NULL,
   subset.var = NULL,
   subset.lvl = NULL,
-  subset.genes = NULL
+  subset.genes = NULL,
+  model.lm = NULL
 )
 }
 \arguments{
@@ -44,6 +45,8 @@ Subset data (optional)}
 \item{subset.lvl}{Character list of variable value(s) or level(s) to filter data to. Must match order of subset.var}
 
 \item{subset.genes}{Character vector of genes to include in models.}
+
+\item{model.lm}{Character vector of simple linear model version of model provided}
 }
 \value{
 Data frame formatted for use in kmFit
