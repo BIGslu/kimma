@@ -104,9 +104,13 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
 
   ###### Check common input parameter errors #####
   if(!is.null(dat) & !(libraryID %in% colnames(dat$targets))){
-      stop("LibraryID column not found in dat$targets.")}
+      stop("libraryID column not found in dat$targets.")}
   if(!is.null(meta) & !(libraryID %in% colnames(meta))){
-      stop("LibraryID column not found in meta.")}
+      stop("libraryID column not found in meta.")}
+  if(!is.null(dat) & !(patientID %in% colnames(dat$targets))){
+    stop("patientID column not found in dat$targets.")}
+  if(!is.null(meta) & !(patientID %in% colnames(meta))){
+    stop("patientID column not found in meta.")}
   if(is.null(subset.var) & !is.null(subset.lvl)){
     stop("Sample subsetting has been selected. Please also provide subset.var")}
   if(!is.null(subset.var) & is.null(subset.lvl)){
