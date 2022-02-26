@@ -126,11 +126,6 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     stop("Variable gene_weight is present in meta or dat$targets. This name is used for model weights. Please change variable name in your data.")
   }
 
-  ###### Data #####
-  to.model.ls <- kimma_cleaning(dat, kin, patientID, libraryID,
-                             counts, meta, genes, weights,
-                             subset.var, subset.lvl, subset.genes)
-
   ###### Formulae #####
   #Make formulae. as.formula does not work
   if(grepl("\\|", model)){
@@ -138,6 +133,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     model.lm <- paste("expression", model.temp, sep="")
   } else {
     model.lm <- paste("expression", model, sep="")
+    model.lm <- gsub(" ","",model.lm)
   }
   model.lme <- paste("expression", gsub(" ", "", model), sep="")
 
@@ -167,6 +163,12 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
 
   #If contrast variables given, force run contrast model
   if(!is.null(contrast.var)){run.contrast <- TRUE}
+
+  ###### Data #####
+  to.model.ls <- kimma_cleaning(dat, kin, patientID, libraryID,
+                                counts, meta, genes, weights,
+                                subset.var, subset.lvl, subset.genes,
+                                model.lm)
 
   ###### Run models ######
   #create blank df to hold results
