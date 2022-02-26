@@ -10,7 +10,6 @@
 #'
 #' @return Data frame with total significant genes for each variable at various FDR cutoffs
 #' @export
-#'
 #' @examples
 #'# Run limma model
 #' design <- model.matrix(~ virus, data = example.voom$targets)
@@ -112,3 +111,7 @@ summarise_lmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
 
   return(result.format)
 }
+
+#' @rdname summarise_lmFit
+#' @export
+summarize_lmFit <- summarise_lmFit
