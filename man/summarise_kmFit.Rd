@@ -2,9 +2,19 @@
 % Please edit documentation in R/summarise_kmFit.R
 \name{summarise_kmFit}
 \alias{summarise_kmFit}
+\alias{summarize_kmFit}
 \title{Summarise kmFit FDR results}
 \usage{
 summarise_kmFit(
+  fdr,
+  fdr.cutoff = c(0.05, 0.1, 0.2, 0.3, 0.4, 0.5),
+  p.cutoff = NULL,
+  contrast = FALSE,
+  FCgroup = FALSE,
+  intercept = FALSE
+)
+
+summarize_kmFit(
   fdr,
   fdr.cutoff = c(0.05, 0.1, 0.2, 0.3, 0.4, 0.5),
   p.cutoff = NULL,

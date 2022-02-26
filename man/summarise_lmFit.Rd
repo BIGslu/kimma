@@ -2,9 +2,18 @@
 % Please edit documentation in R/summarise_lmFit.R
 \name{summarise_lmFit}
 \alias{summarise_lmFit}
+\alias{summarize_lmFit}
 \title{Summarise lmFit FDR results}
 \usage{
 summarise_lmFit(
+  fdr,
+  fdr.cutoff = c(0.05, 0.1, 0.2, 0.3, 0.4, 0.5),
+  p.cutoff = NULL,
+  FCgroup = FALSE,
+  intercept = FALSE
+)
+
+summarize_lmFit(
   fdr,
   fdr.cutoff = c(0.05, 0.1, 0.2, 0.3, 0.4, 0.5),
   p.cutoff = NULL,
