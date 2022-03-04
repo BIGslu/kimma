@@ -24,6 +24,7 @@ Imports:
     ggplot2,
     limma,
     lme4,
+    lmerTest,
     magrittr,
     readr,
     stats,
