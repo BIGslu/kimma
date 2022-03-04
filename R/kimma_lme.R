@@ -39,17 +39,17 @@ kimma_lme <- function(model.lme, to.model.gene, gene, use.weights){
       results.lme <- data.frame(
         model = "lme",                      #Label model as lme
         gene = gene,                        #gene name
-        variable = c(p.lme$term, rownames(p.rand)[2]),      #variables in model
-        estimate = c(est.lme$Estimate, p.rand$LRT[2]),      #estimate in model
-        pval = c(p.lme$p.value, p.rand$`Pr(>Chisq)`[2]))    #P-value
+        variable = c(p.lme$term, rownames(p.rand)[-1]),      #variables in model
+        estimate = c(est.lme$Estimate, p.rand$LRT[-1]),      #estimate in model
+        pval = c(p.lme$p.value, p.rand$`Pr(>Chisq)`[-1]))    #P-value
     } else {
       #If 3+ variable
       results.lme <- data.frame(
         model = "lme",                      #Label model as lme
         gene = gene,                        #gene name
-        variable = c(p.lme$term, p.rand$t[2]),      #variables in model
+        variable = c(p.lme$term, p.rand$t[-1]),      #variables in model
         estimate = "seeContrasts",                  #estimate in model
-        pval = c(p.lme$p.value, p.rand$p.value[2])) #P-value
+        pval = c(p.lme$p.value, p.rand$p.value[-1])) #P-value
     }
 
     #Calculate R-squared
