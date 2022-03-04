@@ -25,6 +25,7 @@ kimma_lme <- function(model.lme, to.model.gene, gene, use.weights){
 
     #Estimate P-value
     p.lme <- broom::tidy(car::Anova(fit.lme))
+    p.rand <- as.data.frame(lmerTest::rand(fit.lme))
     #Get estimates
     est.lme <- as.data.frame(stats::coef(summary(fit.lme))) %>%
       tibble::rownames_to_column() %>%
@@ -38,17 +39,17 @@ kimma_lme <- function(model.lme, to.model.gene, gene, use.weights){
       results.lme <- data.frame(
         model = "lme",                      #Label model as lme
         gene = gene,                        #gene name
-        variable = p.lme$term,              #variables in model
-        estimate = est.lme$Estimate,        #estimate in model
-        pval = p.lme$p.value)               #P-value
+        variable = c(p.lme$term, rownames(p.rand)[2]),      #variables in model
+        estimate = c(est.lme$Estimate, p.rand$LRT[2]),      #estimate in model
+        pval = c(p.lme$p.value, p.rand$`Pr(>Chisq)`[2]))    #P-value
     } else {
       #If 3+ variable
       results.lme <- data.frame(
         model = "lme",                      #Label model as lme
         gene = gene,                        #gene name
-        variable = p.lme$term,              #variables in model
-        estimate = "seeContrasts",          #estimate in model
-        pval = p.lme$p.value)               #P-value
+        variable = c(p.lme$term, p.rand$t[2]),      #variables in model
+        estimate = "seeContrasts",                  #estimate in model
+        pval = c(p.lme$p.value, p.rand$p.value[2])) #P-value
     }
 
     #Calculate R-squared
