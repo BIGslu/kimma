@@ -35,13 +35,15 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
     if(rownames(counts)[1]!=1){
       counts.format <- as.data.frame(counts) %>%
         tibble::rownames_to_column() %>%
-        dplyr::select(rowname, tidyselect::all_of(meta[,libraryID])) %>%
+        dplyr::select(rowname, tidyselect::all_of(unlist(meta[,libraryID],
+                                                         use.names=FALSE))) %>%
         dplyr::arrange(match(rowname, genes$geneName)) %>%
         tibble::column_to_rownames()
     } else {
       counts.format <- as.data.frame(counts) %>%
         dplyr::rename_if(is.character, ~"rowname")%>%
-        dplyr::select(rowname, tidyselect::all_of(meta[,libraryID])) %>%
+        dplyr::select(rowname, tidyselect::all_of(unlist(meta[,libraryID],
+                                                          use.names=FALSE))) %>%
         dplyr::arrange(match(rowname, genes$geneName)) %>%
         tibble::column_to_rownames()
     }
