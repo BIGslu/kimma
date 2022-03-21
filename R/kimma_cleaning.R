@@ -153,8 +153,8 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
   if(!is.null(kin)){
     #Combine expression data (E) and sample metadata (targets)
     to.model <- dat.subset$E %>%
-      tidyr::pivot_longer(-rowname, names_to = "libID", values_to = "expression") %>%
-      dplyr::inner_join(dat.subset$targets, by=c("libID"=libraryID)) %>%
+      tidyr::pivot_longer(-rowname, names_to = libraryID, values_to = "expression") %>%
+      dplyr::inner_join(dat.subset$targets, by=libraryID) %>%
       #Remove samples missing kinship
       dplyr::filter(get(to.modelID) %in% colnames(kin)) %>%
       dplyr::arrange(get(to.modelID))
@@ -220,8 +220,8 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
   } else{
     #Combine expression data (E) and sample metadata (targets)
     to.model <- dat.subset$E %>%
-      tidyr::pivot_longer(-rowname, names_to = "libID", values_to = "expression") %>%
-      dplyr::inner_join(dat.subset$targets, by=c("libID"=libraryID))
+      tidyr::pivot_longer(-rowname, names_to = libraryID, values_to = "expression") %>%
+      dplyr::inner_join(dat.subset$targets, by=libraryID)
 
     #Add weights if available
     if(!is.null(dat.subset$weights)){
