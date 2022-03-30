@@ -225,11 +225,12 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
     all_vars <- unique(strsplit(all_vars, "\\+|\\*|:")[[1]])
 
     complete <- to.model %>%
+      dplyr::filter(get(patientID) %in% colnames(kin)) %>%
       dplyr::select(tidyselect::all_of(c(libraryID, all_vars))) %>%
       dplyr::distinct() %>%
       tidyr::drop_na() %>% nrow()
 
-    miss.no <- lib.no-complete
+    miss.no <- lib.no-kin.miss-complete
     if(miss.no>0){
       message("- ", miss.no, " libraries missing fixed effect variable(s)") }
 
