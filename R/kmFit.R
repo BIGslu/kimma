@@ -79,7 +79,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                   run.contrast = FALSE, contrast.var = NULL,
                   processors = NULL, p.method = "BH"){
 
-  rowname <- libID <- variable <- pval <- group <- gene <- V1 <- V2 <- combo <- term <- p.value <- estimate <- contrast <- contrast.i <- weights.gene <- NULL
+  rowname <- libID <- variable <- pval <- group <- gene <- V1 <- V2 <- combo <- term <- p.value <- estimate <- contrast <- contrast.i <- weights.gene <- FDR <- NULL
 
   ###### Parallel ######
   #setup parallel processors
@@ -347,22 +347,44 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
         dplyr::group_by(model, variable, contrast) %>%
         dplyr::mutate(FDR=stats::p.adjust(pval, method=p.method)) %>%
         dplyr::ungroup() %>%
-        dplyr::mutate(contrast = gsub("contrast","",contrast))
+        dplyr::mutate(contrast = gsub("contrast","",contrast)) %>%
+        dplyr::select(model:variable, contrast, estimate, pval, FDR,
+                      dplyr::everything())
     }else{
       kmFit.results <- fit.results %>%
         #Within model and variable
         dplyr::group_by(model, variable) %>%
         dplyr::mutate(FDR=stats::p.adjust(pval, method=p.method)) %>%
-        dplyr::ungroup()
+        dplyr::ungroup() %>%
+        dplyr::select(model:variable, estimate, pval, FDR,
+                      dplyr::everything())
     }
+
+    # Add gene info if available
+    if(!is.null(dat$genes)){
+      genes <- as.data.frame(dat$genes)
+    }
+
+    if(!is.null(genes)){
+      #Find matching column
+      nameID <- which(apply(genes, 2, function(x)
+        any(grepl(kmFit.results$gene[1], x))))
+      name <- colnames(genes)[nameID]
+
+      kmFit.results.anno <- kmFit.results %>%
+        dplyr::left_join(genes, by=c("gene"=name))
+    } else{
+      kmFit.results.anno <- kmFit.results
+    }
+
     # Split into list
-    for(result.i in unique(kmFit.results$model)){
-      result.temp <- dplyr::filter(kmFit.results, model==result.i)
+    for(result.i in unique(kmFit.results.anno$model)){
+      result.temp <- dplyr::filter(kmFit.results.anno, model==result.i)
       #Turn estimate numeric if needed
       estimates <- unique(result.temp$estimate)
       estimates <- estimates[!is.na(estimates)]
       if(all(estimates != "seeContrasts") & !is.null(estimates)){
-        result.temp <- dplyr::filter(kmFit.results, model==result.i) %>%
+        result.temp <- dplyr::filter(kmFit.results.anno, model==result.i) %>%
           dplyr::mutate(estimate=as.numeric(estimate))
       }
 
