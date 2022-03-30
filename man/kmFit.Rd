@@ -20,7 +20,8 @@ kmFit(
   use.weights = FALSE,
   run.lm = FALSE,
   run.lme = FALSE,
-  run.lmekin = FALSE,
+  run.lmerel = FALSE,
+  run.lmekin = NULL,
   run.contrast = FALSE,
   contrast.var = NULL,
   processors = NULL,
@@ -58,7 +59,9 @@ kmFit(
 
 \item{run.lme}{Logical if should run lme model without kinship}
 
-\item{run.lmekin}{Logical if should run lmekin model with kinship}
+\item{run.lmerel}{Logical if should run lmerel model with kinship}
+
+\item{run.lmekin}{Depreciated. Please use run.lmerel}
 
 \item{run.contrast}{Logical if should run pairwise contrasts. If no matrix provided, all possible pairwise comparisons are completed.}
 
@@ -70,53 +73,48 @@ kmFit(
 }
 \value{
 List of data frames including
-   - lm/lme/lmekin: model estimates and significance
+   - lm/lme/lmerel: model estimates and significance
    - *.contrast: model estimates and significance for pairwise contrasts with variables in the original model
    - *.fit: model fit metrics such as sigma, AIC, BIC, R-squared
    - *.error: error messages for genes that failed model fitting
 }
 \description{
-Run lmekin and corresponding lm or lme without kinship of gene expression in RNA-seq data
+Run lmerel and corresponding lm or lme without kinship of gene expression in RNA-seq data
 }
 \examples{
 # All samples and all genes
 ## Not run
 # kmFit(dat = example.voom,
-#     patientID = "donorID", libraryID = "libID",
-#     kin = example.kin, run.lmekin = TRUE,
-#     model = "~ virus + (1|donorID)")
+#     kin = example.kin, run.lmerel = TRUE,
+#     model = "~ virus + (1|ptID)")
 
 # Subset samples and genes
 ## Also with weights
 kmFit(dat = example.voom,
-      patientID = "donorID", libraryID = "libID",
       run.lm = TRUE,
       use.weights = TRUE,
       subset.var = list("asthma"), subset.lvl = list(c("asthma")),
       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
-      model = "~ virus + (1|donorID)")
+      model = "~ virus + (1|ptID)")
 
 # Pairwise contrasts
 ## No interaction
 kmFit(dat = example.voom,
-      patientID = "donorID", libraryID = "libID",
       run.lme = TRUE, run.contrast = TRUE,
       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
-      model = "~ virus + asthma * median_cv_coverage + (1|donorID)",
+      model = "~ virus + asthma * median_cv_coverage + (1|ptID)",
       contrast.var=c("virus","asthma:median_cv_coverage"))
 
 ## With interaction
 kmFit(dat = example.voom, kin = example.kin,
-      patientID = "donorID", libraryID = "libID",
-      run.lmekin = TRUE, run.contrast = TRUE,
+      run.lmerel = TRUE, run.contrast = TRUE,
       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
-      model = "~ virus*asthma + (1|donorID)",
+      model = "~ virus*asthma + (1|ptID)",
       contrast.var=c("virus","virus:asthma"))
 
 # Model with failed genes
 kmFit(dat = example.voom,
-      patientID = "donorID", libraryID = "libID",
-      kin = example.kin, run.lmekin = TRUE, run.lm = TRUE,
+      kin = example.kin, run.lmerel = TRUE, run.lm = TRUE,
       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
-      model = "~ virus*asthma + lib.size + norm.factors + median_cv_coverage + donorID+(1|donorID)")
+      model = "~ virus*asthma + lib.size + norm.factors + median_cv_coverage + ptID+(1|ptID)")
 }
