@@ -9,7 +9,7 @@
 #' @keywords internal
 
 kmFit_contrast <- function(fit, contrast.var, to.model.gene, metrics){
-  contrast.i <- term <- p.value <- NULL
+  contrast.i <- term <- p.value <- contrast_ref <- contrast_lvl <- contrast <- null.value <- NULL
   contrast.result <- data.frame()
 
  #Fit variables in contrast.var
@@ -26,7 +26,9 @@ kmFit_contrast <- function(fit, contrast.var, to.model.gene, metrics){
                           stats::as.formula(paste("pairwise~", i.split[!contrast.is.numeric],
                                            sep="")))$contrasts %>%
           broom::tidy() %>%
-          dplyr::mutate(term = gsub(":","*", contrast.i))
+          dplyr::mutate(term = gsub(":","*", contrast.i)) %>%
+          tidyr::separate(contrast, into=c("contrast_ref","contrast_lvl"),
+                          sep=" - ")
         }, error=function(e){ return(NULL) })
 
       #if model ran, add to results
@@ -40,7 +42,9 @@ kmFit_contrast <- function(fit, contrast.var, to.model.gene, metrics){
         emmeans::emmeans(fit, adjust="none",
                          stats::as.formula(paste("pairwise~", contrast.i,sep="")))$contrasts %>%
           broom::tidy() %>%
-          dplyr::mutate(term = gsub(":","*", contrast.i))
+          dplyr::mutate(term = gsub(":","*", contrast.i)) %>%
+          tidyr::separate(contrast, into=c("contrast_ref","contrast_lvl"),
+                          sep=" - ")
       }, error=function(e){ return(NULL) })
 
       #if model ran, add to results
@@ -50,7 +54,8 @@ kmFit_contrast <- function(fit, contrast.var, to.model.gene, metrics){
       }
         }}
   contrast.result.format <- contrast.result %>%
-    dplyr::rename(variable=term, pval=p.value)
+    dplyr::rename(variable=term, pval=p.value) %>%
+    dplyr::select(-null.value)
   return(contrast.result.format)
 }
 

@@ -17,7 +17,7 @@ extract_lmFit(
 
 \item{fit}{MArrayLM model fit output by limma::eBayes( )}
 
-\item{contrast.mat}{contrast matrix output by limma::makeContrasts( )}
+\item{contrast.mat}{contrast matrix output by limma::makeContrasts( ). NOTE: When using constrasts, the result will not exactly match extract_kmFit due to limma's naming of contrast levels as variableLEVEL}
 
 \item{dat.genes}{data frame with additional gene annotations. Optional.}
 

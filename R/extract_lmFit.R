@@ -4,7 +4,7 @@
 #'
 #' @param design model matrix output by model.matrix( )
 #' @param fit MArrayLM model fit output by limma::eBayes( )
-#' @param contrast.mat contrast matrix output by limma::makeContrasts( )
+#' @param contrast.mat contrast matrix output by limma::makeContrasts( ). NOTE: When using constrasts, the result will not exactly match extract_kmFit due to limma's naming of contrast levels as variableLEVEL
 #' @param dat.genes data frame with additional gene annotations. Optional.
 #' @param name.genes character for variable name in dat.genes that matches gene names in fit
 #'
@@ -35,7 +35,7 @@ extract_lmFit <- function(design, fit, contrast.mat=NULL,
                           dat.genes=NULL, name.genes="geneName"){
   #Empty df to hold results
   pval.result <- data.frame()
-  logFC <- FCgroup <- variable <- geneName <- NULL
+  logFC <- FCgroup <- variable <- geneName <- P.Value <- adj.P.Val <- model <- gene <- contrast_ref <- contrast_lvl <- estimate <- pval <- FDR <- B <- NULL
 
   #List variables of interest
   if(!is.null(contrast.mat)){
@@ -47,8 +47,8 @@ extract_lmFit <- function(design, fit, contrast.mat=NULL,
   for(var in 1:length(vars)){
 
     pval.temp <- limma::topTable(fit, coef=var,
-                          number=nrow(fit),
-                          adjust.method = "BH")
+                                 number=nrow(fit),
+                                 adjust.method = "BH")
 
     #Move gene names from rownames if exist
     if (is.numeric(pval.temp[,1])){
@@ -69,13 +69,27 @@ extract_lmFit <- function(design, fit, contrast.mat=NULL,
   }
 
   pval.result.format <- pval.result %>%
-    # Add categorical var for DE
-    dplyr::mutate(FCgroup = ifelse(logFC < 0 , "down",
-                             ifelse(logFC > 0 , "up", NA))) %>%
     #Convert groups to ordered factors
-    dplyr::mutate(FCgroup = factor(FCgroup, levels=c("down","up")),
-                  variable = factor(variable, levels=vars)) %>%
-    dplyr::select(geneName, variable, logFC, FCgroup, dplyr::everything())
+    dplyr::mutate(variable = factor(variable, levels=vars)) %>%
+    #rename to match kmFit
+    dplyr::rename(gene=geneName, estimate=logFC, pval=P.Value, FDR=adj.P.Val) %>%
+    dplyr::mutate(model="limma")
 
-  return(pval.result.format)
+  #Split contrast if present
+  if(!is.null(contrast.mat)){
+    pval.result.format2 <- pval.result.format %>%
+      tidyr::separate(variable, into=c("contrast_lvl","contrast_ref"), sep=" - ") %>%
+      dplyr::select(model, gene, contrast_ref, contrast_lvl,
+                    estimate, pval, FDR, t, B, dplyr::everything())
+
+      paste(Reduce(intersect, strsplit(c(pval.result.format2$contrast_lvl,
+                                   pval.result.format2$contrast_ref),"")),
+            collapse="")
+  } else{
+    pval.result.format2 <- pval.result.format %>%
+      dplyr::select(model, gene, variable, estimate, pval, FDR, t, B,
+                    dplyr::everything())
+  }
+
+  return(pval.result.format2)
 }
