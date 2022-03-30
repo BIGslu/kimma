@@ -38,7 +38,7 @@ kmFit_contrast <- function(fit, contrast.var, to.model.gene, metrics){
         }
     } else {
       #If not numeric
-      contrast.result.temp2 <- tryCatch({
+      contrast.result.temp <- tryCatch({
         emmeans::emmeans(fit, adjust="none",
                          stats::as.formula(paste("pairwise~", contrast.i,sep="")))$contrasts %>%
           broom::tidy() %>%
@@ -50,12 +50,12 @@ kmFit_contrast <- function(fit, contrast.var, to.model.gene, metrics){
       #if model ran, add to results
       if(is.data.frame(contrast.result.temp)){
         contrast.result <- contrast.result.temp %>%
-          dplyr::select(-null.value) %>%
           dplyr::bind_rows(contrast.result)
       }
         }}
   contrast.result.format <- contrast.result %>%
-    dplyr::rename(variable=term, pval=p.value)
+    dplyr::rename(variable=term, pval=p.value) %>%
+    dplyr::select(-null.value)
   return(contrast.result.format)
 }
 
