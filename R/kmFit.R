@@ -1,6 +1,6 @@
 #' Linear mixed effects models with kinship for RNA-seq
 #'
-#' Run lmekin and corresponding lm or lme without kinship of gene expression in RNA-seq data
+#' Run lmerel and corresponding lm or lme without kinship of gene expression in RNA-seq data
 #'
 #' @param dat EList object output by voom( ). Contains counts (dat$E), meta (dat$targets), and genes (dat$genes).
 #' @param kin Matrix with pairwise kinship values between individuals. Must be numeric with rownames.
@@ -17,14 +17,15 @@
 #' @param use.weights Logical if gene specific weights should be used in model. Default is FALSE
 #' @param run.lm Logical if should run lm model without kinship
 #' @param run.lme Logical if should run lme model without kinship
-#' @param run.lmekin Logical if should run lmekin model with kinship
+#' @param run.lmerel Logical if should run lmerel model with kinship
 #' @param run.contrast Logical if should run pairwise contrasts. If no matrix provided, all possible pairwise comparisons are completed.
 #' @param contrast.var Character vector of variable in model to run contrasts of. Interaction terms must be specified as "var1:var2". If NULL (default), all contrasts for all variables in the model are run
 #' @param processors Numeric processors to run in parallel. Default is 2 less than the total available
 #' @param p.method Character of FDR adjustment method. Values as in p.adjust( )
+#' @param run.lmekin Depreciated. Please use run.lmerel
 #'
 #' @return List of data frames including
-#'    - lm/lme/lmekin: model estimates and significance
+#'    - lm/lme/lmerel: model estimates and significance
 #'    - *.contrast: model estimates and significance for pairwise contrasts with variables in the original model
 #'    - *.fit: model fit metrics such as sigma, AIC, BIC, R-squared
 #'    - *.error: error messages for genes that failed model fitting
@@ -36,7 +37,7 @@
 #' # All samples and all genes
 #' ## Not run
 #' # kmFit(dat = example.voom,
-#' #     kin = example.kin, run.lmekin = TRUE,
+#' #     kin = example.kin, run.lmerel = TRUE,
 #' #     model = "~ virus + (1|ptID)")
 #'
 #' # Subset samples and genes
@@ -58,7 +59,7 @@
 #'
 #' ## With interaction
 #' kmFit(dat = example.voom, kin = example.kin,
-#'       run.lmekin = TRUE, run.contrast = TRUE,
+#'       run.lmerel = TRUE, run.contrast = TRUE,
 #'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
 #'       model = "~ virus*asthma + (1|ptID)",
 #'       contrast.var=c("virus","virus:asthma"))
@@ -73,7 +74,8 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                   counts=NULL, meta=NULL, genes=NULL, weights=NULL,
                   subset.var = NULL, subset.lvl = NULL, subset.genes = NULL,
                   model, use.weights=FALSE,
-                  run.lm = FALSE, run.lme = FALSE, run.lmekin = FALSE,
+                  run.lm = FALSE, run.lme = FALSE, run.lmerel = FALSE,
+                  run.lmekin = NULL,
                   run.contrast = FALSE, contrast.var = NULL,
                   processors = NULL, p.method = "BH"){
 
@@ -111,19 +113,22 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     stop("Sample subsetting has been selected. Please also provide subset.var")}
   if(!is.null(subset.var) & is.null(subset.lvl)){
     stop("Sample subsetting has been selected. Please also provide subset.lvl")}
-  if(run.lmekin & !grepl("\\|", model)){
+  if(run.lmerel & !grepl("\\|", model)){
     stop("Kinship models require a random effect in the model as in (1 | ptID)")}
-  if(is.null(kin) & run.lmekin){
-    stop("Kinship matrix is required to run lmekin")}
-  if(!run.lm & !run.lme & !run.lmekin & !run.contrast){
+  if(is.null(kin) & run.lmerel){
+    stop("Kinship matrix is required to run lmerel")}
+  if(!run.lm & !run.lme & !run.lmerel & !run.contrast){
     stop("At least 1 model type must be selected. Please set one run parameter to TRUE.")}
-  if(!run.lm & !run.lme & !run.lmekin & run.contrast){
+  if(!run.lm & !run.lme & !run.lmerel & run.contrast){
       stop("Contrast models must be run with an accompanying linear model.")}
   if(use.weights & is.null(weights) & is.null(dat$weights)){
     stop("When use.weights is TRUE, must provide gene weights is dat object or separate data frame.")
   }
   if("gene_weight" %in% c(colnames(meta), colnames(dat$targets))){
     stop("Variable gene_weight is present in meta or dat$targets. This name is used for model weights. Please change variable name in your data.")
+  }
+  if(!is.null(run.lmekin)){
+    stop("run.lmekin no longer supported. Please use run.lmerel")
   }
 
   ###### Formulae #####
@@ -139,7 +144,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
 
   #Model message
   if(run.lm){ message(paste("lm model:",model.lm))}
-  if(run.lme | run.lmekin){ message(paste("lme/lmekin model:",model.lme))}
+  if(run.lme | run.lmerel){ message(paste("lme/lmerel model:",model.lme))}
 
   #If no contrast variable set, us all
   if(run.contrast & is.null(contrast.var)){
@@ -181,9 +186,8 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                                      .packages = c("dplyr","magrittr","stats","broom","lme4",
                                                    "car","tibble","coxme","utils","emmeans",
                                                    "data.table","foreach","doParallel"),
-                                     .export = c("kimma_lm","kimma_lme","kimma_lmekin",
-                                                 "kmFit_contrast","kmFit_contrast_kin",
-                                                 "lmekin2")) %dopar% {
+                                     .export = c("kimma_lm","kimma_lme","kimma_lmerel",
+                                                 "kmFit_contrast")) %dopar% {
     #### Prepare data ####
     #Filter data to gene
     to.model.gene <- to.model.ls[["to.model"]] %>%
@@ -221,13 +225,13 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
 
     ##### Kinship model ######
     results.kin.ls <- NULL
-    if(run.lmekin){
+    if(run.lmerel){
       #Wrap model run in error catch to allow loop to continue even if a single model fails
       results.kin.ls <- tryCatch({
-        kimma_lmekin(model.lme, to.model.gene, gene, to.model.ls[["kin.subset"]],
-                     use.weights)
+        kimma_lmerel(model.lme, to.model.gene, gene, to.model.ls[["kin.subset"]],
+                     use.weights, patientID)
         }, error=function(e){
-          results.kin.ls[["error"]] <- data.frame(model="lmekin",
+          results.kin.ls[["error"]] <- data.frame(model="lmerel",
                                                   gene=gene,
                                                   message=conditionMessage(e))
           return(results.kin.ls)
@@ -267,12 +271,12 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
 
       if(!is.null(results.kin.ls[["results"]])){
         contrast.kin <- tryCatch({
-          kmFit_contrast_kin(contrast.var, to.model.gene, patientID,
-                             to.model.ls, gene, use.weights)
+          kmFit_contrast(results.kin.ls[["fit"]], contrast.var, to.model.gene) %>%
+            dplyr::mutate(model="lmerel.contrast")
         }, error=function(e){
-          contrast.kin.error <- data.frame(model="lmekin.contrast",
-                                                  gene=gene,
-                                                  message=conditionMessage(e))
+          contrast.kin.error <- data.frame(model="lmerel.contrast",
+                                           gene=gene,
+                                           message=conditionMessage(e))
           return(contrast.kin.error)
         })
       }
