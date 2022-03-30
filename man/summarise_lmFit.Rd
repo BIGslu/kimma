@@ -26,7 +26,7 @@ summarize_lmFit(
 
 \item{fdr.cutoff}{numeric vector of FDR cutoffs to summarise at}
 
-\item{p.cutoff}{numeric vector of P-value cutodds to summarise at. No FDR summary given if p.cutoff is provided}
+\item{p.cutoff}{numeric vector of P-value cutoffs to summarise at. No FDR summary given if p.cutoff is provided}
 
 \item{FCgroup}{logical if should separate summary by up/down fold change groups}
 
@@ -48,5 +48,20 @@ model_results <- extract_lmFit(design = design, fit = fit)
 
 # Summarise results
 summarise_lmFit(fdr = model_results, fdr.cutoff = c(0.05, 0.5), FCgroup = TRUE)
+
+# Contrasts model
+design <- model.matrix(~ 0 + virus, data = example.voom$targets)
+fit <- limma::lmFit(example.voom$E, design)
+contrast.mat <- limma::makeContrasts(virusHRV-virusnone, levels = design)
+fit <- limma::eBayes(limma::contrasts.fit(fit, contrast.mat))
+
+## Get results
+model_results <- extract_lmFit(design = design, fit = fit,
+                               contrast.mat = contrast.mat)
+
+# Summarise results
+summarise_lmFit(fdr = model_results, fdr.cutoff = c(0.05, 0.5), FCgroup = FALSE)
+## No signif results (not run)
+# summarise_lmFit(fdr = model_results, fdr.cutoff = 0.0001, FCgroup = FALSE)
 
 }

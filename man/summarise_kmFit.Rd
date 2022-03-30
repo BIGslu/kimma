@@ -9,7 +9,6 @@ summarise_kmFit(
   fdr,
   fdr.cutoff = c(0.05, 0.1, 0.2, 0.3, 0.4, 0.5),
   p.cutoff = NULL,
-  contrast = FALSE,
   FCgroup = FALSE,
   intercept = FALSE
 )
@@ -18,19 +17,16 @@ summarize_kmFit(
   fdr,
   fdr.cutoff = c(0.05, 0.1, 0.2, 0.3, 0.4, 0.5),
   p.cutoff = NULL,
-  contrast = FALSE,
   FCgroup = FALSE,
   intercept = FALSE
 )
 }
 \arguments{
-\item{fdr}{data.frame output by kimma::kmFit( )}
+\item{fdr}{data.frame output by kimma::kmFit( ). Main model or contrasts accepted}
 
 \item{fdr.cutoff}{numeric vector of FDR cutoffs to summarise at}
 
-\item{p.cutoff}{numeric vector of P-value cutodds to summarise at. No FDR summary given if p.cutoff is provided}
-
-\item{contrast}{logical if should separate summary by pairwise contrasts within variables}
+\item{p.cutoff}{numeric vector of P-value cutoffs to summarise at. No FDR summary given if p.cutoff is provided}
 
 \item{FCgroup}{logical if should separate summary by up/down fold change groups}
 
@@ -46,13 +42,17 @@ Summarise number of significant genes at various FDR cutoffs. Can split by up/do
 # Run kimma model
 model_results <- kmFit(dat = example.voom,
       kin = example.kin,
-      run.lme = TRUE, run.lmerel=TRUE,
+      run.lme = TRUE, run.lmerel=TRUE, run.contrast=TRUE,
       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
       model = "~ virus + (1|ptID)")
 
 # Summarise results
 summarise_kmFit(fdr = model_results$lmerel, fdr.cutoff = c(0.01, 0.5),
                 FCgroup = TRUE)
-summarise_kmFit(fdr = model_results$lmerel, fdr.cutoff = c(0.001))
+summarise_kmFit(fdr = model_results$lme.contrast, fdr.cutoff = c(0.01, 0.5),
+                FCgroup = FALSE)
+
+#No significant genes. No run
+## summarise_kmFit(fdr = model_results$lmerel, fdr.cutoff = c(0.001))
 
 }
