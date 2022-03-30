@@ -4,11 +4,12 @@
 #' @param to.model.gene Data frame formatted in kmFit, subset to gene of interest
 #' @param gene Character of gene to model
 #' @param use.weights Logical if gene specific weights should be used in model. Default is FALSE
+#' @param metrics Logical if should calculate model fit metrics such as AIC, BIC, R-squared. Default is FALSE
 #'
 #' @return Linear model results data frame for 1 gene
 #' @keywords internal
 
-kimma_lm <- function(model.lm, to.model.gene, gene, use.weights){
+kimma_lm <- function(model.lm, to.model.gene, gene, use.weights, metrics){
     #Place holder LM results
     p.lm <- NaN
     sigma.lm <- 0
@@ -33,15 +34,18 @@ kimma_lm <- function(model.lm, to.model.gene, gene, use.weights){
       pval = p.lm$p.value)              #P-value
 
     #Model fit metrics
-    fit.metrics <- data.frame(
-      model="lm.fit",
-      gene=gene,
-      sigma = stats::sigma(fit.lm),
-      AIC = stats::AIC(fit.lm),
-      BIC = stats::BIC(fit.lm),
-      Rsq = summary(fit.lm)$r.squared,
-      adj_Rsq = summary(fit.lm)$adj.r.squared
-    )
+    if(metrics){
+      fit.metrics <- data.frame(
+        model="lm.fit",
+        gene=gene,
+        sigma = stats::sigma(fit.lm),
+        AIC = stats::AIC(fit.lm),
+        BIC = stats::BIC(fit.lm),
+        Rsq = summary(fit.lm)$r.squared,
+        adj_Rsq = summary(fit.lm)$adj.r.squared)
+    } else{
+      fit.metrics <- NULL
+    }
 
     results.lm.ls <- list()
     results.lm.ls[["fit"]] <- fit.lm

@@ -10,7 +10,8 @@ kimma_lmerel(
   gene,
   kin.subset,
   use.weights,
-  patientID
+  patientID,
+  metrics
 )
 }
 \arguments{
@@ -25,7 +26,13 @@ kimma_lmerel(
 \item{use.weights}{Logical if gene specific weights should be used in model. Default is FALSE}
 
 \item{patientID}{Character of variable name to match dat$targets to kinship row and column names.}
+
+\item{metrics}{Logical if should calculate model fit metrics such as AIC, BIC, R-squared. Default is FALSE}
+}
+\value{
+Linear mixed effect with kinship results data frame for 1 gene
 }
 \description{
 Run kimma linear mixed effects model with kinship
 }
+\keyword{internal}

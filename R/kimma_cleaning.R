@@ -19,6 +19,7 @@
 #' @param model.lm Character vector of simple linear model version of model provided
 #' @return Data frame formatted for use in kmFit
 #' @keywords internal
+#' @importFrom tidyselect vars_select_helpers
 
 kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                            counts=NULL, meta=NULL, genes=NULL, weights=NULL,
@@ -151,12 +152,28 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
   if(patientID == libraryID){ to.modelID <- "libID" } else{ to.modelID <- patientID }
 
   if(!is.null(kin)){
+    #Format kinship matrix if rownames inside matrix
+    if(!is.numeric(as.matrix(kin))){
+      name.col <- as.data.frame(kin) %>%
+        dplyr::select(!tidyselect::vars_select_helpers$where(is.numeric))
+      name.col <- colnames(name.col)
+      if(length(name.col) > 1){
+        stop("More than one non-numeric column in kin data. Please correct.")
+      }
+      kin.format <- as.data.frame(kin) %>%
+        tibble::column_to_rownames(name.col) %>%
+        as.matrix()
+    } else{
+      kin.format <- as.matrix(kin)
+    }
+
+
     #Combine expression data (E) and sample metadata (targets)
     to.model <- dat.subset$E %>%
       tidyr::pivot_longer(-rowname, names_to = libraryID, values_to = "expression") %>%
       dplyr::inner_join(dat.subset$targets, by=libraryID) %>%
       #Remove samples missing kinship
-      dplyr::filter(get(to.modelID) %in% colnames(kin)) %>%
+      dplyr::filter(get(to.modelID) %in% colnames(kin.format)) %>%
       dplyr::arrange(get(to.modelID))
 
     #Add weights if available
@@ -173,7 +190,7 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
     #Remove samples from kinship missing expression data
     #Order kinship as in to.model
     to.keep <- unique(unlist(to.model[,to.modelID]))
-    kin.subset <- as.data.frame(kin) %>%
+    kin.subset <- as.data.frame(kin.format) %>%
       tibble::rownames_to_column() %>%
       dplyr::filter(rowname %in% to.keep) %>%
       dplyr::select(rowname, tidyselect::all_of(to.keep)) %>%

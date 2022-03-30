@@ -6,9 +6,13 @@
 #' @param kin.subset Pairwise kinship matrix
 #' @param use.weights Logical if gene specific weights should be used in model. Default is FALSE
 #' @param patientID Character of variable name to match dat$targets to kinship row and column names.
+#' @param metrics Logical if should calculate model fit metrics such as AIC, BIC, R-squared. Default is FALSE
+#'
+#' @return Linear mixed effect with kinship results data frame for 1 gene
+#' @keywords internal
 
 kimma_lmerel <- function(model.lme, to.model.gene, gene, kin.subset, use.weights,
-                         patientID){
+                         patientID, metrics){
   rowname <- NULL
   #Place holder LME results
   p.kin <- NaN
@@ -36,8 +40,6 @@ kimma_lmerel <- function(model.lme, to.model.gene, gene, kin.subset, use.weights
   est.kin <- as.data.frame(stats::coef(summary(fit.kin))) %>%
     tibble::rownames_to_column() %>%
     dplyr::filter(rowname != "(Intercept)")
-  #Calculate sigma
-  sigma.kin <- stats::sigma(fit.kin)
 
   #Extract results
   #If no 3+ level variables
@@ -58,30 +60,34 @@ kimma_lmerel <- function(model.lme, to.model.gene, gene, kin.subset, use.weights
       pval = c(p.kin$p.value, p.rand$p.value[-1])) #P-value
   }
 
-  #Calculate R-squared
-  if(use.weights){
-    null <- stats::glm(formula = expression ~ 1, data = to.model.gene,
-                       weights = to.model.gene$gene_weight)
+  if(metrics){
+    #Calculate R-squared
+    if(use.weights){
+      null <- stats::glm(formula = expression ~ 1, data = to.model.gene,
+                         weights = to.model.gene$gene_weight)
+    } else{
+      null <- stats::glm(formula = expression ~ 1, data = to.model.gene)
+    }
+
+    L0 <- as.vector(stats::logLik(null))
+    L1 <- as.vector(stats::logLik(fit.kin))
+    n <- stats::nobs(fit.kin)
+    ret <- 1 - exp(-2 / n * (L1 - L0))
+    max.r2 <- 1 - exp(2 / n * L0)
+
+    #Model fit metrics
+    fit.metrics <- data.frame(
+      model="lmerel.fit",
+      gene=gene,
+      sigma = stats::sigma(fit.kin),
+      AIC = stats::AIC(fit.kin),
+      BIC = stats::BIC(fit.kin),
+      Rsq = ret,
+      adj_Rsq = ret / max.r2)
   } else{
-    null <- stats::glm(formula = expression ~ 1, data = to.model.gene)
+    fit.metrics <- NULL
   }
 
-  L0 <- as.vector(stats::logLik(null))
-  L1 <- as.vector(stats::logLik(fit.kin))
-  n <- stats::nobs(fit.kin)
-  ret <- 1 - exp(-2 / n * (L1 - L0))
-  max.r2 <- 1 - exp(2 / n * L0)
-
-  #Model fit metrics
-  fit.metrics <- data.frame(
-    model="lmerel.fit",
-    gene=gene,
-    sigma = stats::sigma(fit.kin),
-    AIC = stats::AIC(fit.kin),
-    BIC = stats::BIC(fit.kin),
-    Rsq = ret,
-    adj_Rsq = ret / max.r2
-  )
 
   results.kin.ls <- list()
   results.kin.ls[["fit"]] <- fit.kin

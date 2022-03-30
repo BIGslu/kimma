@@ -21,6 +21,7 @@ kmFit(
   run.lm = FALSE,
   run.lme = FALSE,
   run.lmerel = FALSE,
+  metrics = FALSE,
   run.lmekin = NULL,
   run.contrast = FALSE,
   contrast.var = NULL,
@@ -61,6 +62,8 @@ kmFit(
 
 \item{run.lmerel}{Logical if should run lmerel model with kinship}
 
+\item{metrics}{Logical if should calculate model fit metrics such as AIC, BIC, R-squared. Default is FALSE}
+
 \item{run.lmekin}{Depreciated. Please use run.lmerel}
 
 \item{run.contrast}{Logical if should run pairwise contrasts. If no matrix provided, all possible pairwise comparisons are completed.}
@@ -75,7 +78,7 @@ kmFit(
 List of data frames including
    - lm/lme/lmerel: model estimates and significance
    - *.contrast: model estimates and significance for pairwise contrasts with variables in the original model
-   - *.fit: model fit metrics such as sigma, AIC, BIC, R-squared
+   - *.fit: model fit metrics such as sigma, AIC, BIC, R-squared (optional with metrics paramater)
    - *.error: error messages for genes that failed model fitting
 }
 \description{
@@ -106,11 +109,6 @@ kmFit(dat = example.voom,
       contrast.var=c("virus","asthma:median_cv_coverage"))
 
 ## With interaction
-kmFit(dat = example.voom, kin = example.kin,
-      run.lmerel = TRUE, run.contrast = TRUE,
-      subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
-      model = "~ virus*asthma + (1|ptID)",
-      contrast.var=c("virus","virus:asthma"))
 
 # Model with failed genes
 kmFit(dat = example.voom,
