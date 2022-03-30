@@ -3,11 +3,12 @@
 #' @param fit model fit from lm( ) or lmer( )
 #' @param contrast.var Character vector of variable in model to run contrasts of
 #' @param to.model.gene Formatted data from kimma_cleaning( ), subset to gene of interest
+#' @param metrics Logical if should calculate model fit metrics such as AIC, BIC, R-squared. Default is FALSE
 #'
 #' @return data frame with contrast model results
 #' @keywords internal
 
-kmFit_contrast <- function(fit, contrast.var, to.model.gene){
+kmFit_contrast <- function(fit, contrast.var, to.model.gene, metrics){
   contrast.i <- term <- p.value <- NULL
   contrast.result <- data.frame()
 

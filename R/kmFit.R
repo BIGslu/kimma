@@ -20,6 +20,7 @@
 #' @param run.lmerel Logical if should run lmerel model with kinship
 #' @param run.contrast Logical if should run pairwise contrasts. If no matrix provided, all possible pairwise comparisons are completed.
 #' @param contrast.var Character vector of variable in model to run contrasts of. Interaction terms must be specified as "var1:var2". If NULL (default), all contrasts for all variables in the model are run
+#' @param metrics Logical if should calculate model fit metrics such as AIC, BIC, R-squared. Default is FALSE
 #' @param processors Numeric processors to run in parallel. Default is 2 less than the total available
 #' @param p.method Character of FDR adjustment method. Values as in p.adjust( )
 #' @param run.lmekin Depreciated. Please use run.lmerel
@@ -27,7 +28,7 @@
 #' @return List of data frames including
 #'    - lm/lme/lmerel: model estimates and significance
 #'    - *.contrast: model estimates and significance for pairwise contrasts with variables in the original model
-#'    - *.fit: model fit metrics such as sigma, AIC, BIC, R-squared
+#'    - *.fit: model fit metrics such as sigma, AIC, BIC, R-squared (optional with metrics paramater)
 #'    - *.error: error messages for genes that failed model fitting
 #'
 #' @importFrom foreach %dopar%
@@ -58,11 +59,11 @@
 #'       contrast.var=c("virus","asthma:median_cv_coverage"))
 #'
 #' ## With interaction
-#' kmFit(dat = example.voom, kin = example.kin,
-#'       run.lmerel = TRUE, run.contrast = TRUE,
-#'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
-#'       model = "~ virus*asthma + (1|ptID)",
-#'       contrast.var=c("virus","virus:asthma"))
+# kmFit(dat = example.voom, kin = example.kin,
+#       run.lmerel = TRUE, run.contrast = TRUE, metrics=TRUE,
+#       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
+#       model = "~ virus*asthma + (1|ptID)",
+#       contrast.var=c("virus","virus:asthma"))
 #'
 #' # Model with failed genes
 #' kmFit(dat = example.voom,
@@ -75,7 +76,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                   subset.var = NULL, subset.lvl = NULL, subset.genes = NULL,
                   model, use.weights=FALSE,
                   run.lm = FALSE, run.lme = FALSE, run.lmerel = FALSE,
-                  run.lmekin = NULL,
+                  metrics = FALSE, run.lmekin = NULL,
                   run.contrast = FALSE, contrast.var = NULL,
                   processors = NULL, p.method = "BH"){
 
@@ -200,7 +201,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     if(run.lm){
     #Wrap model run in error catch to allow loop to continue even if a single model fails
      results.lm.ls <- tryCatch({
-       kimma_lm(model.lm, to.model.gene, gene, use.weights)
+       kimma_lm(model.lm, to.model.gene, gene, use.weights, metrics)
      }, error=function(e){
        results.lm.ls[["error"]] <- data.frame(model="lm",
                                                gene=gene,
@@ -214,7 +215,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     if(run.lme){
       #Wrap model run in error catch to allow loop to continue even if a single model fails
       results.lme.ls <- tryCatch({
-        kimma_lme(model.lme, to.model.gene, gene, use.weights)
+        kimma_lme(model.lme, to.model.gene, gene, use.weights, metrics)
         }, error=function(e){
           results.lme.ls[["error"]] <- data.frame(model="lme",
                                                   gene=gene,
@@ -229,7 +230,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
       #Wrap model run in error catch to allow loop to continue even if a single model fails
       results.kin.ls <- tryCatch({
         kimma_lmerel(model.lme, to.model.gene, gene, to.model.ls[["kin.subset"]],
-                     use.weights, patientID)
+                     use.weights, patientID, metrics)
         }, error=function(e){
           results.kin.ls[["error"]] <- data.frame(model="lmerel",
                                                   gene=gene,
@@ -247,7 +248,8 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     if(run.contrast){
       if(!is.null(results.lm.ls[["results"]])){
         contrast.lm <- tryCatch({
-          kmFit_contrast(results.lm.ls[["fit"]], contrast.var, to.model.gene)%>%
+          kmFit_contrast(results.lm.ls[["fit"]], contrast.var, to.model.gene,
+                         metrics) %>%
             dplyr::mutate(model="lm.contrast")
         }, error=function(e){
           contrast.lm.error <- data.frame(model="lm.contrast",
@@ -259,7 +261,8 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
 
       if(!is.null(results.lme.ls[["results"]])){
         contrast.lme <- tryCatch({
-          kmFit_contrast(results.lme.ls[["fit"]], contrast.var, to.model.gene) %>%
+          kmFit_contrast(results.lme.ls[["fit"]], contrast.var, to.model.gene,
+                         metrics) %>%
             dplyr::mutate(model="lme.contrast")
         }, error=function(e){
           contrast.lme.error <- data.frame(model="lme.contrast",
@@ -271,7 +274,8 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
 
       if(!is.null(results.kin.ls[["results"]])){
         contrast.kin <- tryCatch({
-          kmFit_contrast(results.kin.ls[["fit"]], contrast.var, to.model.gene) %>%
+          kmFit_contrast(results.kin.ls[["fit"]], contrast.var, to.model.gene,
+                         metrics) %>%
             dplyr::mutate(model="lmerel.contrast")
         }, error=function(e){
           contrast.kin.error <- data.frame(model="lmerel.contrast",

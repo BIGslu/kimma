@@ -4,7 +4,7 @@
 \alias{kimma_lm}
 \title{Run kimma linear model}
 \usage{
-kimma_lm(model.lm, to.model.gene, gene, use.weights)
+kimma_lm(model.lm, to.model.gene, gene, use.weights, metrics)
 }
 \arguments{
 \item{model.lm}{Character model created in kmFit}
@@ -14,6 +14,8 @@ kimma_lm(model.lm, to.model.gene, gene, use.weights)
 \item{gene}{Character of gene to model}
 
 \item{use.weights}{Logical if gene specific weights should be used in model. Default is FALSE}
+
+\item{metrics}{Logical if should calculate model fit metrics such as AIC, BIC, R-squared. Default is FALSE}
 }
 \value{
 Linear model results data frame for 1 gene
