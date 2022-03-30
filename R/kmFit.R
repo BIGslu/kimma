@@ -184,7 +184,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
   fit.results <- data.table::rbindlist(fill=TRUE,
                     foreach::foreach(gene=unique(to.model.ls[["to.model"]]$rowname),
                                      .packages = c("dplyr","magrittr","stats","broom","lme4",
-                                                   "car","tibble","coxme","utils","emmeans",
+                                                   "car","tibble","lme4qtl","utils","emmeans",
                                                    "data.table","foreach","doParallel"),
                                      .export = c("kimma_lm","kimma_lme","kimma_lmerel",
                                                  "kmFit_contrast")) %dopar% {
