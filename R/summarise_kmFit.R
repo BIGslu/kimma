@@ -15,11 +15,10 @@
 #' @examples
 #' # Run kimma model
 #' model_results <- kmFit(dat = example.voom,
-#'       patientID = "donorID", libraryID = "libID",
 #'       kin = example.kin,
 #'       run.lme = TRUE, run.lmekin=TRUE,
 #'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
-#'       model = "~ virus + (1|donorID)")
+#'       model = "~ virus + (1|ptID)")
 #'
 #' # Summarise results
 #' summarise_kmFit(fdr = model_results$lmekin, fdr.cutoff = c(0.01, 0.5), FCgroup = TRUE)

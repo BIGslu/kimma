@@ -36,43 +36,38 @@
 #' # All samples and all genes
 #' ## Not run
 #' # kmFit(dat = example.voom,
-#' #     patientID = "donorID", libraryID = "libID",
 #' #     kin = example.kin, run.lmekin = TRUE,
-#' #     model = "~ virus + (1|donorID)")
+#' #     model = "~ virus + (1|ptID)")
 #'
 #' # Subset samples and genes
 #' ## Also with weights
 #' kmFit(dat = example.voom,
-#'       patientID = "donorID", libraryID = "libID",
 #'       run.lm = TRUE,
 #'       use.weights = TRUE,
 #'       subset.var = list("asthma"), subset.lvl = list(c("asthma")),
 #'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
-#'       model = "~ virus + (1|donorID)")
+#'       model = "~ virus + (1|ptID)")
 #'
 #' # Pairwise contrasts
 #' ## No interaction
 #' kmFit(dat = example.voom,
-#'       patientID = "donorID", libraryID = "libID",
 #'       run.lme = TRUE, run.contrast = TRUE,
 #'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
-#'       model = "~ virus + asthma * median_cv_coverage + (1|donorID)",
+#'       model = "~ virus + asthma * median_cv_coverage + (1|ptID)",
 #'       contrast.var=c("virus","asthma:median_cv_coverage"))
 #'
 #' ## With interaction
 #' kmFit(dat = example.voom, kin = example.kin,
-#'       patientID = "donorID", libraryID = "libID",
 #'       run.lmekin = TRUE, run.contrast = TRUE,
 #'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
-#'       model = "~ virus*asthma + (1|donorID)",
+#'       model = "~ virus*asthma + (1|ptID)",
 #'       contrast.var=c("virus","virus:asthma"))
 #'
 #' # Model with failed genes
 #' kmFit(dat = example.voom,
-#'       patientID = "donorID", libraryID = "libID",
-#'       kin = example.kin, run.lmekin = TRUE, run.lm = TRUE,
+#'       kin = example.kin, run.lmerel = TRUE, run.lm = TRUE,
 #'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
-#'       model = "~ virus*asthma + lib.size + norm.factors + median_cv_coverage + donorID+(1|donorID)")
+#'       model = "~ virus*asthma + lib.size + norm.factors + median_cv_coverage + ptID+(1|ptID)")
 
 kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                   counts=NULL, meta=NULL, genes=NULL, weights=NULL,

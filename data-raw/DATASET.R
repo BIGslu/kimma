@@ -59,6 +59,12 @@ kin.example <- data.frame(rowname = c("donor1","donor2","donor3","donor4","donor
                           donor6 = c(0.1, 0.09, 0.15, 0.13, 0.17, 1)) %>%
   tibble::column_to_rownames() %>% as.matrix()
 
+#Rename donorID to default
+dat.example$samples <- dat.example$samples %>%
+  rename(ptID=donorID)
+dat.voom.example$targets <- dat.voom.example$targets %>%
+  rename(ptID=donorID)
+
 #Rename
 example.count <- count.filter
 example.dat <- dat.example
