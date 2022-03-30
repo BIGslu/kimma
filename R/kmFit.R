@@ -248,8 +248,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     if(run.contrast){
       if(!is.null(results.lm.ls[["results"]])){
         contrast.lm <- tryCatch({
-          kmFit_contrast(results.lm.ls[["fit"]], contrast.var, to.model.gene,
-                         metrics) %>%
+          kmFit_contrast(results.lm.ls[["fit"]], contrast.var, to.model.gene) %>%
             dplyr::mutate(model="lm.contrast")
         }, error=function(e){
           contrast.lm.error <- data.frame(model="lm.contrast",
@@ -261,8 +260,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
 
       if(!is.null(results.lme.ls[["results"]])){
         contrast.lme <- tryCatch({
-          kmFit_contrast(results.lme.ls[["fit"]], contrast.var, to.model.gene,
-                         metrics) %>%
+          kmFit_contrast(results.lme.ls[["fit"]], contrast.var, to.model.gene) %>%
             dplyr::mutate(model="lme.contrast")
         }, error=function(e){
           contrast.lme.error <- data.frame(model="lme.contrast",
@@ -274,8 +272,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
 
       if(!is.null(results.kin.ls[["results"]])){
         contrast.kin <- tryCatch({
-          kmFit_contrast(results.kin.ls[["fit"]], contrast.var, to.model.gene,
-                         metrics) %>%
+          kmFit_contrast(results.kin.ls[["fit"]], contrast.var, to.model.gene) %>%
             dplyr::mutate(model="lmerel.contrast")
         }, error=function(e){
           contrast.kin.error <- data.frame(model="lmerel.contrast",
