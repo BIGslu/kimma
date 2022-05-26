@@ -9,7 +9,7 @@
 #' @keywords internal
 
 kmFit_contrast <- function(fit, contrast.var, to.model.gene, metrics){
-  contrast.i <- term <- p.value <- contrast_ref <- contrast_lvl <- contrast <- null.value <- NULL
+  contrast.i <- term <- p.value <- contrast_ref <- contrast_lvl <- contrast <- null.value <- estimate <- NULL
   contrast.result <- data.frame()
 
  #Fit variables in contrast.var
@@ -55,7 +55,10 @@ kmFit_contrast <- function(fit, contrast.var, to.model.gene, metrics){
         }}
   contrast.result.format <- contrast.result %>%
     dplyr::rename(variable=term, pval=p.value) %>%
-    dplyr::select(-null.value)
+    dplyr::select(-null.value) %>%
+    #Switch estimate sign to match lvl-ref calculation
+    #THE REF AND LVL VALUES ARE INCORRECT UNTIL YOU DO THIS
+    dplyr::mutate(estimate = -estimate)
   return(contrast.result.format)
 }
 
