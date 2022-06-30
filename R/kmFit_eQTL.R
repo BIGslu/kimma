@@ -91,12 +91,15 @@ kmFit_eQTL <- function(dat.snp = NULL, within.gene = FALSE,
     stop("Non-numeric genotypes in dat.snp. Please provide only genotypeID, geneID (optional), and numeric 0,1,2 SNP data.")}
 
   #### Data ####
-  #combine genotype and metadata
-  snp.format <- dat.snp %>%
-    tibble::column_to_rownames(genotypeID) %>%
+  num.cols <- dat.snp %>%
     dplyr::select_if(is.numeric) %>%
-    t() %>% as.data.frame() %>%
-    tibble::rownames_to_column(patientID)
+    colnames()
+
+  snp.format <- dat.snp %>%
+    dplyr::select(genotypeID, dplyr::all_of(num.cols)) %>%
+    dplyr::distinct() %>%
+    tidyr::pivot_longer(-dplyr::all_of(genotypeID), names_to = patientID) %>%
+    tidyr::pivot_wider(names_from = genotypeID)
 
   if(!is.null(dat)){
     dat$targets <- dat$targets %>%
