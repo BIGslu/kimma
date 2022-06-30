@@ -3,6 +3,7 @@
 export("%>%")
 export(extract_lmFit)
 export(kmFit)
+export(kmFit_eQTL)
 export(summarise_kmFit)
 export(summarise_lmFit)
 export(summarize_kmFit)
