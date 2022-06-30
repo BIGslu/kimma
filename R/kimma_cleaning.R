@@ -25,7 +25,7 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
                            counts=NULL, meta=NULL, genes=NULL, weights=NULL,
                            subset.var = NULL, subset.lvl = NULL, subset.genes = NULL,
                            model.lm = NULL){
-  i <- rowname <- libID <- NULL
+  i <- rowname <- NULL
   #If data are NOT a voom EList, create a mock version
   if(is.null(dat)) {
     dat.format <- list()
@@ -180,8 +180,8 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
     if(!is.null(dat.subset$weights)){
       to.model <- to.model %>%
         dplyr::left_join(tidyr::pivot_longer(dat.subset$weights, -rowname,
-                                             names_to = "libID", values_to = "gene_weight"),
-                         by=c("rowname", "libID"))
+                                             names_to = libraryID, values_to = "gene_weight"),
+                         by=c("rowname", libraryID))
     } else{
       to.model <- to.model %>%
         dplyr::mutate(gene_weight = NA)
@@ -245,8 +245,8 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
     if(!is.null(dat.subset$weights)){
       to.model <- to.model %>%
         dplyr::left_join(tidyr::pivot_longer(dat.subset$weights, -rowname,
-                                             names_to = "libID", values_to = "gene_weight"),
-                         by=c("rowname", "libID"))
+                                             names_to = libraryID, values_to = "gene_weight"),
+                         by=c("rowname", libraryID))
     } else{
       to.model <- to.model %>%
         dplyr::mutate(gene_weight = NA)
