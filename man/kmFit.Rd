@@ -26,7 +26,8 @@ kmFit(
   run.contrast = FALSE,
   contrast.var = NULL,
   processors = NULL,
-  p.method = "BH"
+  p.method = "BH",
+  genotype.name = NULL
 )
 }
 \arguments{
@@ -73,6 +74,8 @@ kmFit(
 \item{processors}{Numeric processors to run in parallel. Default is 2 less than the total available}
 
 \item{p.method}{Character of FDR adjustment method. Values as in p.adjust( )}
+
+\item{genotype.name}{Character string. Used internally for kmFit_eQTL}
 }
 \value{
 List of data frames including
@@ -100,7 +103,7 @@ kmFit(dat = example.voom,
       model = "~ virus + (1|ptID)")
 
 # Pairwise contrasts
-## Continiuous interaction
+## Continuous interaction
 kmFit(dat = example.voom,
       run.lme = TRUE, run.contrast = TRUE,
       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),

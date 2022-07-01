@@ -6,7 +6,7 @@
 \usage{
 kmFit_eQTL(
   dat.snp = NULL,
-  within.gene = FALSE,
+  dat.map = NULL,
   geneID = "gene",
   genotypeID = "snpID",
   dat = NULL,
@@ -34,15 +34,13 @@ kmFit_eQTL(
 )
 }
 \arguments{
-\item{dat.snp}{Data frame containing numeric (0,1,2) genotypes. Rows are SNP and columns are donors. Option column matching SNP to genes of interest (see within.gene).}
+\item{dat.snp}{Data frame containing 0,1,2 genotypes. Can be numeric or character/factor depending on desired analysis. Rows are donors and columns are SNP.}
 
-\item{within.gene}{Logical if should only run paired SNP and genes in rows of dat.snp. Default is FALSE. Does NOT work in combination with subset.genes}
+\item{dat.map}{Data frame mapping geneID to genotypeID. If provided, genotypes will be modeled against only the genes they are paired with in the map. If not provided, genotypes will be modeled against all genes in dat$E / counts}
 
 \item{geneID}{Character variable name to match dat.snp dat with gene identifiers. Values should match rownames in express data (dat$E or counts) Default it "gene"}
 
-\item{genotypeID}{Character variable name to match dat.snp dat with SNP identifiers. Default it "snpID"
-
-Same as kmFit( )}
+\item{genotypeID}{Character variable name to match dat.snp dat with SNP identifiers. Default it "snpID"}
 
 \item{dat}{EList object output by voom( ). Contains counts (dat$E), meta (dat$targets), and genes (dat$genes).}
 
@@ -66,7 +64,9 @@ Same as kmFit( )}
 
 \item{subset.genes}{Character vector of genes to include in models.}
 
-\item{model}{Character vector of model starting with ~ Should include (1|patientID) if mixed effects will be run}
+\item{model}{Character vector of model starting with ~ Should include (1|patientID) if mixed effects will be run. NOTE THAT FOR EQTL, the model MUST include genotype as a place holder for the genotype data. For example "~ genotype + (1|ptID)"
+
+Same as kmFit( )}
 
 \item{use.weights}{Logical if gene specific weights should be used in model. Default is FALSE}
 
@@ -104,21 +104,28 @@ nSNP <- 4
 nSamp <- length(unique(example.voom$targets$ptID))
 #Create random genotype data
 snp <- data.frame(matrix(sample(c(0,1,2), nSNP*nSamp, replace=TRUE),
-                         nrow=nSNP)) \%>\%
-  #Add SNP and gene names
-  dplyr::mutate(snpID = paste0("rs",1:nSNP),
-                gene = rep(example.voom$genes$geneName[1:2], nSNP/2)) \%>\%
- dplyr::select(snpID, gene, dplyr::everything())
- colnames(snp) <- c("snpID", "gene", unique(example.voom$targets$ptID))
+                         nrow=nSamp)) \%>\%
+  #Add SNP names
+  dplyr::mutate(ptID = unique(example.voom$targets$ptID)) \%>\%
+  dplyr::select(ptID, dplyr::everything())
+colnames(snp) <- c("ptID", paste0("rs",1:nSNP))
 
-eQTL_result <- kmFit_eQTL(dat.snp = snp,
+#Create gene to SNP map
+ map <- data.frame(snpID = paste0("rs",1:nSNP),
+                 gene = rep(example.voom$genes$geneName[1:2], nSNP/2))
+
+#Run SNP interaction model
+eQTL_result <- kmFit_eQTL(dat.snp = snp, dat.map = map,
                           dat = example.voom, kin = example.kin,
                           run.lmerel = TRUE, run.contrast = TRUE, metrics=TRUE,
-                          subset.genes = c("ENSG00000250479","CENSG00000250510"),
                           model = "~ virus*genotype + (1|ptID)")
 
-eQTL_result2 <- kmFit_eQTL(dat.snp = snp, within.gene = TRUE,
+#Run SNP as factors with contrasts
+snp_fct <- snp \%>\%
+ dplyr::mutate_if(is.numeric, ~as.factor(.))
+
+eQTL_result2 <- kmFit_eQTL(dat.snp = snp_fct, dat.map = map,
                            dat = example.voom, kin = example.kin,
                            run.lmerel = TRUE, run.contrast = TRUE, metrics=TRUE,
-                           model = "~ virus*genotype + (1|ptID)")
+                           model = "~ genotype + (1|ptID)")
 }

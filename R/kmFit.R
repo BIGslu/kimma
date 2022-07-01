@@ -23,6 +23,7 @@
 #' @param metrics Logical if should calculate model fit metrics such as AIC, BIC, R-squared. Default is FALSE
 #' @param processors Numeric processors to run in parallel. Default is 2 less than the total available
 #' @param p.method Character of FDR adjustment method. Values as in p.adjust( )
+#' @param genotype.name Character string. Used internally for kmFit_eQTL
 #' @param run.lmekin Depreciated. Please use run.lmerel
 #'
 #' @return List of data frames including
@@ -50,7 +51,7 @@
 #'       model = "~ virus + (1|ptID)")
 #'
 #' # Pairwise contrasts
-#' ## Continiuous interaction
+#' ## Continuous interaction
 #' kmFit(dat = example.voom,
 #'       run.lme = TRUE, run.contrast = TRUE,
 #'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
@@ -77,7 +78,8 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                   run.lm = FALSE, run.lme = FALSE, run.lmerel = FALSE,
                   metrics = FALSE, run.lmekin = NULL,
                   run.contrast = FALSE, contrast.var = NULL,
-                  processors = NULL, p.method = "BH"){
+                  processors = NULL, p.method = "BH",
+                  genotype.name=NULL){
 
   rowname <- libID <- variable <- pval <- group <- gene <- V1 <- V2 <- combo <- term <- p.value <- estimate <- contrast <- contrast.i <- weights.gene <- FDR <- contrast_ref <- contrast_lvl <- NULL
 
@@ -164,6 +166,11 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     }
 
     contrast.var <- c(contrast.main, contrast.interact)
+
+    #Set eQTL variable
+    if(!is.null(genotype.name)){
+      contrast.var <- gsub("genotype", genotype.name, contrast.var)
+    }
   }
 
   #If contrast variables given, force run contrast model
@@ -173,7 +180,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
   to.model.ls <- kimma_cleaning(dat, kin, patientID, libraryID,
                                 counts, meta, genes, weights,
                                 subset.var, subset.lvl, subset.genes,
-                                model.lm)
+                                model.lm, genotype.name)
 
   ###### Run models ######
   #create blank df to hold results
@@ -247,7 +254,8 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     if(run.contrast){
       if(!is.null(results.lm.ls[["results"]])){
         contrast.lm <- tryCatch({
-          kmFit_contrast(results.lm.ls[["fit"]], contrast.var, to.model.gene) %>%
+          kmFit_contrast(results.lm.ls[["fit"]], contrast.var, to.model.gene,
+                         genotype.name) %>%
             dplyr::mutate(model="lm.contrast")
         }, error=function(e){
           contrast.lm.error <- data.frame(model="lm.contrast",
@@ -259,7 +267,8 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
 
       if(!is.null(results.lme.ls[["results"]])){
         contrast.lme <- tryCatch({
-          kmFit_contrast(results.lme.ls[["fit"]], contrast.var, to.model.gene) %>%
+          kmFit_contrast(results.lme.ls[["fit"]], contrast.var, to.model.gene,
+                         genotype.name) %>%
             dplyr::mutate(model="lme.contrast")
         }, error=function(e){
           contrast.lme.error <- data.frame(model="lme.contrast",
@@ -271,7 +280,8 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
 
       if(!is.null(results.kin.ls[["results"]])){
         contrast.kin <- tryCatch({
-          kmFit_contrast(results.kin.ls[["fit"]], contrast.var, to.model.gene) %>%
+          kmFit_contrast(results.kin.ls[["fit"]], contrast.var, to.model.gene,
+                         genotype.name) %>%
             dplyr::mutate(model="lmerel.contrast")
         }, error=function(e){
           contrast.kin.error <- data.frame(model="lmerel.contrast",
@@ -344,7 +354,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     if(run.contrast){
       kmFit.results <- fit.results %>%
         #Within model and variable
-        dplyr::group_by(model, variable, contrast_ref,contrast_lvl) %>%
+        dplyr::group_by(model, variable, contrast_ref, contrast_lvl) %>%
         dplyr::mutate(FDR=stats::p.adjust(pval, method=p.method)) %>%
         dplyr::ungroup() %>%
         dplyr::select(model:variable, contrast_ref, contrast_lvl,

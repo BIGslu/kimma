@@ -17,6 +17,8 @@
 #' @param subset.lvl Character list of variable value(s) or level(s) to filter data to. Must match order of subset.var
 #' @param subset.genes Character vector of genes to include in models.
 #' @param model.lm Character vector of simple linear model version of model provided
+#' @param genotype.name Character string. Used internally for kmFit_eQTL
+#'
 #' @return Data frame formatted for use in kmFit
 #' @keywords internal
 #' @importFrom tidyselect vars_select_helpers
@@ -24,7 +26,7 @@
 kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                            counts=NULL, meta=NULL, genes=NULL, weights=NULL,
                            subset.var = NULL, subset.lvl = NULL, subset.genes = NULL,
-                           model.lm = NULL){
+                           model.lm = NULL, genotype.name = NULL){
   i <- rowname <- NULL
   #If data are NOT a voom EList, create a mock version
   if(is.null(dat)) {
@@ -270,6 +272,8 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
     ## Missing data
     all_vars <- gsub("expression~", "", model.lm)
     all_vars <- unique(strsplit(all_vars, "\\+|\\*|:")[[1]])
+
+    if(!is.null(genotype.name)){ all_vars <- c(all_vars, genotype.name)}
 
     complete <- to.model %>%
       dplyr::select(tidyselect::all_of(c(libraryID, all_vars))) %>%
