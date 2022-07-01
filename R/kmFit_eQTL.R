@@ -87,10 +87,11 @@ kmFit_eQTL <- function(dat.snp = NULL, dat.map = NULL,
   #### Checks ####
   if(!is.null(dat.map) & !is.null(subset.genes)){
     stop("Only one of dat.map and subset.genes can be provided.")}
-  if(!(genotypeID %in% colnames(dat.map))){
-    stop("genotypeID variable not in dat.map. Please set genotypeID to the correct variable name for your data.")}
-  if(!(geneID %in% colnames(dat.map))){
-    stop("geneID variable not in dat.map Please set geneID to the correct variable name for your data.")}
+  if(!is.null(dat.map)){
+    if(!(genotypeID %in% colnames(dat.map))){
+      stop("genotypeID variable not in dat.map. Please set genotypeID to the correct variable name for your data.")}
+    if(!(geneID %in% colnames(dat.map))){
+      stop("geneID variable not in dat.map Please set geneID to the correct variable name for your data.")}}
 
   num.check <- as.matrix(dat.snp[,colnames(dat.snp) != patientID])
 
