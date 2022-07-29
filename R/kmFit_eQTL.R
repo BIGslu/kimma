@@ -2,10 +2,11 @@
 #'
 #' Run lmerel and corresponding lm or lme without kinship of gene expression in RNA-seq data against associated genotypes
 #'
-#' @param dat.snp Data frame containing numeric (0,1,2) genotypes. Rows are SNP and columns are donors. Option column matching SNP to genes of interest (see within.gene).
-#' @param within.gene Logical if should only run paired SNP and genes in rows of dat.snp. Default is FALSE. Does NOT work in combination with subset.genes
+#' @param dat.snp Data frame containing 0,1,2 genotypes. Can be numeric or character/factor depending on desired analysis. Rows are donors and columns are SNP.
+#' @param dat.map Data frame mapping geneID to genotypeID. If provided, genotypes will be modeled against only the genes they are paired with in the map. If not provided, genotypes will be modeled against all genes in dat$E / counts
 #' @param geneID Character variable name to match dat.snp dat with gene identifiers. Values should match rownames in express data (dat$E or counts) Default it "gene"
 #' @param genotypeID Character variable name to match dat.snp dat with SNP identifiers. Default it "snpID"
+#' @param model Character vector of model starting with ~ Should include (1|patientID) if mixed effects will be run. NOTE THAT FOR EQTL, the model MUST include genotype as a place holder for the genotype data. For example "~ genotype + (1|ptID)"
 #'
 #' Same as kmFit( )
 #' @param dat EList object output by voom( ). Contains counts (dat$E), meta (dat$targets), and genes (dat$genes).
@@ -19,7 +20,6 @@
 #' @param subset.var Character list of variable name(s) to filter data by.
 #' @param subset.lvl Character list of variable value(s) or level(s) to filter data to. Must match order of subset.var
 #' @param subset.genes Character vector of genes to include in models.
-#' @param model Character vector of model starting with ~ Should include (1|patientID) if mixed effects will be run
 #' @param use.weights Logical if gene specific weights should be used in model. Default is FALSE
 #' @param run.lm Logical if should run lm model without kinship
 #' @param run.lme Logical if should run lme model without kinship
@@ -45,26 +45,32 @@
 #' nSamp <- length(unique(example.voom$targets$ptID))
 #' #Create random genotype data
 #' snp <- data.frame(matrix(sample(c(0,1,2), nSNP*nSamp, replace=TRUE),
-#'                          nrow=nSNP)) %>%
-#'   #Add SNP and gene names
-#'   dplyr::mutate(snpID = paste0("rs",1:nSNP),
-#'                 gene = rep(example.voom$genes$geneName[1:2], nSNP/2)) %>%
-#'  dplyr::select(snpID, gene, dplyr::everything())
-#'  colnames(snp) <- c("snpID", "gene", unique(example.voom$targets$ptID))
+#'                          nrow=nSamp)) %>%
+#'   #Add SNP names
+#'   dplyr::mutate(ptID = unique(example.voom$targets$ptID)) %>%
+#'   dplyr::select(ptID, dplyr::everything())
+#' colnames(snp) <- c("ptID", paste0("rs",1:nSNP))
 #'
-#' eQTL_result <- kmFit_eQTL(dat.snp = snp,
+#' #Create gene to SNP map
+#'  map <- data.frame(snpID = paste0("rs",1:nSNP),
+#'                  gene = rep(example.voom$genes$geneName[1:2], nSNP/2))
+#'
+#' #Run SNP interaction model
+#' eQTL_result <- kmFit_eQTL(dat.snp = snp, dat.map = map,
 #'                           dat = example.voom, kin = example.kin,
 #'                           run.lmerel = TRUE, run.contrast = TRUE, metrics=TRUE,
-#'                           subset.genes = c("ENSG00000250479","CENSG00000250510"),
 #'                           model = "~ virus*genotype + (1|ptID)")
 #'
-#' eQTL_result2 <- kmFit_eQTL(dat.snp = snp, within.gene = TRUE,
+#' #Run SNP as factors with contrasts
+#' snp_fct <- snp %>%
+#'  dplyr::mutate_if(is.numeric, ~as.factor(.))
+#'
+#' eQTL_result2 <- kmFit_eQTL(dat.snp = snp_fct, dat.map = map,
 #'                            dat = example.voom, kin = example.kin,
 #'                            run.lmerel = TRUE, run.contrast = TRUE, metrics=TRUE,
-#'                            model = "~ virus*genotype + (1|ptID)")
+#'                            model = "~ genotype + (1|ptID)")
 
-
-kmFit_eQTL <- function(dat.snp = NULL, within.gene = FALSE,
+kmFit_eQTL <- function(dat.snp = NULL, dat.map = NULL,
                        geneID = "gene", genotypeID = "snpID",
                        #Same as kmFit
                        dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
@@ -79,27 +85,29 @@ kmFit_eQTL <- function(dat.snp = NULL, within.gene = FALSE,
   snp <- genotype <- NULL
 
   #### Checks ####
-  if(!is.null(subset.genes) & within.gene){
-    stop("Only one of within.gene and subset.genes can be provided.")}
-  if(within.gene & !(geneID %in% colnames(dat.snp))){
-    stop("geneID variable must be in dat.snp in order for within.gene to run properly.")}
-  if(!(genotypeID %in% colnames(dat.snp))){
-    stop("genotypeID variable not in dat.snp. Please set genotypeID to the correct variable name for your data.")}
+  if(!is.null(dat.map) & !is.null(subset.genes)){
+    stop("Only one of dat.map and subset.genes can be provided.")}
+  if(!is.null(dat.map)){
+    if(!(genotypeID %in% colnames(dat.map))){
+      stop("genotypeID variable not in dat.map. Please set genotypeID to the correct variable name for your data.")}
+    if(!(geneID %in% colnames(dat.map))){
+      stop("geneID variable not in dat.map Please set geneID to the correct variable name for your data.")}}
 
-  num.check <- as.matrix(dat.snp[,!colnames(dat.snp) %in% c(genotypeID, geneID)])
-  if(!is.numeric(num.check)){
-    stop("Non-numeric genotypes in dat.snp. Please provide only genotypeID, geneID (optional), and numeric 0,1,2 SNP data.")}
+  num.check <- as.matrix(dat.snp[,colnames(dat.snp) != patientID])
+
+  if((run.contrast | !is.null(contrast.var)) & is.numeric(num.check)){
+    message("WARNING: Genotype data are numeric. If you would like to treat 0,1,2 as distinct levels in the contrast model, please change dat.snp to character/factor.")
+  }
 
   #### Data ####
-  num.cols <- dat.snp %>%
-    dplyr::select_if(is.numeric) %>%
-    colnames()
+  #Move rownames if present in dat.snp
+  if(!patientID %in% colnames(dat.snp)){
+    snp.format <- dat.snp %>%
+      tibble::rownames_to_column(patientID)
+  } else {
+    snp.format <- dat.snp
+  }
 
-  snp.format <- dat.snp %>%
-    dplyr::select(genotypeID, dplyr::all_of(num.cols)) %>%
-    dplyr::distinct() %>%
-    tidyr::pivot_longer(-dplyr::all_of(genotypeID), names_to = patientID) %>%
-    tidyr::pivot_wider(names_from = genotypeID)
 
   if(!is.null(dat)){
     dat$targets <- dat$targets %>%
@@ -112,17 +120,19 @@ kmFit_eQTL <- function(dat.snp = NULL, within.gene = FALSE,
   }
 
   #### Model ####
+  all.snp <- colnames(snp.format)[colnames(snp.format) != patientID]
   result.ls <- list()
-  for(s in unique(dat.snp[,genotypeID])){
+
+  for(s in all.snp){
     message(paste0("\nRunning ", s))
 
     #Make model for SNP of interest
     m <- gsub("genotype", s, model)
 
     #Match SNP to subset of genes if within gene is selected
-    if(within.gene){
+    if(!is.null(dat.map)){
       #List genes of interest
-      subset.genes <- dat.snp %>%
+      subset.genes <- dat.map %>%
         dplyr::filter(get(genotypeID) == s) %>%
         dplyr::pull(geneID)
     }
@@ -130,20 +140,26 @@ kmFit_eQTL <- function(dat.snp = NULL, within.gene = FALSE,
     temp <- kmFit(dat, kin, patientID, libraryID,
                   counts, meta, genes, weights,
                   subset.var, subset.lvl, subset.genes,
-                  m, use.weights,
+                  model=m, use.weights,
                   run.lm, run.lme, run.lmerel,
                   metrics, run.lmekin,
                   run.contrast, contrast.var,
-                  processors, p.method)
+                  processors, p.method, genotype.name=s)
 
     #combine with previous snp outputs
     for(df in unique(c(names(temp), names(result.ls)))){
+      #Reconcile "seeContrasts" is a character for estimate
+      if(!is.null(result.ls[[df]]) & "estimate" %in% colnames(temp[[df]])){
+        if(any(is.character(result.ls[[df]]$estimate), is.character(temp[[df]]$estimate))){
+          temp[[df]]$estimate <- as.character(temp[[df]]$estimate)
+          result.ls[[df]]$estimate <- as.character(result.ls[[df]]$estimate)
+        }}
+
       result.ls[[df]] <- temp[[df]] %>%
         dplyr::mutate(genotype = s) %>%
         dplyr::select(genotype, dplyr::everything()) %>%
         dplyr::bind_rows(result.ls[[df]])
     }
   }
-
   return(result.ls)
 }

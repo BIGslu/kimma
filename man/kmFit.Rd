@@ -26,11 +26,12 @@ kmFit(
   run.contrast = FALSE,
   contrast.var = NULL,
   processors = NULL,
-  p.method = "BH"
+  p.method = "BH",
+  genotype.name = NULL
 )
 }
 \arguments{
-\item{dat}{EList object output by voom( ). Contains counts (dat$E), meta (dat$targets), and genes (dat$genes).}
+\item{dat}{EList object output by voom( ). Must contain counts (dat$E) and meta (dat$targets). Optionally also contains gene metadata (dat$genes) and weights (dat$weights)}
 
 \item{kin}{Matrix with pairwise kinship values between individuals. Must be numeric with rownames.}
 
@@ -42,9 +43,9 @@ kmFit(
 
 \item{meta}{Matrix or data frame of sample and individual metadata.}
 
-\item{genes}{Matrix or data frame of gene metadata.}
+\item{genes}{Optional matrix or data frame of gene metadata.}
 
-\item{weights}{Matrix of data frame of gene specific weights. Usually calculated with limma::voomWithQualityWeights().}
+\item{weights}{Optional matrix of data frame of gene specific weights. Usually calculated with limma::voomWithQualityWeights().}
 
 \item{subset.var}{Character list of variable name(s) to filter data by.}
 
@@ -73,6 +74,8 @@ kmFit(
 \item{processors}{Numeric processors to run in parallel. Default is 2 less than the total available}
 
 \item{p.method}{Character of FDR adjustment method. Values as in p.adjust( )}
+
+\item{genotype.name}{Character string. Used internally for kmFit_eQTL}
 }
 \value{
 List of data frames including
@@ -100,7 +103,7 @@ kmFit(dat = example.voom,
       model = "~ virus + (1|ptID)")
 
 # Pairwise contrasts
-## Continiuous interaction
+## Continuous interaction
 kmFit(dat = example.voom,
       run.lme = TRUE, run.contrast = TRUE,
       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
@@ -119,4 +122,10 @@ kmFit(dat = example.voom,
       kin = example.kin, run.lmerel = TRUE, run.lm = TRUE,
       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
       model = "~ virus*asthma + lib.size + norm.factors + median_cv_coverage + ptID+(1|ptID)")
+
+# None dat data
+kmFit(counts = example.voom$E, meta = example.voom$targets,
+      run.lm = TRUE, use.weights = FALSE,
+      subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
+      model = "~ virus + (1|ptID)")
 }

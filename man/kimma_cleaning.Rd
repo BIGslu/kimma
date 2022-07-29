@@ -16,7 +16,8 @@ kimma_cleaning(
   subset.var = NULL,
   subset.lvl = NULL,
   subset.genes = NULL,
-  model.lm = NULL
+  model.lm = NULL,
+  genotype.name = NULL
 )
 }
 \arguments{
@@ -47,6 +48,8 @@ Subset data (optional)}
 \item{subset.genes}{Character vector of genes to include in models.}
 
 \item{model.lm}{Character vector of simple linear model version of model provided}
+
+\item{genotype.name}{Character string. Used internally for kmFit_eQTL}
 }
 \value{
 Data frame formatted for use in kmFit

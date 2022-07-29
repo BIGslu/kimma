@@ -17,6 +17,8 @@
 #' @param subset.lvl Character list of variable value(s) or level(s) to filter data to. Must match order of subset.var
 #' @param subset.genes Character vector of genes to include in models.
 #' @param model.lm Character vector of simple linear model version of model provided
+#' @param genotype.name Character string. Used internally for kmFit_eQTL
+#'
 #' @return Data frame formatted for use in kmFit
 #' @keywords internal
 #' @importFrom tidyselect vars_select_helpers
@@ -24,7 +26,7 @@
 kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                            counts=NULL, meta=NULL, genes=NULL, weights=NULL,
                            subset.var = NULL, subset.lvl = NULL, subset.genes = NULL,
-                           model.lm = NULL){
+                           model.lm = NULL, genotype.name = NULL){
   i <- rowname <- NULL
   #If data are NOT a voom EList, create a mock version
   if(is.null(dat)) {
@@ -37,15 +39,28 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
       counts.format <- as.data.frame(counts) %>%
         tibble::rownames_to_column() %>%
         dplyr::select(rowname, tidyselect::all_of(unlist(meta[,libraryID],
-                                                         use.names=FALSE))) %>%
-        dplyr::arrange(match(rowname, genes$geneName)) %>%
-        tibble::column_to_rownames()
+                                                         use.names=FALSE)))
     } else {
       counts.format <- as.data.frame(counts) %>%
         dplyr::rename_if(is.character, ~"rowname")%>%
         dplyr::select(rowname, tidyselect::all_of(unlist(meta[,libraryID],
-                                                          use.names=FALSE))) %>%
-        dplyr::arrange(match(rowname, genes$geneName)) %>%
+                                                          use.names=FALSE)))
+    }
+
+    if(!is.null(genes)){
+      g.match <- c()
+      #match expression data to column in genes
+      for(g in colnames(genes)){
+        if(any(counts.format$rowname %in% genes[,g])){ g.match <- c(g.match, g) }
+      }
+
+      if(length(g.match) >1){ stop("Cannot combine gene and expression data. More than 1 column in dat$genes or genes contains values that match gene names in dat$E or counts. Please remove duplicate gene name column.") }
+
+      counts.format <- counts.format %>%
+        dplyr::arrange(match(rowname, genes[,g.match])) %>%
+        tibble::column_to_rownames()
+    } else {
+      counts.format <- counts.format %>%
         tibble::column_to_rownames()
     }
 
@@ -270,6 +285,8 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
     ## Missing data
     all_vars <- gsub("expression~", "", model.lm)
     all_vars <- unique(strsplit(all_vars, "\\+|\\*|:")[[1]])
+
+    if(!is.null(genotype.name)){ all_vars <- c(all_vars, genotype.name)}
 
     complete <- to.model %>%
       dplyr::select(tidyselect::all_of(c(libraryID, all_vars))) %>%
