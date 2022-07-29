@@ -2,14 +2,14 @@
 #'
 #' Run lmerel and corresponding lm or lme without kinship of gene expression in RNA-seq data
 #'
-#' @param dat EList object output by voom( ). Contains counts (dat$E), meta (dat$targets), and genes (dat$genes).
+#' @param dat EList object output by voom( ). Must contain counts (dat$E) and meta (dat$targets). Optionally also contains gene metadata (dat$genes) and weights (dat$weights)
 #' @param kin Matrix with pairwise kinship values between individuals. Must be numeric with rownames.
 #' @param patientID Character of variable name to match dat$targets to kinship row and column names.
 #' @param libraryID Character of variable name to match dat$targets to dat$E colnames
 #' @param counts Matrix of normalized expression. Rows are genes, columns are libraries.
 #' @param meta Matrix or data frame of sample and individual metadata.
-#' @param genes Matrix or data frame of gene metadata.
-#' @param weights Matrix of data frame of gene specific weights. Usually calculated with limma::voomWithQualityWeights().
+#' @param genes Optional matrix or data frame of gene metadata.
+#' @param weights Optional matrix of data frame of gene specific weights. Usually calculated with limma::voomWithQualityWeights().
 #' @param subset.var Character list of variable name(s) to filter data by.
 #' @param subset.lvl Character list of variable value(s) or level(s) to filter data to. Must match order of subset.var
 #' @param subset.genes Character vector of genes to include in models.

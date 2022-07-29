@@ -31,7 +31,7 @@ kmFit(
 )
 }
 \arguments{
-\item{dat}{EList object output by voom( ). Contains counts (dat$E), meta (dat$targets), and genes (dat$genes).}
+\item{dat}{EList object output by voom( ). Must contain counts (dat$E) and meta (dat$targets). Optionally also contains gene metadata (dat$genes) and weights (dat$weights)}
 
 \item{kin}{Matrix with pairwise kinship values between individuals. Must be numeric with rownames.}
 
@@ -43,9 +43,9 @@ kmFit(
 
 \item{meta}{Matrix or data frame of sample and individual metadata.}
 
-\item{genes}{Matrix or data frame of gene metadata.}
+\item{genes}{Optional matrix or data frame of gene metadata.}
 
-\item{weights}{Matrix of data frame of gene specific weights. Usually calculated with limma::voomWithQualityWeights().}
+\item{weights}{Optional matrix of data frame of gene specific weights. Usually calculated with limma::voomWithQualityWeights().}
 
 \item{subset.var}{Character list of variable name(s) to filter data by.}
 
