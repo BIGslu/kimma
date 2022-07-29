@@ -27,7 +27,9 @@ kimma_lme <- function(model.lme, to.model.gene, gene, use.weights, metrics){
 
     #Estimate P-value
     p.lme <- broom::tidy(car::Anova(fit.lme))
-    p.rand <- as.data.frame(lmerTest::rand(fit.lme))
+    p.rand <- as.data.frame(lmerTest::rand(fit.lme)) %>%
+      tibble::rownames_to_column() %>%
+      dplyr::filter(rowname != "<none>")
     #Get estimates
     est.lme <- as.data.frame(stats::coef(summary(fit.lme))) %>%
       tibble::rownames_to_column() %>%
@@ -37,20 +39,20 @@ kimma_lme <- function(model.lme, to.model.gene, gene, use.weights, metrics){
     #If no 3+ level variables
     if(nrow(p.lme)==nrow(est.lme)){
       results.lme <- data.frame(
-        model = "lme",                      #Label model as lme
-        gene = gene,                        #gene name
-        variable = c(p.lme$term, rownames(p.rand)[-1]),      #variables in model
-        estimate = c(est.lme$Estimate, p.rand$LRT[-1]),      #estimate in model
-        pval = c(p.lme$p.value, p.rand$`Pr(>Chisq)`[-1]))    #P-value
-    } else {
+        model = "lme",                                  #Label model as lme
+        gene = gene,                                    #gene name
+        variable = c(p.lme$term, p.rand$rowname),       #variables in model
+        estimate = c(est.lme$Estimate, p.rand$LRT),     #estimate in model
+        pval = c(p.lme$p.value, p.rand$`Pr(>Chisq)`))   #P-value
+    } else{
       #If 3+ variable
       results.lme <- data.frame(
-        model = "lme",                      #Label model as lme
-        gene = gene,                        #gene name
-        variable = c(p.lme$term, p.rand$t[-1]),      #variables in model
-        estimate = "seeContrasts",                  #estimate in model
-        pval = c(p.lme$p.value, p.rand$p.value[-1])) #P-value
-    }
+        model = "lme",                                #Label model as lme
+        gene = gene,                                  #gene name
+        variable = c(p.lme$term, p.rand$rowname),     #variables in model
+        estimate = "seeContrasts",                    #estimate in model
+        pval = c(p.lme$p.value, p.rand$`Pr(>Chisq)`)) #P-value
+      }
 
     if(metrics){
       #Calculate R-squared

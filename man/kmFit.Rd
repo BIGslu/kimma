@@ -121,11 +121,19 @@ kmFit(dat = example.voom, kin = example.kin,
 kmFit(dat = example.voom,
       kin = example.kin, run.lmerel = TRUE, run.lm = TRUE,
       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
-      model = "~ virus*asthma + lib.size + norm.factors + median_cv_coverage + ptID+(1|ptID)")
+      model = "~ virus*asthma + lib.size + norm.factors + median_cv_coverage + ptID + (1|ptID)")
 
-# None dat data
+# Non-dat data
 kmFit(counts = example.voom$E, meta = example.voom$targets,
       run.lm = TRUE, use.weights = FALSE,
       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
       model = "~ virus + (1|ptID)")
+
+# Three level variable
+example.voom$targets$lvl <- rep(c("A","B","C"), length(example.voom$targets$libID)/3)
+kmFit(dat = example.voom,
+      run.lme= TRUE, run.contrast = TRUE,
+      subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
+      model = "~ lvl + (1|ptID)")
+
 }

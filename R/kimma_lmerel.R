@@ -35,7 +35,9 @@ kimma_lmerel <- function(model.lme, to.model.gene, gene, kin.subset, use.weights
 
   #Estimate P-value
   p.kin <- broom::tidy(car::Anova(fit.kin))
-  p.rand <- as.data.frame(lmerTest::rand(fit.kin))
+  p.rand <- as.data.frame(lmerTest::rand(fit.kin)) %>%
+    tibble::rownames_to_column() %>%
+    dplyr::filter(rowname != "<none>")
   #Get estimates
   est.kin <- as.data.frame(stats::coef(summary(fit.kin))) %>%
     tibble::rownames_to_column() %>%
@@ -45,19 +47,19 @@ kimma_lmerel <- function(model.lme, to.model.gene, gene, kin.subset, use.weights
   #If no 3+ level variables
   if(nrow(p.kin)==nrow(est.kin)){
     results.kin <- data.frame(
-      model = "lmerel",                      #Label model as lmerel
-      gene = gene,                        #gene name
-      variable = c(p.kin$term, rownames(p.rand)[-1]),      #variables in model
-      estimate = c(est.kin$Estimate, p.rand$LRT[-1]),      #estimate in model
-      pval = c(p.kin$p.value, p.rand$`Pr(>Chisq)`[-1]))    #P-value
-  } else {
+      model = "lmerel",                               #Label model as lme
+      gene = gene,                                    #gene name
+      variable = c(p.kin$term, p.rand$rowname),       #variables in model
+      estimate = c(est.kin$Estimate, p.rand$LRT),     #estimate in model
+      pval = c(p.kin$p.value, p.rand$`Pr(>Chisq)`))   #P-value
+  } else{
     #If 3+ variable
     results.kin <- data.frame(
-      model = "lmerel",                      #Label model as lmerel
-      gene = gene,                        #gene name
-      variable = c(p.kin$term, p.rand$t[-1]),      #variables in model
-      estimate = "seeContrasts",                  #estimate in model
-      pval = c(p.kin$p.value, p.rand$p.value[-1])) #P-value
+      model = "lmerel",                            #Label model as lme
+      gene = gene,                                 #gene name
+      variable = c(p.kin$term, p.rand$rowname),    #variables in model
+      estimate = "seeContrasts",                    #estimate in model
+      pval = c(p.kin$p.value, p.rand$`Pr(>Chisq)`)) #P-value
   }
 
   if(metrics){
