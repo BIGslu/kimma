@@ -35,7 +35,7 @@ design <- model.matrix(~ virus, data = example.voom$targets)
 fit <- limma::eBayes(limma::lmFit(example.voom$E, design))
 
 ## Get results
-result <- extract_lmFit(design = design, fit = fit)
+fdr <- extract_lmFit(design = design, fit = fit)
 ## Get results and add gene annotations
 fdr <- extract_lmFit(design = design, fit = fit,
                         dat.genes = example.voom$genes, name.genes = "geneName")

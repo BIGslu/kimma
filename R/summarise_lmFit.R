@@ -2,7 +2,7 @@
 #'
 #' Summarise number of significant genes at various FDR cutoffs. Can split by up/down fold change as well.
 #'
-#' @param fdr data.frame output by kimma::extract_lmFit( )
+#' @param fdr data.frame output by kimma::extract_lmFit( ). Specify the model such as fdr$lm
 #' @param fdr.cutoff numeric vector of FDR cutoffs to summarise at
 #' @param p.cutoff numeric vector of P-value cutoffs to summarise at. No FDR summary given if p.cutoff is provided
 #' @param FCgroup logical if should separate summary by up/down fold change groups
@@ -19,7 +19,7 @@
 #' model_results <- extract_lmFit(design = design, fit = fit)
 #'
 #' # Summarise results
-#' summarise_lmFit(fdr = model_results, fdr.cutoff = c(0.05, 0.5), FCgroup = TRUE)
+#' summarise_lmFit(fdr = model_results$lm, fdr.cutoff = c(0.05, 0.5), FCgroup = TRUE)
 #'
 #' # Contrasts model
 #' design <- model.matrix(~ 0 + virus, data = example.voom$targets)
@@ -32,9 +32,11 @@
 #'                                contrast.mat = contrast.mat)
 #'
 #' # Summarise results
-#' summarise_lmFit(fdr = model_results, fdr.cutoff = c(0.05, 0.5), FCgroup = FALSE)
-#' ## No signif results (not run)
-#' # summarise_lmFit(fdr = model_results, fdr.cutoff = 0.0001, FCgroup = FALSE)
+#' summarise_lmFit(fdr = model_results$lm.contrast,
+#'     fdr.cutoff = c(0.05, 0.5), FCgroup = FALSE)
+#' ## No signif results (Not run error)
+#' # summarise_lmFit(fdr = model_results$lm.contrast,
+#' #     fdr.cutoff = 0.0001, FCgroup = FALSE)
 #'
 
 summarise_lmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),

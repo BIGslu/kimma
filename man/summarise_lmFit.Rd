@@ -22,7 +22,7 @@ summarize_lmFit(
 )
 }
 \arguments{
-\item{fdr}{data.frame output by kimma::extract_lmFit( )}
+\item{fdr}{data.frame output by kimma::extract_lmFit( ). Specify the model such as fdr$lm}
 
 \item{fdr.cutoff}{numeric vector of FDR cutoffs to summarise at}
 
@@ -47,7 +47,7 @@ fit <- limma::eBayes(limma::lmFit(example.voom$E, design))
 model_results <- extract_lmFit(design = design, fit = fit)
 
 # Summarise results
-summarise_lmFit(fdr = model_results, fdr.cutoff = c(0.05, 0.5), FCgroup = TRUE)
+summarise_lmFit(fdr = model_results$lm, fdr.cutoff = c(0.05, 0.5), FCgroup = TRUE)
 
 # Contrasts model
 design <- model.matrix(~ 0 + virus, data = example.voom$targets)
@@ -60,8 +60,10 @@ model_results <- extract_lmFit(design = design, fit = fit,
                                contrast.mat = contrast.mat)
 
 # Summarise results
-summarise_lmFit(fdr = model_results, fdr.cutoff = c(0.05, 0.5), FCgroup = FALSE)
-## No signif results (not run)
-# summarise_lmFit(fdr = model_results, fdr.cutoff = 0.0001, FCgroup = FALSE)
+summarise_lmFit(fdr = model_results$lm.contrast,
+    fdr.cutoff = c(0.05, 0.5), FCgroup = FALSE)
+## No signif results (Not run error)
+# summarise_lmFit(fdr = model_results$lm.contrast,
+#     fdr.cutoff = 0.0001, FCgroup = FALSE)
 
 }

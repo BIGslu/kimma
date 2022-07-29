@@ -17,7 +17,7 @@
 #' fit <- limma::eBayes(limma::lmFit(example.voom$E, design))
 #'
 #' ## Get results
-#' result <- extract_lmFit(design = design, fit = fit)
+#' fdr <- extract_lmFit(design = design, fit = fit)
 #' ## Get results and add gene annotations
 #' fdr <- extract_lmFit(design = design, fit = fit,
 #'                         dat.genes = example.voom$genes, name.genes = "geneName")
@@ -72,14 +72,17 @@ extract_lmFit <- function(design, fit, contrast.mat=NULL,
     #Convert groups to ordered factors
     dplyr::mutate(variable = factor(variable, levels=vars)) %>%
     #rename to match kmFit
-    dplyr::rename(gene=geneName, estimate=logFC, pval=P.Value, FDR=adj.P.Val) %>%
-    dplyr::mutate(model="limma")
+    dplyr::rename(gene=geneName, estimate=logFC, pval=P.Value, FDR=adj.P.Val)
 
   #Split contrast if present
   if(!is.null(contrast.mat)){
     pval.result.format2 <- pval.result.format %>%
       tidyr::separate(variable, into=c("contrast_lvl","contrast_ref"), sep=" - ") %>%
-      dplyr::select(model, gene, contrast_ref, contrast_lvl,
+      dplyr::mutate(variable = paste(Reduce(intersect, strsplit(c(contrast_lvl,
+                                                                  contrast_ref),"")),
+                                     collapse=""),
+                    model="limma.contrast") %>%
+      dplyr::select(model, gene, variable, contrast_ref, contrast_lvl,
                     estimate, pval, FDR, t, B, dplyr::everything())
 
       paste(Reduce(intersect, strsplit(c(pval.result.format2$contrast_lvl,
@@ -87,9 +90,28 @@ extract_lmFit <- function(design, fit, contrast.mat=NULL,
             collapse="")
   } else{
     pval.result.format2 <- pval.result.format %>%
+      dplyr::mutate(model="limma") %>%
       dplyr::select(model, gene, variable, estimate, pval, FDR, t, B,
                     dplyr::everything())
   }
 
-  return(pval.result.format2)
+  #Goodness of fit metric sigma
+  lm.fit <- data.frame(
+    model = "limma.fit",
+    gene = names(fit$sigma),
+    sigma = fit$sigma
+  )
+  rownames(lm.fit) <- NULL
+  if(!is.null(dat.genes)){
+    lm.fit <- dplyr::left_join(lm.fit, dat.genes, by=c("gene"=name.genes))
+  }
+
+  result.ls <- list()
+  if(is.null(contrast.mat)){
+    result.ls[["lm"]] <- pval.result.format2
+  } else {
+    result.ls[["lm.contrast"]] <- pval.result.format2
+  }
+  result.ls[["lm.fit"]] <- lm.fit
+  return(result.ls)
 }
