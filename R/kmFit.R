@@ -138,6 +138,9 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
   if(!is.null(run.lmekin)){
     stop("run.lmekin no longer supported. Please use run.lmerel")
   }
+  if(grepl("\n", model)){
+    stop("Model cannot contain hard returns \n. Please correct.")
+  }
 
   ###### Formulae #####
   #Make formulae. as.formula does not work
