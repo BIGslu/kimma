@@ -19,12 +19,12 @@ extract_lmFit(
 
 \item{contrast.mat}{contrast matrix output by limma::makeContrasts( ). NOTE: When using constrasts, the result will not exactly match extract_kmFit due to limma's naming of contrast levels as variableLEVEL}
 
-\item{dat.genes}{data frame with additional gene annotations. Optional.}
+\item{dat.genes}{data frame with additional gene annotations. Optional. If not provided, the fit object is also checked for gene annotation information.}
 
 \item{name.genes}{character for variable name in dat.genes that matches gene names in fit}
 }
 \value{
-Data frame with model fit and significance for all variable and genes. Format as in limma::topTable( )
+List with data frames. One for model fit (sigma) and one for significance for all variable and genes. Variables names as in limma::topTable( )
 }
 \description{
 Extract model fit and significance for all individual variables and/or contrasts in a limma model
@@ -44,7 +44,7 @@ fdr <- extract_lmFit(design = design, fit = fit,
 design <- model.matrix(~ 0 + virus, data = example.voom$targets)
 fit <- limma::lmFit(example.voom$E, design)
 contrast.mat <- limma::makeContrasts(virusHRV-virusnone, levels = design)
-fit <- eBayes(contrasts.fit(fit, contrast.mat))
+fit <- limma::eBayes(limma::contrasts.fit(fit, contrast.mat))
 
 ## Get contrast results
 fdr <- extract_lmFit(design = design, fit = fit, contrast.mat = contrast.mat)

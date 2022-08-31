@@ -5,10 +5,10 @@
 #' @param design model matrix output by model.matrix( )
 #' @param fit MArrayLM model fit output by limma::eBayes( )
 #' @param contrast.mat contrast matrix output by limma::makeContrasts( ). NOTE: When using constrasts, the result will not exactly match extract_kmFit due to limma's naming of contrast levels as variableLEVEL
-#' @param dat.genes data frame with additional gene annotations. Optional.
+#' @param dat.genes data frame with additional gene annotations. Optional. If not provided, the fit object is also checked for gene annotation information.
 #' @param name.genes character for variable name in dat.genes that matches gene names in fit
 #'
-#' @return Data frame with model fit and significance for all variable and genes. Format as in limma::topTable( )
+#' @return List with data frames. One for model fit (sigma) and one for significance for all variable and genes. Variables names as in limma::topTable( )
 #' @export
 #'
 #' @examples
@@ -26,7 +26,7 @@
 #' design <- model.matrix(~ 0 + virus, data = example.voom$targets)
 #' fit <- limma::lmFit(example.voom$E, design)
 #' contrast.mat <- limma::makeContrasts(virusHRV-virusnone, levels = design)
-#' fit <- eBayes(contrasts.fit(fit, contrast.mat))
+#' fit <- limma::eBayes(limma::contrasts.fit(fit, contrast.mat))
 #'
 #' ## Get contrast results
 #' fdr <- extract_lmFit(design = design, fit = fit, contrast.mat = contrast.mat)
@@ -35,7 +35,7 @@ extract_lmFit <- function(design, fit, contrast.mat=NULL,
                           dat.genes=NULL, name.genes="geneName"){
   #Empty df to hold results
   pval.result <- data.frame()
-  logFC <- FCgroup <- variable <- geneName <- P.Value <- adj.P.Val <- model <- gene <- contrast_ref <- contrast_lvl <- estimate <- pval <- FDR <- B <- NULL
+  logFC <- FCgroup <- variable <- geneName <- P.Value <- adj.P.Val <- model <- gene <- contrast_ref <- contrast_lvl <- estimate <- pval <- FDR <- B <- sigma <- NULL
 
   #List variables of interest
   if(!is.null(contrast.mat)){
@@ -66,6 +66,8 @@ extract_lmFit <- function(design, fit, contrast.mat=NULL,
   #Add hgnc symbol
   if(!is.null(dat.genes)){
     pval.result <- dplyr::left_join(pval.result, dat.genes, by=name.genes)
+  } else if(!is.null(fit$genes)){
+    pval.result <- dplyr::left_join(pval.result, fit$genes, by=name.genes)
   }
 
   pval.result.format <- pval.result %>%
@@ -85,9 +87,9 @@ extract_lmFit <- function(design, fit, contrast.mat=NULL,
       dplyr::select(model, gene, variable, contrast_ref, contrast_lvl,
                     estimate, pval, FDR, t, B, dplyr::everything())
 
-      paste(Reduce(intersect, strsplit(c(pval.result.format2$contrast_lvl,
-                                   pval.result.format2$contrast_ref),"")),
-            collapse="")
+    paste(Reduce(intersect, strsplit(c(pval.result.format2$contrast_lvl,
+                                       pval.result.format2$contrast_ref),"")),
+          collapse="")
   } else{
     pval.result.format2 <- pval.result.format %>%
       dplyr::mutate(model="limma") %>%
@@ -98,12 +100,16 @@ extract_lmFit <- function(design, fit, contrast.mat=NULL,
   #Goodness of fit metric sigma
   lm.fit <- data.frame(
     model = "limma.fit",
-    gene = names(fit$sigma),
+    gene = names(fit$Amean),
     sigma = fit$sigma
   )
+
+  ## add gene annotation if exists
   rownames(lm.fit) <- NULL
   if(!is.null(dat.genes)){
     lm.fit <- dplyr::left_join(lm.fit, dat.genes, by=c("gene"=name.genes))
+  } else if(!is.null(fit$genes)){
+    lm.fit <- dplyr::left_join(lm.fit, fit$genes, by=c("gene"=name.genes))
   }
 
   result.ls <- list()
