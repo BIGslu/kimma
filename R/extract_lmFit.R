@@ -62,7 +62,9 @@ extract_lmFit <- function(design, fit, contrast.mat=NULL,
       pval.temp <- dplyr::mutate(pval.temp, variable = vars[var])
     }
 
-    pval.result <- dplyr::bind_rows(pval.result, pval.temp)
+    pval.result <- pval.temp %>%
+      dplyr::select(dplyr::all_of(name.genes), logFC:variable) %>%
+      dplyr::bind_rows(pval.result)
 
   }
 
