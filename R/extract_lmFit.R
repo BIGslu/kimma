@@ -51,7 +51,10 @@ extract_lmFit <- function(design, fit, contrast.mat=NULL,
                                  adjust.method = "BH")
 
     #Move gene names from rownames if exist
-    if (is.numeric(pval.temp[,1])){
+    if (!is.numeric(rownames(pval.temp)[1])){
+      if(name.genes %in% colnames(pval.temp)){
+        pval.temp <- pval.temp %>% dplyr::select(-dplyr::all_of(name.genes))
+      }
       pval.temp <- pval.temp %>%
         tibble::rownames_to_column(name.genes) %>%
         dplyr::mutate(variable = vars[var])
