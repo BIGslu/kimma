@@ -7,11 +7,11 @@ library(limma)
 load("data-raw/P259_pDC_clean.RData")
 count <- read.csv("data-raw/P259_pDC_counts.csv")
 
-#Select 5 libraries
+#Select 12 libraries
 targets <- dat.pDC.voom$targets %>%
   filter(virus.detail != "newHRV" & IL5 != "EOS.supp" & donorID != "donor4" &
            !grepl("AT", donorID)) %>%
-  select(group, libID,donorID, median_cv_coverage, virus, asthma)
+  select(group, libID, donorID, median_cv_coverage, virus, asthma)
 
 E <- count[,c("geneName", targets$libID)]
 
@@ -27,7 +27,7 @@ colnames(count.filter) <- c("geneName", paste("lib",1:12,sep=""))
 set.seed(546)
 targets <- targets %>%
   mutate(donorID = recode(donorID, "AC3"="donor4","AC4"="donor5","AC5"="donor6"),
-         batch = floor(runif(12, 1, 3)))
+         batch = ifelse(donorID %in% c("donor1","donor2","donor3"), "1","2"))
 
 #Subset genes
 set.seed(546)
