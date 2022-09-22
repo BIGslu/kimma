@@ -53,7 +53,7 @@ extract_lmFit <- function(design, fit, contrast.mat=NULL,
     #Move gene names from rownames if exist
     if (is.numeric(pval.temp[,1])){
       pval.temp <- pval.temp %>%
-        tibble::rownames_to_column("geneName") %>%
+        tibble::rownames_to_column(name.genes) %>%
         dplyr::mutate(variable = vars[var])
     } else{
       pval.temp <- dplyr::mutate(pval.temp, variable = vars[var])
@@ -65,9 +65,9 @@ extract_lmFit <- function(design, fit, contrast.mat=NULL,
 
   #Add hgnc symbol
   if(!is.null(dat.genes)){
-    pval.result <- dplyr::left_join(pval.result, dat.genes, by=name.genes)
+    pval.result <- suppressMessages(dplyr::left_join(pval.result, dat.genes))
   } else if(!is.null(fit$genes)){
-    pval.result <- dplyr::left_join(pval.result, fit$genes, by=name.genes)
+    pval.result <- suppressMessages(dplyr::left_join(pval.result, fit$genes))
   }
 
   pval.result.format <- pval.result %>%
