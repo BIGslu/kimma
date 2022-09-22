@@ -6,6 +6,8 @@ Kinship In Mixed Model Analysis of RNA-seq
 
 Data analysis and linear mixed effects models with pairwise kinship for RNA-seq data.
 
+Dill-McFarland KA, Mitchell K, Batchu S, Segnitz RM, Benson B, Janczyk T, Cox MS, Mayanja-Kizza H, Boom WH, Benchek P, Stein CM, Hawn TR, Altman MC
+
 ### Installation
 
 ```
