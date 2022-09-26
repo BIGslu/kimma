@@ -20,7 +20,7 @@
 #' fdr <- extract_lmFit(design = design, fit = fit)
 #' ## Get results and add gene annotations
 #' fdr <- extract_lmFit(design = design, fit = fit,
-#'                         dat.genes = example.voom$genes, name.genes = "geneName")
+#'                         dat.genes = example.voom$genes)
 #'
 #' # Run limma contrasts model
 #' design <- model.matrix(~ 0 + virus, data = example.voom$targets)
@@ -79,7 +79,7 @@ extract_lmFit <- function(design, fit, contrast.mat=NULL,
     #Convert groups to ordered factors
     dplyr::mutate(variable = factor(variable, levels=vars)) %>%
     #rename to match kmFit
-    dplyr::rename(gene=geneName, estimate=logFC, pval=P.Value, FDR=adj.P.Val)
+    dplyr::rename(gene=name.genes, estimate=logFC, pval=P.Value, FDR=adj.P.Val)
 
   #Split contrast if present
   if(!is.null(contrast.mat)){
