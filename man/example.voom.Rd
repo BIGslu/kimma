@@ -25,7 +25,7 @@ Formal class 'EList' [package "limma"] with 1 slot:
   \item{donorID}{character. Donor ID.}
   \item{median_cv_coverage}{numeric. Median coefficient of variation of coverage. Quality metric for sequencing libraries calculated from original full data set.}
   \item{virus}{Factor. Media samples with no virus ("none") vs virus-infected samples ("HRV").}
-  \item{asthma}{Character. Asthma vs healthy.}
+  \item{asthma}{Factor. Asthma vs healthy.}
   }
 
 \item \strong{E} A matrix with 1000 rows and 12 columns
