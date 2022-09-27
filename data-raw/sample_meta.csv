@@ -1,0 +1,13 @@
+libID,ptID,virus,batch
+lib1,donor1,none,A
+lib2,donor1,HRV,A
+lib3,donor2,none,A
+lib4,donor2,HRV,A
+lib5,donor3,none,B
+lib6,donor3,HRV,A
+lib7,donor4,none,A
+lib8,donor4,HRV,A
+lib9,donor5,none,B
+lib10,donor5,HRV,B
+lib11,donor1,none,B
+lib12,donor1,HRV,B

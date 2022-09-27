@@ -76,3 +76,21 @@ usethis::use_data(example.count, overwrite = TRUE)
 usethis::use_data(example.dat, overwrite = TRUE)
 usethis::use_data(example.voom, overwrite = TRUE)
 usethis::use_data(example.kin, overwrite = TRUE)
+
+######
+# SEAsnake outputs for tutorials
+library(tidyverse)
+fcounts <- read_tsv("data-raw/combined_feature_counts.tsv")
+flagstat <- read_tsv("data-raw/combined_flagstat.tsv")
+picard <- read_tsv("data-raw/combined_picard.tsv")
+patient <- read_csv("data-raw/patient_meta.csv")
+sample <- read_csv("data-raw/sample_meta.csv")
+
+example.seasnake <- list()
+example.seasnake[["fcounts"]] <- fcounts
+example.seasnake[["flagstat"]] <- flagstat
+example.seasnake[["picard"]] <- picard
+example.seasnake[["patient"]] <- patient
+example.seasnake[["sample"]] <- sample
+
+usethis::use_data(example.seasnake, overwrite = TRUE)
