@@ -1,0 +1,55 @@
+#' Example SEAsnake outputs
+#'
+#' @format Class 'list' with 5 slots:
+#' \enumerate{
+#' \item \strong{fcounts} A data frame with 19118 rows and 13 columns
+#' \describe{
+#'   \item{Geneid}{character. ENSEMBL gene ID.}
+#'   \item{lib1}{numeric. Counts in library 1.}
+#'   \item{lib2}{numeric. Counts in library 2.}
+#'   \item{lib3}{numeric. Counts in library 3.}
+#'   \item{lib4}{numeric. Counts in library 4.}
+#'   \item{lib5}{numeric. Counts in library 5.}
+#'   \item{lib6}{numeric. Counts in library 6.}
+#'   \item{lib7}{numeric. Counts in library 7.}
+#'   \item{lib8}{numeric. Counts in library 8.}
+#'   \item{lib9}{numeric. Counts in library 9.}
+#'   \item{lib10}{numeric. Counts in library 10.}
+#'   \item{lib11}{numeric. Counts in library 11.}
+#'   \item{lib12}{numeric. Counts in library 12.}
+#'       }
+#'
+#' \item \strong{flagstat} A data frame with 12 rows and 17 columns
+#' \describe{
+#'   See http://www.htslib.org/doc/samtools-flagstat.html
+#'       }
+#'
+#' \item \strong{picard} A data frame with 12 rows and 31 columns
+#' \describe{
+#'   See http://broadinstitute.github.io/picard/picard-metric-definitions.html#RnaSeqMetrics
+#'   }
+#'
+#' \item \strong{patient} A data frame with 5 rows and 4 columns
+#' \describe{
+#'   \item{ptID}{character. patient ID.}
+#'   \item{asthma}{character. Patient classification as healthy or asthma.}
+#'   \item{age}{numeric. Patient age in years.}
+#'   \item{sex}{character. Patient biological sex: male or female.}
+#'   }
+#'
+#' \item \strong{sample} A data frame with 12 rows and 4 columns
+#' \describe{
+#'   \item{libID}{character. Libray ID.}
+#'   \item{ptID}{character. Patient ID.}
+#'   \item{virus}{character. Sample treatment: media control (none) or human rhinovirus infected (HRV).}
+#'   \item{batch}{character. Sequenceing batch: A or B.}
+#'   }
+#'   }
+#'
+#' @source \url{https://github.com/BIGslu/SEAsnake}
+#' @references Dill-McFarland et al. 2022 Eosinophil-mediated suppression and Anti-IL-5 enhancement of plasmacytoid dendritic cell interferon responses in asthma. J Allergy Clin Immunol. 150(3):666-675. doi: 10.1016/j.jaci.2022.03.025
+#' @description A list contains SEAsnake results including gene counts, library quality metrics, and sample metadata.
+#' @docType data
+#' @name example.seasnake
+#' @keywords datasets
+"example.seasnake"
