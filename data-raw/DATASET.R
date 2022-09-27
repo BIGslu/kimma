@@ -29,7 +29,7 @@ colnames(count.filter) <- c("geneName", paste("lib",1:12,sep=""))
 set.seed(546)
 targets <- targets %>%
   mutate(donorID = recode(donorID, "AC3"="donor4","AC4"="donor5","AC5"="donor6"),
-         batch = ifelse(libID %in% c("lib4","lib6","lib9","lib12"), "1","2"))
+         batch = ifelse(libID %in% c("lib4","lib6","lib8","lib12"), "1","2"))
 
 #Subset genes
 set.seed(546)
