@@ -11,7 +11,9 @@ count <- read.csv("data-raw/P259_pDC_counts.csv")
 targets <- dat.pDC.voom$targets %>%
   filter(virus.detail != "newHRV" & IL5 != "EOS.supp" & donorID != "donor4" &
            !grepl("AT", donorID)) %>%
-  select(group, libID, donorID, median_cv_coverage, virus, asthma)
+  select(group, libID, donorID, median_cv_coverage, virus, asthma) %>%
+  mutate(virus = fct_relevel(factor(virus), ref="none")) %>%
+  mutate(asthma = fct_relevel(factor(asthma), ref="healthy"))
 
 E <- count[,c("geneName", targets$libID)]
 
