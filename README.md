@@ -14,3 +14,7 @@ Dill-McFarland KA, Mitchell K, Batchu S, Segnitz RM, Benson B, Janczyk T, Cox MS
 install.packages("devtools")
 devtools::install_github("BIGslu/kimma")
 ```
+
+# Vignette
+
+<https://bigslu.github.io/kimma_vignette/kimma_vignette.html>
