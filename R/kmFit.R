@@ -387,21 +387,23 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     }
 
     # Add gene info if available
-    if(!is.null(dat$genes)){
-      genes <- as.data.frame(dat$genes)
-    }
-
-    if(!is.null(genes)){
-      #Find matching column
-      nameID <- which(apply(genes, 2, function(x)
-        any(grepl(kmFit.results$gene[1], x))))
-      name <- colnames(genes)[nameID]
-
-      kmFit.results.anno <- kmFit.results %>%
-        dplyr::left_join(genes, by=c("gene"=name))
-    } else{
-      kmFit.results.anno <- kmFit.results
-    }
+    # REMOVE because uses too much RAM with large models / contrasts
+    # if(!is.null(dat$genes)){
+    #   genes <- as.data.frame(dat$genes)
+    # }
+    #
+    # if(!is.null(genes)){
+    #   #Find matching column
+    #   nameID <- which(apply(genes, 2, function(x)
+    #     any(grepl(kmFit.results$gene[1], x))))
+    #   name <- colnames(genes)[nameID]
+    #
+    #   kmFit.results.anno <- kmFit.results %>%
+    #     dplyr::left_join(genes, by=c("gene"=name))
+    # } else{
+    #   kmFit.results.anno <- kmFit.results
+    # }
+    kmFit.results.anno <- kmFit.results
 
     # Split into list
     for(result.i in unique(kmFit.results.anno$model)){
