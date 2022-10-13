@@ -193,6 +193,31 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
   #If contrast variables given, force run contrast model
   if(!is.null(contrast.var)){run.contrast <- TRUE}
 
+  #Check contrast variable is character/factor
+  if(run.contrast){
+    if(!is.null(dat)){
+      meta.temp <- dat$targets
+    } else {
+      meta.temp <- meta
+    }
+    for(v in contrast.var){
+      #Deal with interaction terms. Only 1 need be non-numeric
+      if(grepl("[*]|:", v)){
+        v.sep <- strsplit(v, split="[*]|:")[[1]]
+        v.class1 <- class(meta.temp[,v.sep[1]])
+        v.class2 <- class(meta.temp[,v.sep[2]])
+        if(all(c(v.class1,v.class2) %in% c("numeric","integer"))){
+          stop(paste("Contrast variable", v, "is numeric. Please specify only character/factor contrasts."))
+        }
+      } else {
+        v.class <- class(meta.temp[,v])
+        if(v.class %in% c("numeric","integer")){
+          stop(paste("Contrast variable", v, "is numeric. Please specify only character/factor contrasts."))
+        }
+      }
+    }
+  }
+
   ###### Data #####
   to.model.ls <- kimma_cleaning(dat, kin, patientID, libraryID,
                                 counts, meta, genes, weights,
@@ -212,6 +237,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                                                    "data.table","foreach","doParallel"),
                                      .export = c("kimma_lm","kimma_lme","kimma_lmerel",
                                                  "kmFit_contrast")) %dopar% {
+
     #### Prepare data ####
     #Filter data to gene
     to.model.gene <- to.model.ls[["to.model"]] %>%
