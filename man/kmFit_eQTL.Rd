@@ -34,7 +34,7 @@ kmFit_eQTL(
 )
 }
 \arguments{
-\item{dat.snp}{Data frame containing 0,1,2 genotypes. Can be numeric or character/factor depending on desired analysis. Rows are donors and columns are SNP.}
+\item{dat.snp}{Data frame containing 0,1,2 genotypes. Can be numeric or character/factor depending on desired analysis. If running contrasdts, must be character/factor for pairwise comparisons to run. Rows are donors and columns are SNP.}
 
 \item{dat.map}{Data frame mapping geneID to genotypeID. If provided, genotypes will be modeled against only the genes they are paired with in the map. If not provided, genotypes will be modeled against all genes in dat$E / counts}
 
@@ -117,7 +117,8 @@ colnames(snp) <- c("ptID", paste0("rs",1:nSNP))
 #Run SNP interaction model
 eQTL_result <- kmFit_eQTL(dat.snp = snp, dat.map = map,
                           dat = example.voom, kin = example.kin,
-                          run.lmerel = TRUE, run.contrast = TRUE, metrics=TRUE,
+                          run.lmerel = TRUE, metrics=TRUE,
+                          run.contrast = TRUE, contrast.var="virus:genotype",
                           model = "~ virus*genotype + (1|ptID)")
 
 #Run SNP as factors with contrasts
