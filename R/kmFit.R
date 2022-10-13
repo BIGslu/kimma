@@ -165,7 +165,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
   if(run.lm){ message(paste("lm model:",model.lm))}
   if(run.lme | run.lmerel){ message(paste("lme/lmerel model:",model.lme))}
 
-  #If no contrast variable set, us all
+  #If no contrast variable set, as all
   if(run.contrast & is.null(contrast.var)){
     contrast.temp <- strsplit(gsub(" |~", "", model), split = "\\+\\(1")[[1]][1]
     #main term
