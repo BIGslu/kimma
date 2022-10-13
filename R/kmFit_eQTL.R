@@ -2,7 +2,7 @@
 #'
 #' Run lmerel and corresponding lm or lme without kinship of gene expression in RNA-seq data against associated genotypes
 #'
-#' @param dat.snp Data frame containing 0,1,2 genotypes. Can be numeric or character/factor depending on desired analysis. Rows are donors and columns are SNP.
+#' @param dat.snp Data frame containing 0,1,2 genotypes. Can be numeric or character/factor depending on desired analysis. If running contrasdts, must be character/factor for pairwise comparisons to run. Rows are donors and columns are SNP.
 #' @param dat.map Data frame mapping geneID to genotypeID. If provided, genotypes will be modeled against only the genes they are paired with in the map. If not provided, genotypes will be modeled against all genes in dat$E / counts
 #' @param geneID Character variable name to match dat.snp dat with gene identifiers. Values should match rownames in express data (dat$E or counts) Default it "gene"
 #' @param genotypeID Character variable name to match dat.snp dat with SNP identifiers. Default it "snpID"
@@ -58,7 +58,8 @@
 #' #Run SNP interaction model
 #' eQTL_result <- kmFit_eQTL(dat.snp = snp, dat.map = map,
 #'                           dat = example.voom, kin = example.kin,
-#'                           run.lmerel = TRUE, run.contrast = TRUE, metrics=TRUE,
+#'                           run.lmerel = TRUE, metrics=TRUE,
+#'                           run.contrast = TRUE, contrast.var="virus:genotype",
 #'                           model = "~ virus*genotype + (1|ptID)")
 #'
 #' #Run SNP as factors with contrasts
@@ -137,13 +138,20 @@ kmFit_eQTL <- function(dat.snp = NULL, dat.map = NULL,
         dplyr::pull(geneID)
     }
 
+    #Fix contrast to specify SNP
+    if(!is.null(contrast.var)){
+      contrast.var2 <- gsub("genotype", s, contrast.var)
+    } else{
+      contrast.var2 <- contrast.var
+    }
+
     temp <- kmFit(dat, kin, patientID, libraryID,
                   counts, meta, genes, weights,
                   subset.var, subset.lvl, subset.genes,
                   model=m, use.weights,
                   run.lm, run.lme, run.lmerel,
                   metrics, run.lmekin,
-                  run.contrast, contrast.var,
+                  run.contrast, contrast.var=contrast.var2,
                   processors, p.method, genotype.name=s)
 
     #combine with previous snp outputs
