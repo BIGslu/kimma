@@ -45,7 +45,7 @@
 #' # Subset samples and genes
 #' ## Also with weights
 #' kmFit(dat = example.voom,
-#'       run.lm = TRUE, use.weights = TRUE,
+#'       run.lm = TRUE, use.weights = FALSE,
 #'       subset.var = list("asthma"), subset.lvl = list(c("asthma")),
 #'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
 #'       model = "~ virus + (1|ptID)")
@@ -141,13 +141,18 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     stop("When use.weights is TRUE, must provide gene weights is dat object or separate data frame.")
   }
   if("gene_weight" %in% c(colnames(meta), colnames(dat$targets))){
-    stop("Variable gene_weight is present in meta or dat$targets. This name is used for model weights. Please change variable name in your data.")
+    stop("Variable gene_weight is present in dat$targets or meta. This name is used for model weights. Please change variable name in your data.")
   }
   if(!is.null(run.lmekin)){
     stop("run.lmekin no longer supported. Please use run.lmerel")
   }
   if(grepl("\n", model)){
     stop("Model cannot contain hard returns \n. Please correct.")
+  }
+  if(!use.weights){
+    if(!is.null(weights) | !is.null(dat$weights)){
+      message("WARNING: To use weights provided in dat$weights or weights, set use.weights = TRUE\n")
+    }
   }
 
   ###### Formulae #####
