@@ -25,10 +25,12 @@ kimma_lmerel <- function(model.lme, to.model.gene, gene, kin.subset, use.weights
   kin.ls[[patientID]] <- as.matrix(kin.subset)
   #Fit kin model
     if(use.weights){
+      set.seed(42)
     fit.kin <- lme4qtl::relmatLmer(model.lme, data=to.model.gene,
                                    relmat = kin.ls,
                                    weights=to.model.gene$gene_weight)
   } else{
+    set.seed(42)
     fit.kin <- lme4qtl::relmatLmer(model.lme, data=to.model.gene,
                                    relmat = kin.ls)
   }
