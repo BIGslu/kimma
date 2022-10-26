@@ -56,14 +56,14 @@
 #'       run.lme = TRUE, run.contrast = TRUE,
 #'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
 #'       model = "~ virus + asthma * median_cv_coverage + (1|ptID)",
-#'       contrast.var=c("virus","asthma:median_cv_coverage"))
+#'       contrast.var=c("asthma:median_cv_coverage"))
 #'
 #' ## Categorical interaction
 #' kmFit(dat = example.voom, kin = example.kin,
 #'       run.lmerel = TRUE, run.contrast = TRUE, metrics=TRUE,
 #'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
 #'       model = "~ virus*asthma + (1|ptID)",
-#'       contrast.var=c("virus","virus:asthma"))
+#'       contrast.var=c("virus:asthma"))
 #'
 #' # Model with failed genes
 #' kmFit(dat = example.voom,
@@ -95,7 +95,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                   processors = NULL, p.method = "BH",
                   genotype.name=NULL){
 
-  rowname <- libID <- variable <- pval <- group <- gene <- V1 <- V2 <- combo <- term <- p.value <- estimate <- contrast <- contrast.i <- weights.gene <- FDR <- contrast_ref <- contrast_lvl <- NULL
+  rowname <- libID <- variable <- statistic <- df <- pval <- group <- gene <- V1 <- V2 <- combo <- term <- p.value <- estimate <- contrast <- contrast.i <- weights.gene <- FDR <- contrast_ref <- contrast_lvl <- NULL
 
   ###### Parallel ######
   #setup parallel processors
@@ -351,11 +351,23 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
        is.character(results.lme.ls[["results"]]$estimate),
        is.character(results.kin.ls[["results"]]$estimate),
        is.character(contrast.results$estimate))){
+      #Estimate
       results.lm.ls[["results"]]$estimate <- as.character(results.lm.ls[["results"]]$estimate)
       results.lme.ls[["results"]]$estimate <- as.character(results.lme.ls[["results"]]$estimate)
       results.kin.ls[["results"]]$estimate <- as.character(results.kin.ls[["results"]]$estimate)
       contrast.results$estimate <- as.character(contrast.results$estimate)
+      #Statistic
+      results.lm.ls[["results"]]$statistic <- as.character(results.lm.ls[["results"]]$statistic)
+      results.lme.ls[["results"]]$statistic <- as.character(results.lme.ls[["results"]]$statistic)
+      results.kin.ls[["results"]]$statistic <- as.character(results.kin.ls[["results"]]$statistic)
+      contrast.results$statistic <- as.character(contrast.results$statistic)
+      #df
+      # results.lm.ls[["results"]]$df <- as.character(results.lm.ls[["results"]]$df)
+      # results.lme.ls[["results"]]$df <- as.character(results.lme.ls[["results"]]$df)
+      # results.kin.ls[["results"]]$df <- as.character(results.kin.ls[["results"]]$df)
+      # contrast.results$df <- as.character(contrast.results$df)
     }
+
 
     fit.results <- results.lm.ls[["results"]] %>%
       dplyr::bind_rows(results.lme.ls[["results"]]) %>%
@@ -405,7 +417,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
         dplyr::group_by(model, variable, contrast_ref, contrast_lvl) %>%
         dplyr::mutate(FDR=stats::p.adjust(pval, method=p.method)) %>%
         dplyr::ungroup() %>%
-        dplyr::select(model:variable, contrast_ref, contrast_lvl,
+        dplyr::select(model:statistic, contrast_ref, contrast_lvl,
                       estimate, pval, FDR, dplyr::everything())
     }else{
       kmFit.results <- fit.results %>%
@@ -413,7 +425,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
         dplyr::group_by(model, variable) %>%
         dplyr::mutate(FDR=stats::p.adjust(pval, method=p.method)) %>%
         dplyr::ungroup() %>%
-        dplyr::select(model:variable, estimate, pval, FDR,
+        dplyr::select(model:statistic, estimate, pval, FDR,
                       dplyr::everything())
     }
 
@@ -444,8 +456,11 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
       estimates <- estimates[!is.na(estimates)]
       if(all(estimates != "seeContrasts") & !is.null(estimates)){
         result.temp <- dplyr::filter(kmFit.results.anno, model==result.i) %>%
-          dplyr::mutate(estimate=as.numeric(estimate))
+          dplyr::mutate(estimate=as.numeric(estimate),
+                        statistic=as.numeric(statistic),
+                        df=as.numeric(df))
       }
+
 
       kmFit.ls[[result.i]] <- result.temp %>%
         dplyr::select_if(function(x) any(!is.na(x)))

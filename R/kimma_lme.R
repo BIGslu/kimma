@@ -44,6 +44,8 @@ kimma_lme <- function(model.lme, to.model.gene, gene, use.weights, metrics){
         model = "lme",                                  #Label model as lme
         gene = gene,                                    #gene name
         variable = c(p.lme$term, p.rand$rowname),       #variables in model
+        statistic = c(p.lme$statistic, rep(NA, nrow(p.rand))),  #test statistic
+        #df = NA,                                        #degrees of freedom
         estimate = c(est.lme$Estimate, p.rand$LRT),     #estimate in model
         pval = c(p.lme$p.value, p.rand$`Pr(>Chisq)`))   #P-value
     } else{
@@ -52,6 +54,8 @@ kimma_lme <- function(model.lme, to.model.gene, gene, use.weights, metrics){
         model = "lme",                                #Label model as lme
         gene = gene,                                  #gene name
         variable = c(p.lme$term, p.rand$rowname),     #variables in model
+        statistic = "seeContrasts",                   #test statistic
+        #df = "seeContrasts",                          #degrees of freedom
         estimate = "seeContrasts",                    #estimate in model
         pval = c(p.lme$p.value, p.rand$`Pr(>Chisq)`)) #P-value
       }

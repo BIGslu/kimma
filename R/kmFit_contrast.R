@@ -69,7 +69,7 @@ kmFit_contrast <- function(fit, contrast.var, to.model.gene, genotype.name){
   contrast.result.format <- contrast.result %>%
     dplyr::rename(variable=term, pval=p.value) %>%
     dplyr::select(-null.value) %>%
-    #Switch estimate sign to match lvl-ref calculation
+    #Switch estimate sign to match lvl minus ref calculation
     #THE REF AND LVL VALUES ARE INCORRECT UNTIL YOU DO THIS
     dplyr::mutate(estimate = -estimate)
 

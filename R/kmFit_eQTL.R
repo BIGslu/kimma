@@ -155,18 +155,22 @@ kmFit_eQTL <- function(dat.snp = NULL, dat.map = NULL,
                   processors, p.method, genotype.name=s)
 
     #combine with previous snp outputs
-    for(df in unique(c(names(temp), names(result.ls)))){
+    for(datf in unique(c(names(temp), names(result.ls)))){
       #Reconcile "seeContrasts" is a character for estimate
-      if(!is.null(result.ls[[df]]) & "estimate" %in% colnames(temp[[df]])){
-        if(any(is.character(result.ls[[df]]$estimate), is.character(temp[[df]]$estimate))){
-          temp[[df]]$estimate <- as.character(temp[[df]]$estimate)
-          result.ls[[df]]$estimate <- as.character(result.ls[[df]]$estimate)
+      if(!is.null(result.ls[[datf]]) & "estimate" %in% colnames(temp[[datf]])){
+        if(any(is.character(result.ls[[datf]]$estimate),
+               is.character(temp[[datf]]$estimate))){
+          temp[[datf]]$estimate <- as.character(temp[[datf]]$estimate)
+          result.ls[[datf]]$estimate <- as.character(result.ls[[datf]]$estimate)
+
+          temp[[datf]]$statistic <- as.character(temp[[datf]]$statistic)
+          result.ls[[datf]]$statistic <- as.character(result.ls[[datf]]$statistic)
         }}
 
-      result.ls[[df]] <- temp[[df]] %>%
+      result.ls[[datf]] <- temp[[datf]] %>%
         dplyr::mutate(genotype = s) %>%
         dplyr::select(genotype, dplyr::everything()) %>%
-        dplyr::bind_rows(result.ls[[df]])
+        dplyr::bind_rows(result.ls[[datf]])
     }
   }
   return(result.ls)

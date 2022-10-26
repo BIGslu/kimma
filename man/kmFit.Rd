@@ -108,14 +108,14 @@ kmFit(dat = example.voom,
       run.lme = TRUE, run.contrast = TRUE,
       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
       model = "~ virus + asthma * median_cv_coverage + (1|ptID)",
-      contrast.var=c("virus","asthma:median_cv_coverage"))
+      contrast.var=c("asthma:median_cv_coverage"))
 
 ## Categorical interaction
 kmFit(dat = example.voom, kin = example.kin,
       run.lmerel = TRUE, run.contrast = TRUE, metrics=TRUE,
       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
       model = "~ virus*asthma + (1|ptID)",
-      contrast.var=c("virus","virus:asthma"))
+      contrast.var=c("virus:asthma"))
 
 # Model with failed genes
 kmFit(dat = example.voom,
