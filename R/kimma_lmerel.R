@@ -53,13 +53,17 @@ kimma_lmerel <- function(model.lme, to.model.gene, gene, kin.subset, use.weights
       gene = gene,                                    #gene name
       variable = c(p.kin$term, p.rand$rowname),       #variables in model
       estimate = c(est.kin$Estimate, p.rand$LRT),     #estimate in model
+      statistic = c(p.kin$statistic, rep(NA, nrow(p.rand))),  #test statistic
+      #df = NA,                                        #degrees of freedom
       pval = c(p.kin$p.value, p.rand$`Pr(>Chisq)`))   #P-value
   } else{
     #If 3+ variable
     results.kin <- data.frame(
-      model = "lmerel",                            #Label model as lme
-      gene = gene,                                 #gene name
-      variable = c(p.kin$term, p.rand$rowname),    #variables in model
+      model = "lmerel",                             #Label model as lme
+      gene = gene,                                  #gene name
+      variable = c(p.kin$term, p.rand$rowname),     #variables in model
+      statistic = "seeContrasts",                   #test statistic
+      #df = "seeContrasts",                          #degrees of freedom
       estimate = "seeContrasts",                    #estimate in model
       pval = c(p.kin$p.value, p.rand$`Pr(>Chisq)`)) #P-value
   }

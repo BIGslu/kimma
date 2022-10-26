@@ -32,6 +32,8 @@ kimma_lm <- function(model.lm, to.model.gene, gene, use.weights, metrics){
       model = rep("lm", nrow(p.lm)),    #Label model as lm
       gene = rep(gene, nrow(p.lm)),     #gene name
       variable = p.lm$term,             #variables in model
+      df = fit.lm$df.residual,          #degrees of freedom
+      statistic = p.lm$statistic,       #test statistic
       estimate = p.lm$estimate,         #estimates in model
       pval = p.lm$p.value)              #P-value
 
