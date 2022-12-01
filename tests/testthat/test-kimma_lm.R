@@ -1,7 +1,4 @@
-test_tomodel_path <- base::system.file(
-  "inst", "testdata", "to_model_ls.Rds",
-  package = "kimma"
-)
+test_tomodel_path <- testthat::test_path("test_data", "to_model_ls.Rds")
 
 to.model.ls <- readRDS(test_tomodel_path)
 to.model.test.df <- to.model.ls[["to.model"]]
