@@ -8,7 +8,7 @@ testthat::test_that("kimma_lm produces correct results with gene weights", {
 
   # check for 1st gene
   tst.df.gene1 <- to.model.test.df %>%
-    filter(rowname == "ENSG00000000460")
+    filter(to.model.test.df$rowname == "ENSG00000000460")
 
   res.gene1 <- kimma_lm(
     model.lm = "expression~virus+asthma",
@@ -44,7 +44,7 @@ testthat::test_that("kimma_lm produces correct results with gene weights", {
 
   # check for 2nd gene
   tst.df.gene2 <- to.model.test.df %>%
-    filter(rowname == "ENSG00000001460")
+    filter(to.model.test.df$rowname == "ENSG00000001460")
 
   res.gene2 <- kimma_lm(
     model.lm = "expression~virus+asthma",
@@ -59,7 +59,7 @@ testthat::test_that("kimma_lm produces correct results with gene weights", {
   virus.est <- coef.tab[names(coef.tab) == "virusHRV"][[1]]
   asthma.est <- coef.tab[names(coef.tab) == "asthmaasthma"][[1]]
 
-  testthat::expect_equal(intercept.val, 6.2902, tolerance = 0.001)
+  testthat::expect_equal(intercept.est, 6.2902, tolerance = 0.001)
   testthat::expect_equal(virus.est, 0.9594, tolerance = 0.001)
   testthat::expect_equal(asthma.est, 0.7352, tolerance = 0.001)
 })
@@ -68,7 +68,7 @@ testthat::test_that("kimma_lm produces correct results with gene weights", {
 testthat::test_that("kimma_lm produces correct results without gene weights", {
 
   tst.df <- to.model.test.df %>%
-    filter(rowname == "ENSG00000000460")
+    filter(to.model.test.df$rowname == "ENSG00000000460")
 
   res <- kimma_lm(
     model.lm = "expression~virus+asthma",
@@ -93,7 +93,7 @@ testthat::test_that("kimma_lm produces correct results without gene weights", {
 testthat::test_that("kimma_lm adds fit metrics if set TRUE", {
 
   tst.df <- to.model.test.df %>%
-    filter(rowname == "ENSG00000000460")
+    filter(to.model.test.df$rowname == "ENSG00000000460")
 
   res <- kimma_lm(
     model.lm = "expression~virus+asthma",

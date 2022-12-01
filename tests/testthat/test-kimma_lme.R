@@ -7,7 +7,7 @@ to.model.test.df <- to.model.ls[["to.model"]]
 testthat::test_that("kimma_lme produces correct results with gene weights", {
 
   tst.df <- to.model.test.df %>%
-    filter(rowname == "ENSG00000000460")
+    filter(to.model.test.df$rowname == "ENSG00000000460")
 
   res <- kimma_lme(
     model.lm = "expression~virus+asthma+(1|ptID)",
@@ -35,7 +35,7 @@ testthat::test_that("kimma_lme produces correct results with gene weights", {
 testthat::test_that("kimma_lme produces correct results without gene weights", {
 
   tst.df <- to.model.test.df %>%
-    filter(rowname == "ENSG00000000460")
+    filter(to.model.test.df$rowname == "ENSG00000000460")
 
   res <- kimma_lme(
     model.lm = "expression~virus+asthma+(1|ptID)",
