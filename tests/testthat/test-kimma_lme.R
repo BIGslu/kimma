@@ -1,12 +1,12 @@
 test_tomodel_path <- testthat::test_path("test_data", "to_model_ls.Rds")
 
 to.model.ls <- readRDS(test_tomodel_path)
-to.model.test.df <- to.model.ls[["to.model"]]
+to.model.df <- to.model.ls[["to.model"]]
 
 
 testthat::test_that("kimma_lme produces correct results with gene weights", {
 
-  tst.df <- to.model.test.df[to.model.test.df$rowname == "ENSG00000000460", ]
+  tst.df <- to.model.df[to.model.df$rowname == "ENSG00000000460", ]
 
   res <- kimma_lme(
     model.lm = "expression~virus+asthma+(1|ptID)",
@@ -33,7 +33,7 @@ testthat::test_that("kimma_lme produces correct results with gene weights", {
 
 testthat::test_that("kimma_lme produces correct results without gene weights", {
 
-  tst.df <- to.model.test.df[to.model.test.df$rowname == "ENSG00000000460", ]
+  tst.df <- to.model.df[to.model.df$rowname == "ENSG00000000460", ]
 
   res <- kimma_lme(
     model.lm = "expression~virus+asthma+(1|ptID)",

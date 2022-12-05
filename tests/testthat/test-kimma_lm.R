@@ -1,13 +1,13 @@
 test_tomodel_path <- testthat::test_path("test_data", "to_model_ls.Rds")
 
 to.model.ls <- readRDS(test_tomodel_path)
-to.model.test.df <- to.model.ls[["to.model"]]
+to.model.df <- to.model.ls[["to.model"]]
 
 
 testthat::test_that("kimma_lm produces correct results with gene weights", {
 
   # check for 1st gene
-  tst.df.gene1 <- to.model.test.df[to.model.test.df$rowname == "ENSG00000000460", ]
+  tst.df.gene1 <- to.model.df[to.model.df$rowname == "ENSG00000000460", ]
 
   res.gene1 <- kimma_lm(
     model.lm = "expression~virus+asthma",
@@ -42,7 +42,7 @@ testthat::test_that("kimma_lm produces correct results with gene weights", {
 
 
   # check for 2nd gene
-  tst.df.gene2 <- to.model.test.df[to.model.test.df$rowname == "ENSG00000001460", ]
+  tst.df.gene2 <- to.model.df[to.model.df$rowname == "ENSG00000001460", ]
 
   res.gene2 <- kimma_lm(
     model.lm = "expression~virus+asthma",
@@ -65,7 +65,7 @@ testthat::test_that("kimma_lm produces correct results with gene weights", {
 
 testthat::test_that("kimma_lm produces correct results without gene weights", {
 
-  tst.df <- to.model.test.df[to.model.test.df$rowname == "ENSG00000000460", ]
+  tst.df <- to.model.df[to.model.df$rowname == "ENSG00000000460", ]
 
   res <- kimma_lm(
     model.lm = "expression~virus+asthma",
@@ -89,7 +89,7 @@ testthat::test_that("kimma_lm produces correct results without gene weights", {
 
 testthat::test_that("kimma_lm adds fit metrics if set TRUE", {
 
-  tst.df <- to.model.test.df[to.model.test.df$rowname == "ENSG00000000460", ]
+  tst.df <- to.model.df[to.model.df$rowname == "ENSG00000000460", ]
 
   res <- kimma_lm(
     model.lm = "expression~virus+asthma",
