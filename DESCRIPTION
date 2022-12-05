@@ -16,6 +16,7 @@ Imports:
     data.table,
     doParallel,
     dplyr,
+    edgeR,
     emmeans,
     forcats,
     foreach,
