@@ -1,3 +1,8 @@
+# TODO:
+# ?? add tests for kimma_lme if:
+# if(nrow(p.lme)==nrow(est.lme)){
+
+
 test_tomodel_path <- testthat::test_path("test_data", "to_model_ls.Rds")
 
 to.model.ls <- readRDS(test_tomodel_path)
@@ -70,4 +75,27 @@ testthat::test_that("kimma_lme fails if no random effects terms specified in mod
     )
   )
 
+})
+
+
+testthat::test_that("kimma_lme adds fit metrics if set to TRUE", {
+
+  tst.df <- to.model.df[to.model.df$rowname == "ENSG00000000460", ]
+
+  res <- kimma_lme(
+    model.lm = "expression~virus+asthma+(1|ptID)",
+    to.model.gene = tst.df,
+    gene = "ENSG00000001460",
+    use.weights = FALSE,
+    metrics = TRUE
+  )
+
+  # metrics data is added
+  testthat::expect_true("metrics" %in% names(res))
+
+  testthat::expect_equal(res$metrics[["sigma"]], 0.6155, tolerance = 0.001)
+  testthat::expect_equal(res$metrics[["AIC"]], 33.2673, tolerance = 0.001)
+  testthat::expect_equal(res$metrics[["BIC"]], 35.6919, tolerance = 0.001)
+  testthat::expect_equal(res$metrics[["Rsq"]], 0.3729, tolerance = 0.001)
+  testthat::expect_equal(res$metrics[["adj_Rsq"]], 0.4099, tolerance = 0.001)
 })

@@ -87,7 +87,7 @@ testthat::test_that("kimma_lm produces correct results without gene weights", {
 })
 
 
-testthat::test_that("kimma_lm adds fit metrics if set TRUE", {
+testthat::test_that("kimma_lm adds fit metrics if set to TRUE", {
 
   tst.df <- to.model.df[to.model.df$rowname == "ENSG00000000460", ]
 
