@@ -457,8 +457,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
       if(all(estimates != "seeContrasts") & !is.null(estimates)){
         result.temp <- dplyr::filter(kmFit.results.anno, model==result.i) %>%
           dplyr::mutate(estimate=as.numeric(estimate),
-                        statistic=as.numeric(statistic),
-                        df=as.numeric(df))
+                        statistic=as.numeric(statistic))
       }
 
 
