@@ -211,12 +211,12 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
         v.sep <- strsplit(v, split="[*]|:")[[1]]
         v.class1 <- class(meta.temp[,v.sep[1]])
         v.class2 <- class(meta.temp[,v.sep[2]])
-        if(all(c(v.class1,v.class2) %in% c("numeric","integer"))){
+        if(all(c(v.class1,v.class2) %in% c("numeric","integer","double"))){
           stop(paste("Contrast variable", v, "is numeric. Please specify only character/factor contrasts."))
         }
       } else {
         v.class <- class(meta.temp[,v])
-        if(v.class %in% c("numeric","integer")){
+        if(v.class %in% c("numeric","integer","double")){
           stop(paste("Contrast variable", v, "is numeric. Please specify only character/factor contrasts."))
         }
       }
