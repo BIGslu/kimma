@@ -7,30 +7,38 @@
 \usage{
 summarise_lmFit(
   fdr,
-  fdr.cutoff = c(0.05, 0.1, 0.2, 0.3, 0.4, 0.5),
-  p.cutoff = NULL,
+  fdr_cutoff = c(0.05, 0.1, 0.2, 0.3, 0.4, 0.5),
+  p_cutoff = NULL,
   FCgroup = FALSE,
-  intercept = FALSE
+  intercept = FALSE,
+  fdr.cutoff = NULL,
+  p.cutoff = NULL
 )
 
 summarize_lmFit(
   fdr,
-  fdr.cutoff = c(0.05, 0.1, 0.2, 0.3, 0.4, 0.5),
-  p.cutoff = NULL,
+  fdr_cutoff = c(0.05, 0.1, 0.2, 0.3, 0.4, 0.5),
+  p_cutoff = NULL,
   FCgroup = FALSE,
-  intercept = FALSE
+  intercept = FALSE,
+  fdr.cutoff = NULL,
+  p.cutoff = NULL
 )
 }
 \arguments{
 \item{fdr}{data.frame output by kimma::extract_lmFit( ). Specify the model such as fdr$lm}
 
-\item{fdr.cutoff}{numeric vector of FDR cutoffs to summarise at}
+\item{fdr_cutoff}{numeric vector of FDR cutoffs to summarise at}
 
-\item{p.cutoff}{numeric vector of P-value cutoffs to summarise at. No FDR summary given if p.cutoff is provided}
+\item{p_cutoff}{numeric vector of P-value cutoffs to summarise at. No FDR summary given if p_cutoff is provided}
 
 \item{FCgroup}{logical if should separate summary by up/down fold change groups}
 
 \item{intercept}{logical if should include intercept variable in summary}
+
+\item{fdr.cutoff}{Deprecated form of fdr_cutoff}
+
+\item{p.cutoff}{Deprecated form of p_cutoff}
 }
 \value{
 Data frame with total significant genes for each variable at various FDR cutoffs
@@ -47,7 +55,7 @@ fit <- limma::eBayes(limma::lmFit(example.voom$E, design))
 model_results <- extract_lmFit(design = design, fit = fit)
 
 # Summarise results
-summarise_lmFit(fdr = model_results$lm, fdr.cutoff = c(0.05, 0.5), FCgroup = TRUE)
+summarise_lmFit(fdr = model_results$lm, fdr_cutoff = c(0.05, 0.5), FCgroup = TRUE)
 
 # Contrasts model
 design <- model.matrix(~ 0 + virus, data = example.voom$targets)
@@ -57,13 +65,13 @@ fit <- limma::eBayes(limma::contrasts.fit(fit, contrast.mat))
 
 ## Get results
 model_results <- extract_lmFit(design = design, fit = fit,
-                               contrast.mat = contrast.mat)
+                               contrast_mat = contrast.mat)
 
 # Summarise results
 summarise_lmFit(fdr = model_results$lm.contrast,
-    fdr.cutoff = c(0.05, 0.5), FCgroup = FALSE)
+    fdr_cutoff = c(0.05, 0.5), FCgroup = FALSE)
 ## No signif results (Not run error)
 # summarise_lmFit(fdr = model_results$lm.contrast,
-#     fdr.cutoff = 0.0001, FCgroup = FALSE)
+#     fdr_cutoff = 0.0001, FCgroup = FALSE)
 
 }
