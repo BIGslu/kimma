@@ -3,8 +3,10 @@
 #' Summarise number of significant genes at various FDR cutoffs. Can split by up/down fold change as well.
 #'
 #' @param fdr data.frame output by kimma::extract_lmFit( ). Specify the model such as fdr$lm
-#' @param fdr.cutoff numeric vector of FDR cutoffs to summarise at
-#' @param p.cutoff numeric vector of P-value cutoffs to summarise at. No FDR summary given if p.cutoff is provided
+#' @param fdr_cutoff numeric vector of FDR cutoffs to summarise at
+#' @param p_cutoff numeric vector of P-value cutoffs to summarise at. No FDR summary given if p_cutoff is provided
+#' @param fdr.cutoff Deprecated form of fdr_cutoff
+#' @param p.cutoff Deprecated form of p_cutoff
 #' @param FCgroup logical if should separate summary by up/down fold change groups
 #' @param intercept logical if should include intercept variable in summary
 #'
@@ -19,7 +21,7 @@
 #' model_results <- extract_lmFit(design = design, fit = fit)
 #'
 #' # Summarise results
-#' summarise_lmFit(fdr = model_results$lm, fdr.cutoff = c(0.05, 0.5), FCgroup = TRUE)
+#' summarise_lmFit(fdr = model_results$lm, fdr_cutoff = c(0.05, 0.5), FCgroup = TRUE)
 #'
 #' # Contrasts model
 #' design <- model.matrix(~ 0 + virus, data = example.voom$targets)
@@ -33,16 +35,28 @@
 #'
 #' # Summarise results
 #' summarise_lmFit(fdr = model_results$lm.contrast,
-#'     fdr.cutoff = c(0.05, 0.5), FCgroup = FALSE)
+#'     fdr_cutoff = c(0.05, 0.5), FCgroup = FALSE)
 #' ## No signif results (Not run error)
 #' # summarise_lmFit(fdr = model_results$lm.contrast,
-#' #     fdr.cutoff = 0.0001, FCgroup = FALSE)
+#' #     fdr_cutoff = 0.0001, FCgroup = FALSE)
 #'
 
-summarise_lmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
-                            p.cutoff = NULL,
-                            FCgroup = FALSE, intercept = FALSE){
+summarise_lmFit <- function(fdr, fdr_cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
+                            p_cutoff = NULL,
+                            FCgroup = FALSE, intercept = FALSE,
+                            fdr.cutoff = NULL,
+                            p.cutoff = NULL){
   group <- n <- variable <- fdr.var <- estimate <- gene <- contrast_ref <- contrast_lvl <- NULL
+
+  # backwards compatibility
+  if(!is.null(fdr.cutoff)){
+    fdr_cutoff <- fdr.cutoff
+  }
+  if(!is.null(p.cutoff)){
+    p_cutoff <- p.cutoff
+  }
+
+
   if(intercept | "contrast_ref" %in% colnames(fdr)){
     fdr.filter <- fdr
   } else{
@@ -50,9 +64,12 @@ summarise_lmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
       droplevels()
   }
 
+
+
+
   # Use p-values if specified
-  if(!is.null(p.cutoff)){
-    fdr.cutoff <- p.cutoff
+  if(!is.null(p_cutoff)){
+    fdr_cutoff <- p_cutoff
     fdr.var <- "pval"
   } else {
     fdr.var <- "FDR"
@@ -64,7 +81,7 @@ summarise_lmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
     #Blank df for results
     result <- data.frame()
 
-    for(FDR.i in fdr.cutoff){
+    for(FDR.i in fdr_cutoff){
       name.fdr <- paste("fdr",FDR.i, sep="_")
       #Calculate total, nonredundant signif genes at different levels
       total.temp <- fdr.filter.FC %>%
@@ -100,7 +117,7 @@ summarise_lmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
     #Blank df for results
     result <- data.frame()
 
-    for(FDR.i in fdr.cutoff){
+    for(FDR.i in fdr_cutoff){
       name.fdr <- paste("fdr",FDR.i, sep="_")
       #Calculate total, nonredundant signif genes at different levels
       total.temp <- fdr.filter %>%
@@ -156,7 +173,7 @@ summarise_lmFit <- function(fdr, fdr.cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
       dplyr::arrange(variable)
   }
   #rename for P-value if specified
-  if(!is.null(p.cutoff)) {
+  if(!is.null(p_cutoff)) {
     result.format <- result.format %>%
       dplyr::rename_all(~gsub("fdr_","p_",.))
   }
