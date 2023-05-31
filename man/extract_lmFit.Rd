@@ -7,9 +7,12 @@
 extract_lmFit(
   design,
   fit,
+  contrast_mat = NULL,
+  dat_genes = NULL,
+  name_genes = "geneName",
   contrast.mat = NULL,
   dat.genes = NULL,
-  name.genes = "geneName"
+  name.genes = NULL
 )
 }
 \arguments{
@@ -17,11 +20,17 @@ extract_lmFit(
 
 \item{fit}{MArrayLM model fit output by limma::eBayes( )}
 
-\item{contrast.mat}{contrast matrix output by limma::makeContrasts( ). NOTE: When using constrasts, the result will not exactly match extract_kmFit due to limma's naming of contrast levels as variableLEVEL}
+\item{contrast_mat}{contrast matrix output by limma::makeContrasts( ). NOTE: When using constrasts, the result will not exactly match extract_kmFit due to limma's naming of contrast levels as variableLEVEL}
 
-\item{dat.genes}{data frame with additional gene annotations. Optional. If not provided, the fit object is also checked for gene annotation information.}
+\item{dat_genes}{data frame with additional gene annotations. Optional. If not provided, the fit object is also checked for gene annotation information.}
 
-\item{name.genes}{character for variable name in dat.genes that matches gene names in fit}
+\item{name_genes}{character for variable name in dat_genes that matches gene names in fit}
+
+\item{contrast.mat}{Deprecated form of contrast_mat}
+
+\item{dat.genes}{Deprecated form of dat_genes}
+
+\item{name.genes}{Deprecated form of name_genes}
 }
 \value{
 List with data frames. One for model fit (sigma) and one for significance for all variable and genes. Variables names as in limma::topTable( )
@@ -38,14 +47,14 @@ fit <- limma::eBayes(limma::lmFit(example.voom$E, design))
 fdr <- extract_lmFit(design = design, fit = fit)
 ## Get results and add gene annotations
 fdr <- extract_lmFit(design = design, fit = fit,
-                        dat.genes = example.voom$genes)
+                        dat_genes = example.voom$genes)
 
 # Run limma contrasts model
 design <- model.matrix(~ 0 + virus, data = example.voom$targets)
 fit <- limma::lmFit(example.voom$E, design)
-contrast.mat <- limma::makeContrasts(virusHRV-virusnone, levels = design)
-fit <- limma::eBayes(limma::contrasts.fit(fit, contrast.mat))
+contrast_mat <- limma::makeContrasts(virusHRV-virusnone, levels = design)
+fit <- limma::eBayes(limma::contrasts.fit(fit, contrast_mat))
 
 ## Get contrast results
-fdr <- extract_lmFit(design = design, fit = fit, contrast.mat = contrast.mat)
+fdr <- extract_lmFit(design = design, fit = fit, contrast_mat = contrast_mat)
 }

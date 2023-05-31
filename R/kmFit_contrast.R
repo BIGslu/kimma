@@ -1,23 +1,23 @@
 #' Run pairwise model comparisons with emmeans
 #'
 #' @param fit model fit from lm( ) or lmer( )
-#' @param contrast.var Character vector of variable in model to run contrasts of
-#' @param to.model.gene Formatted data from kimma_cleaning( ), subset to gene of interest
-#' @param genotype.name Character string. Used internally for kmFit_eQTL
+#' @param contrast_var Character vector of variable in model to run contrasts of
+#' @param to_model_gene Formatted data from kimma_cleaning( ), subset to gene of interest
+#' @param genotype_name Character string. Used internally for kmFit_eQTL
 #'
 #' @return data frame with contrast model results
 #' @keywords internal
 
-kmFit_contrast <- function(fit, contrast.var, to.model.gene, genotype.name){
+kmFit_contrast <- function(fit, contrast_var, to_model_gene, genotype_name){
   contrast.i <- term <- p.value <- contrast_ref <- contrast_lvl <- contrast <- null.value <- estimate <- NULL
   contrast.result <- data.frame()
 
-  #Fit variables in contrast.var
-  for(contrast.i in contrast.var){
+  #Fit variables in contrast_var
+  for(contrast.i in contrast_var){
     contrast.result.temp <- NULL
     #Class
     i.split <- strsplit(contrast.i, split=":")[[1]]
-    contrast.is.numeric <- unlist(lapply(to.model.gene[,i.split], is.numeric))
+    contrast.is.numeric <- unlist(lapply(to_model_gene[,i.split], is.numeric))
 
     #If any numeric
     if(any(contrast.is.numeric)){
@@ -51,11 +51,11 @@ kmFit_contrast <- function(fit, contrast.var, to.model.gene, genotype.name){
       #if model ran, add to results
       if(is.data.frame(contrast.result.temp)){
         #fix genotype names
-        if(!is.null(genotype.name)){
-          if(grepl(genotype.name, contrast.i)){
+        if(!is.null(genotype_name)){
+          if(grepl(genotype_name, contrast.i)){
           contrast.result.temp <- contrast.result.temp %>%
             dplyr::mutate(dplyr::across(c(contrast_ref, contrast_lvl),
-                                 ~gsub(genotype.name, paste0(genotype.name,"_"), .)))
+                                 ~gsub(genotype_name, paste0(genotype_name,"_"), .)))
         }}
 
         contrast.result <- contrast.result.temp %>%

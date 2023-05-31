@@ -4,16 +4,16 @@
 \alias{kimma_lme}
 \title{Run kimma linear mixed effects model}
 \usage{
-kimma_lme(model.lme, to.model.gene, gene, use.weights, metrics)
+kimma_lme(model_lme, to_model_gene, gene, use_weights, metrics)
 }
 \arguments{
-\item{model.lme}{Character model created in kmFit}
+\item{model_lme}{Character model created in kmFit}
 
-\item{to.model.gene}{Data frame formatted in kmFit, subset to gene of interest}
+\item{to_model_gene}{Data frame formatted in kmFit, subset to gene of interest}
 
 \item{gene}{Character of gene to model}
 
-\item{use.weights}{Logical if gene specific weights should be used in model. Default is FALSE}
+\item{use_weights}{Logical if gene specific weights should be used in model. Default is FALSE}
 
 \item{metrics}{Logical if should calculate model fit metrics such as AIC, BIC, R-squared. Default is FALSE}
 }
