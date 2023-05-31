@@ -5,8 +5,8 @@
 \title{eQTL linear mixed effects models with kinship}
 \usage{
 kmFit_eQTL(
-  dat.snp = NULL,
-  dat.map = NULL,
+  dat_snp = NULL,
+  dat_map = NULL,
   geneID = "gene",
   genotypeID = "snpID",
   dat = NULL,
@@ -17,30 +17,42 @@ kmFit_eQTL(
   meta = NULL,
   genes = NULL,
   weights = NULL,
+  subset_var = NULL,
+  subset_lvl = NULL,
+  subset_genes = NULL,
+  model,
+  use_weights = FALSE,
+  run_lm = FALSE,
+  run_lme = FALSE,
+  run_lmerel = FALSE,
+  metrics = FALSE,
+  run_contrast = FALSE,
+  contrast_var = NULL,
+  processors = NULL,
+  p_method = "BH",
+  dat.snp = NULL,
+  dat.map = NULL,
+  run.lmekin = NULL,
   subset.var = NULL,
   subset.lvl = NULL,
   subset.genes = NULL,
-  model,
   use.weights = FALSE,
   run.lm = FALSE,
   run.lme = FALSE,
   run.lmerel = FALSE,
-  metrics = FALSE,
-  run.lmekin = NULL,
   run.contrast = FALSE,
   contrast.var = NULL,
-  processors = NULL,
-  p.method = "BH"
+  p.method = NULL
 )
 }
 \arguments{
-\item{dat.snp}{Data frame containing 0,1,2 genotypes. Can be numeric or character/factor depending on desired analysis. If running contrasdts, must be character/factor for pairwise comparisons to run. Rows are donors and columns are SNP.}
+\item{dat_snp}{Data frame containing 0,1,2 genotypes. Can be numeric or character/factor depending on desired analysis. If running contrasdts, must be character/factor for pairwise comparisons to run. Rows are donors and columns are SNP.}
 
-\item{dat.map}{Data frame mapping geneID to genotypeID. If provided, genotypes will be modeled against only the genes they are paired with in the map. If not provided, genotypes will be modeled against all genes in dat$E / counts}
+\item{dat_map}{Data frame mapping geneID to genotypeID. If provided, genotypes will be modeled against only the genes they are paired with in the map. If not provided, genotypes will be modeled against all genes in dat$E / counts}
 
-\item{geneID}{Character variable name to match dat.snp dat with gene identifiers. Values should match rownames in express data (dat$E or counts) Default it "gene"}
+\item{geneID}{Character variable name to match dat_snp dat with gene identifiers. Values should match rownames in express data (dat$E or counts) Default it "gene"}
 
-\item{genotypeID}{Character variable name to match dat.snp dat with SNP identifiers. Default it "snpID"}
+\item{genotypeID}{Character variable name to match dat_snp dat with SNP identifiers. Default it "snpID"}
 
 \item{dat}{EList object output by voom( ). Contains counts (dat$E), meta (dat$targets), and genes (dat$genes).}
 
@@ -58,35 +70,59 @@ kmFit_eQTL(
 
 \item{weights}{Matrix of data frame of gene specific weights. Usually calculated with limma::voomWithQualityWeights().}
 
-\item{subset.var}{Character list of variable name(s) to filter data by.}
+\item{subset_var}{Character list of variable name(s) to filter data by.}
 
-\item{subset.lvl}{Character list of variable value(s) or level(s) to filter data to. Must match order of subset.var}
+\item{subset_lvl}{Character list of variable value(s) or level(s) to filter data to. Must match order of subset.var}
 
-\item{subset.genes}{Character vector of genes to include in models.}
+\item{subset_genes}{Character vector of genes to include in models.}
 
 \item{model}{Character vector of model starting with ~ Should include (1|patientID) if mixed effects will be run. NOTE THAT FOR EQTL, the model MUST include genotype as a place holder for the genotype data. For example "~ genotype + (1|ptID)"
 
 Same as kmFit( )}
 
-\item{use.weights}{Logical if gene specific weights should be used in model. Default is FALSE}
+\item{use_weights}{Logical if gene specific weights should be used in model. Default is FALSE}
 
-\item{run.lm}{Logical if should run lm model without kinship}
+\item{run_lm}{Logical if should run lm model without kinship}
 
-\item{run.lme}{Logical if should run lme model without kinship}
+\item{run_lme}{Logical if should run lme model without kinship}
 
-\item{run.lmerel}{Logical if should run lmerel model with kinship}
+\item{run_lmerel}{Logical if should run lmerel model with kinship}
 
 \item{metrics}{Logical if should calculate model fit metrics such as AIC, BIC, R-squared. Default is FALSE}
 
-\item{run.lmekin}{Depreciated. Please use run.lmerel}
+\item{run_contrast}{Logical if should run pairwise contrasts. If no matrix provided, all possible pairwise comparisons are completed.}
 
-\item{run.contrast}{Logical if should run pairwise contrasts. If no matrix provided, all possible pairwise comparisons are completed.}
-
-\item{contrast.var}{Character vector of variable in model to run contrasts of. Interaction terms must be specified as "var1:var2". If NULL (default), all contrasts for all variables in the model are run}
+\item{contrast_var}{Character vector of variable in model to run contrasts of. Interaction terms must be specified as "var1:var2". If NULL (default), all contrasts for all variables in the model are run}
 
 \item{processors}{Numeric processors to run in parallel. Default is 2 less than the total available}
 
-\item{p.method}{Character of FDR adjustment method. Values as in p.adjust( )}
+\item{p_method}{Character of FDR adjustment method. Values as in p.adjust( )}
+
+\item{dat.snp}{Deprecated form of dat_snp}
+
+\item{dat.map}{Deprecated form of dat.map}
+
+\item{run.lmekin}{Deprecated. Please use run_lmerel}
+
+\item{subset.var}{Deprecated form of subset_var}
+
+\item{subset.lvl}{Deprecated form of subset_lvl}
+
+\item{subset.genes}{Deprecated form of subset_genes}
+
+\item{use.weights}{Deprecated form of use_weights}
+
+\item{run.lm}{Deprecated form of run_lm}
+
+\item{run.lme}{Deprecated form of run_lme}
+
+\item{run.lmerel}{Deprecated form of run_lmerel}
+
+\item{run.contrast}{Deprecated form of run_contrast}
+
+\item{contrast.var}{Deprecated form of contrast_var}
+
+\item{p.method}{Deprecated form of p_method}
 }
 \value{
 List of data frames including
@@ -115,18 +151,18 @@ colnames(snp) <- c("ptID", paste0("rs",1:nSNP))
                  gene = rep(example.voom$genes$geneName[1:2], nSNP/2))
 
 #Run SNP interaction model
-eQTL_result <- kmFit_eQTL(dat.snp = snp, dat.map = map,
+eQTL_result <- kmFit_eQTL(dat_snp = snp, dat_map = map,
                           dat = example.voom, kin = example.kin,
-                          run.lmerel = TRUE, metrics=TRUE,
-                          run.contrast = TRUE, contrast.var="virus:genotype",
+                          run_lmerel = TRUE, metrics=TRUE,
+                          run_contrast = TRUE, contrast_var="virus:genotype",
                           model = "~ virus*genotype + (1|ptID)")
 
 #Run SNP as factors with contrasts
 snp_fct <- snp \%>\%
  dplyr::mutate_if(is.numeric, ~as.factor(.))
 
-eQTL_result2 <- kmFit_eQTL(dat.snp = snp_fct, dat.map = map,
+eQTL_result2 <- kmFit_eQTL(dat_snp = snp_fct, dat_map = map,
                            dat = example.voom, kin = example.kin,
-                           run.lmerel = TRUE, run.contrast = TRUE, metrics=TRUE,
+                           run_lmerel = TRUE, run_contrast = TRUE, metrics=TRUE,
                            model = "~ genotype + (1|ptID)")
 }

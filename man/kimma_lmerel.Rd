@@ -5,25 +5,25 @@
 \title{Run kimma linear mixed effects model with kinship}
 \usage{
 kimma_lmerel(
-  model.lme,
-  to.model.gene,
+  model_lme,
+  to_model_gene,
   gene,
-  kin.subset,
-  use.weights,
+  kin_subset,
+  use_weights,
   patientID,
   metrics
 )
 }
 \arguments{
-\item{model.lme}{Character model created in kmFit}
+\item{model_lme}{Character model created in kmFit}
 
-\item{to.model.gene}{Data frame formatted in kmFit, subset to gene of interest}
+\item{to_model_gene}{Data frame formatted in kmFit, subset to gene of interest}
 
 \item{gene}{Character of gene to model}
 
-\item{kin.subset}{Pairwise kinship matrix}
+\item{kin_subset}{Pairwise kinship matrix}
 
-\item{use.weights}{Logical if gene specific weights should be used in model. Default is FALSE}
+\item{use_weights}{Logical if gene specific weights should be used in model. Default is FALSE}
 
 \item{patientID}{Character of variable name to match dat$targets to kinship row and column names.}
 
