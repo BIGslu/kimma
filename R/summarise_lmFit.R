@@ -31,7 +31,7 @@
 #'
 #' ## Get results
 #' model_results <- extract_lmFit(design = design, fit = fit,
-#'                                contrast.mat = contrast.mat)
+#'                                contrast_mat = contrast.mat)
 #'
 #' # Summarise results
 #' summarise_lmFit(fdr = model_results$lm.contrast,
@@ -49,13 +49,8 @@ summarise_lmFit <- function(fdr, fdr_cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
   group <- n <- variable <- fdr.var <- estimate <- gene <- contrast_ref <- contrast_lvl <- NULL
 
   # backwards compatibility
-  if(!is.null(fdr.cutoff)){
-    fdr_cutoff <- fdr.cutoff
-  }
-  if(!is.null(p.cutoff)){
-    p_cutoff <- p.cutoff
-  }
-
+  if(!is.null(fdr.cutoff)){fdr_cutoff <- fdr.cutoff}
+  if(!is.null(p.cutoff)){p_cutoff <- p.cutoff}
 
   if(intercept | "contrast_ref" %in% colnames(fdr)){
     fdr.filter <- fdr
@@ -63,9 +58,6 @@ summarise_lmFit <- function(fdr, fdr_cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
     fdr.filter <- dplyr::filter(fdr, variable != '(Intercept)') %>%
       droplevels()
   }
-
-
-
 
   # Use p-values if specified
   if(!is.null(p_cutoff)){
