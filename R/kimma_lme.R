@@ -1,30 +1,30 @@
 #' Run kimma linear mixed effects model
 #'
-#' @param model.lme Character model created in kmFit
-#' @param to.model.gene Data frame formatted in kmFit, subset to gene of interest
+#' @param model_lme Character model created in kmFit
+#' @param to_model_gene Data frame formatted in kmFit, subset to gene of interest
 #' @param gene Character of gene to model
-#' @param use.weights Logical if gene specific weights should be used in model. Default is FALSE
+#' @param use_weights Logical if gene specific weights should be used in model. Default is FALSE
 #' @param metrics Logical if should calculate model fit metrics such as AIC, BIC, R-squared. Default is FALSE
 #'
 #' @return Linear mixed effect results data frame for 1 gene
 #' @keywords internal
 
-kimma_lme <- function(model.lme, to.model.gene, gene, use.weights, metrics){
+kimma_lme <- function(model_lme, to_model_gene, gene, use_weights, metrics){
     rowname <- NULL
     #Place holder LME results
     p.lme <- NaN
     sigma.lme <- 0
     results.lme <- NULL
-    .GlobalEnv$to.model.gene <- to.model.gene
+    .GlobalEnv$to_model_gene <- to_model_gene
 
     #Fit LME model
-    if(use.weights){
+    if(use_weights){
       set.seed(42)
-      fit.lme <- lme4::lmer(model.lme, data=to.model.gene,
-                            weights=to.model.gene$gene_weight)
+      fit.lme <- lme4::lmer(model_lme, data=to_model_gene,
+                            weights=to_model_gene$gene_weight)
     } else{
       set.seed(42)
-      fit.lme <- lme4::lmer(model.lme, data=to.model.gene, weights=NULL)
+      fit.lme <- lme4::lmer(model_lme, data=to_model_gene, weights=NULL)
     }
 
     #Estimate P-value
@@ -62,11 +62,11 @@ kimma_lme <- function(model.lme, to.model.gene, gene, use.weights, metrics){
 
     if(metrics){
       #Calculate R-squared
-      if(use.weights){
-        null <- stats::glm(formula = expression ~ 1, data = to.model.gene,
-                           weights = to.model.gene$gene_weight)
+      if(use_weights){
+        null <- stats::glm(formula = expression ~ 1, data = to_model_gene,
+                           weights = to_model_gene$gene_weight)
       } else{
-        null <- stats::glm(formula = expression ~ 1, data = to.model.gene)
+        null <- stats::glm(formula = expression ~ 1, data = to_model_gene)
       }
 
       L0 <- as.vector(stats::logLik(null))
