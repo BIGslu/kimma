@@ -13,21 +13,31 @@ kmFit(
   meta = NULL,
   genes = NULL,
   weights = NULL,
+  subset_var = NULL,
+  subset_lvl = NULL,
+  subset_genes = NULL,
+  model,
+  use_weights = FALSE,
+  run_lm = FALSE,
+  run_lme = FALSE,
+  run_lmerel = FALSE,
+  metrics = FALSE,
+  run_contrast = FALSE,
+  contrast_var = NULL,
+  processors = NULL,
+  p_method = "BH",
+  genotype_name = NULL,
+  run.lmekin = NULL,
   subset.var = NULL,
   subset.lvl = NULL,
   subset.genes = NULL,
-  model,
   use.weights = FALSE,
   run.lm = FALSE,
   run.lme = FALSE,
   run.lmerel = FALSE,
-  metrics = FALSE,
-  run.lmekin = NULL,
   run.contrast = FALSE,
   contrast.var = NULL,
-  processors = NULL,
-  p.method = "BH",
-  genotype.name = NULL
+  p.method = NULL
 )
 }
 \arguments{
@@ -47,35 +57,55 @@ kmFit(
 
 \item{weights}{Optional matrix of data frame of gene specific weights. Usually calculated with limma::voomWithQualityWeights().}
 
-\item{subset.var}{Character list of variable name(s) to filter data by.}
+\item{subset_var}{Character list of variable name(s) to filter data by.}
 
-\item{subset.lvl}{Character list of variable value(s) or level(s) to filter data to. Must match order of subset.var}
+\item{subset_lvl}{Character list of variable value(s) or level(s) to filter data to. Must match order of subset_var}
 
-\item{subset.genes}{Character vector of genes to include in models.}
+\item{subset_genes}{Character vector of genes to include in models.}
 
 \item{model}{Character vector of model starting with ~ Should include (1|patientID) if mixed effects will be run}
 
-\item{use.weights}{Logical if gene specific weights should be used in model. Default is FALSE}
+\item{use_weights}{Logical if gene specific weights should be used in model. Default is FALSE}
 
-\item{run.lm}{Logical if should run lm model without kinship}
+\item{run_lm}{Logical if should run lm model without kinship}
 
-\item{run.lme}{Logical if should run lme model without kinship}
+\item{run_lme}{Logical if should run lme model without kinship}
 
-\item{run.lmerel}{Logical if should run lmerel model with kinship}
+\item{run_lmerel}{Logical if should run lmerel model with kinship}
 
 \item{metrics}{Logical if should calculate model fit metrics such as AIC, BIC, R-squared. Default is FALSE}
 
-\item{run.lmekin}{Depreciated. Please use run.lmerel}
+\item{run_contrast}{Logical if should run pairwise contrasts. If no matrix provided, all possible pairwise comparisons are completed.}
 
-\item{run.contrast}{Logical if should run pairwise contrasts. If no matrix provided, all possible pairwise comparisons are completed.}
-
-\item{contrast.var}{Character vector of variable in model to run contrasts of. Interaction terms must be specified as "var1:var2". If NULL (default), all contrasts for all variables in the model are run}
+\item{contrast_var}{Character vector of variable in model to run contrasts of. Interaction terms must be specified as "var1:var2". If NULL (default), all contrasts for all variables in the model are run}
 
 \item{processors}{Numeric processors to run in parallel. Default is 2 less than the total available}
 
-\item{p.method}{Character of FDR adjustment method. Values as in p.adjust( )}
+\item{p_method}{Character of FDR adjustment method. Values as in p.adjust( )}
 
-\item{genotype.name}{Character string. Used internally for kmFit_eQTL}
+\item{genotype_name}{Character string. Used internally for kmFit_eQTL}
+
+\item{run.lmekin}{Deprecated. Please use run_lmerel}
+
+\item{subset.var}{Deprecated form of subset_var}
+
+\item{subset.lvl}{Deprecated form of subset_lvl}
+
+\item{subset.genes}{Deprecated form of subset_genes}
+
+\item{use.weights}{Deprecated form of use_weights}
+
+\item{run.lm}{Deprecated form of run_lm}
+
+\item{run.lme}{Deprecated form of run_lme}
+
+\item{run.lmerel}{Deprecated form of run_lmerel}
+
+\item{run.contrast}{Deprecated form of run_contrast}
+
+\item{contrast.var}{Deprecated form of contrast_var}
+
+\item{p.method}{Deprecated form of p_method}
 }
 \value{
 List of data frames including
@@ -91,49 +121,49 @@ Run lmerel and corresponding lm or lme without kinship of gene expression in RNA
 # All samples and all genes
 ## Not run
 # kmFit(dat = example.voom,
-#     kin = example.kin, run.lmerel = TRUE,
+#     kin = example.kin, run_lmerel = TRUE,
 #     model = "~ virus + (1|ptID)")
 
 # Subset samples and genes
 ## Also with weights
 kmFit(dat = example.voom,
-      run.lm = TRUE, use.weights = FALSE,
-      subset.var = list("asthma"), subset.lvl = list(c("asthma")),
-      subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
+      run_lm = TRUE, use_weights = FALSE,
+      subset_var = list("asthma"), subset_lvl = list(c("asthma")),
+      subset_genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
       model = "~ virus + (1|ptID)")
 
 # Pairwise contrasts
 ## Continuous interaction
 kmFit(dat = example.voom,
-      run.lme = TRUE, run.contrast = TRUE,
-      subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
+      run_lme = TRUE, run_contrast = TRUE,
+      subset_genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
       model = "~ virus + asthma * median_cv_coverage + (1|ptID)",
-      contrast.var=c("asthma:median_cv_coverage"))
+      contrast_var=c("asthma:median_cv_coverage"))
 
 ## Categorical interaction
 kmFit(dat = example.voom, kin = example.kin,
-      run.lmerel = TRUE, run.contrast = TRUE, metrics=TRUE,
-      subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
+      run_lmerel = TRUE, run_contrast = TRUE, metrics=TRUE,
+      subset_genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
       model = "~ virus*asthma + (1|ptID)",
-      contrast.var=c("virus:asthma"))
+      contrast_var=c("virus:asthma"))
 
 # Model with failed genes
 kmFit(dat = example.voom,
-      kin = example.kin, run.lmerel = TRUE, run.lm = TRUE,
-      subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
+      kin = example.kin, run_lmerel = TRUE, run_lm = TRUE,
+      subset_genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
       model = "~ virus*asthma + lib.size + norm.factors + median_cv_coverage + ptID + (1|ptID)")
 
 # Non-dat data
 kmFit(counts = example.voom$E, meta = example.voom$targets,
-      run.lm = TRUE, use.weights = FALSE,
-      subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
+      run_lm = TRUE, use_weights = FALSE,
+      subset_genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
       model = "~ virus + (1|ptID)")
 
 # Three level variable
 example.voom$targets$lvl <- rep(c("A","B","C"), length(example.voom$targets$libID)/3)
 kmFit(dat = example.voom,
-      run.lme= TRUE, run.contrast = TRUE,
-      subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
+      run_lme= TRUE, run_contrast = TRUE,
+      subset_genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
       model = "~ lvl + (1|ptID)")
 
 }

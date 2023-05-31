@@ -36,10 +36,10 @@
 extract_lmFit <- function(design, fit, contrast_mat=NULL,
                           dat_genes=NULL, name_genes="geneName",
                           contrast.mat=NULL, dat.genes=NULL, name.genes=NULL){
-  #Back compatability
-  contrast_mat <- contrast.mat
-  dat_genes <- dat.genes
-  name_genes <- name.genes
+  #Back compatibility
+  if(!is.null(contrast.mat)){contrast_mat <- contrast.mat}
+  if(!is.null(dat.genes)){dat_genes <- dat.genes}
+  if(!is.null(name.genes)){name_genes <- name.genes}
 
   #Empty df to hold results
   pval.result <- data.frame()
