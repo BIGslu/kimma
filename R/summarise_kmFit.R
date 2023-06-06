@@ -22,6 +22,11 @@
 #'       subset_genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
 #'       model = "~ virus + asthma + (1|ptID)")
 #'
+#' # Or extract limma results
+#' # design <- model.matrix(~ virus + asthma, data = example.voom$targets)
+#' # fit <- limma::eBayes(limma::lmFit(example.voom$E, design))
+#' # model_results <- extract_lmFit(design = design, fit = fit)
+#'
 #' # Summarise results
 #' summarise_kmFit(fdr = model_results$lmerel, fdr_cutoff = c(0.01, 0.5),
 #'                 FCgroup = TRUE)
@@ -176,3 +181,5 @@ summarise_kmFit <- function(fdr, fdr_cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
 #' @rdname summarise_kmFit
 #' @export
 summarize_kmFit <- summarise_kmFit
+summarise_lmFit <- summarise_kmFit
+summarize_lmFit <- summarise_kmFit
