@@ -6,10 +6,10 @@ to.model.df <- to.model.ls[["to.model"]]
 tst.df <- to.model.df[to.model.df$rowname == "ENSG00000000460", ]
 
 res.lm.fit <- kimma_lm(
-  model.lm = "expression~virus+asthma",
-  to.model.gene = tst.df,
+  model_lm = "expression~virus+asthma",
+  to_model_gene = tst.df,
   gene = "ENSG00000000460",
-  use.weights = TRUE,
+  use_weights = TRUE,
   metrics = FALSE
 )
 
@@ -17,9 +17,9 @@ testthat::test_that("kmFit_contrast produces correct results", {
 
   res <- kmFit_contrast(
     fit = res.lm.fit[["fit"]],
-    contrast.var = "virus",
-    to.model.gene = tst.df,
-    genotype.name = NULL
+    contrast_var = "virus",
+    to_model_gene = tst.df,
+    genotype_name = NULL
   )
 
   estimate.val <- res[["estimate"]]
@@ -36,9 +36,9 @@ testthat::test_that("kmFit_contrast produces correct results with interaction te
 
   res <- kmFit_contrast(
     fit = res.lm.fit[["fit"]],
-    contrast.var = "virus:asthma",
-    to.model.gene = tst.df,
-    genotype.name = NULL
+    contrast_var = "virus:asthma",
+    to_model_gene = tst.df,
+    genotype_name = NULL
   )
 
   testthat::expect_equal(
@@ -83,18 +83,18 @@ testthat::test_that(
   "kmFit_contrast produces correct results when interaction term is numeric", {
 
     res.lm.fit <- kimma_lm(
-      model.lm = "expression~virus + virus * median_cv_coverage",
-      to.model.gene = tst.df,
+      model_lm = "expression~virus + virus * median_cv_coverage",
+      to_model_gene = tst.df,
       gene = "ENSG00000000460",
-      use.weights = TRUE,
+      use_weights = TRUE,
       metrics = FALSE
     )
 
     res <- kmFit_contrast(
       fit = res.lm.fit[["fit"]],
-      contrast.var = "virus:median_cv_coverage",
-      to.model.gene = tst.df,
-      genotype.name = NULL
+      contrast_var = "virus:median_cv_coverage",
+      to_model_gene = tst.df,
+      genotype_name = NULL
     )
 
     estimate.val <- res[["estimate"]]

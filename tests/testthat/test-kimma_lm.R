@@ -10,10 +10,10 @@ testthat::test_that("kimma_lm produces correct results with gene weights", {
   tst.df.gene1 <- to.model.df[to.model.df$rowname == "ENSG00000000460", ]
 
   res.gene1 <- kimma_lm(
-    model.lm = "expression~virus+asthma",
-    to.model.gene = tst.df.gene1,
+    model_lm = "expression~virus+asthma",
+    to_model_gene = tst.df.gene1,
     gene = "ENSG00000000460",
-    use.weights = TRUE,
+    use_weights = TRUE,
     metrics = FALSE
   )
 
@@ -45,10 +45,10 @@ testthat::test_that("kimma_lm produces correct results with gene weights", {
   tst.df.gene2 <- to.model.df[to.model.df$rowname == "ENSG00000001460", ]
 
   res.gene2 <- kimma_lm(
-    model.lm = "expression~virus+asthma",
-    to.model.gene = tst.df.gene2,
+    model_lm = "expression~virus+asthma",
+    to_model_gene = tst.df.gene2,
     gene = "ENSG00000001460",
-    use.weights = TRUE,
+    use_weights = TRUE,
     metrics = FALSE
   )
 
@@ -68,10 +68,10 @@ testthat::test_that("kimma_lm produces correct results without gene weights", {
   tst.df <- to.model.df[to.model.df$rowname == "ENSG00000000460", ]
 
   res <- kimma_lm(
-    model.lm = "expression~virus+asthma",
-    to.model.gene = tst.df,
+    model_lm = "expression~virus+asthma",
+    to_model_gene = tst.df,
     gene = "ENSG00000000460",
-    use.weights = FALSE,
+    use_weights = FALSE,
     metrics = FALSE
   )
 
@@ -92,10 +92,10 @@ testthat::test_that("kimma_lm adds fit metrics if set to TRUE", {
   tst.df <- to.model.df[to.model.df$rowname == "ENSG00000000460", ]
 
   res <- kimma_lm(
-    model.lm = "expression~virus+asthma",
-    to.model.gene = tst.df,
+    model_lm = "expression~virus+asthma",
+    to_model_gene = tst.df,
     gene = "ENSG00000000460",
-    use.weights = TRUE,
+    use_weights = TRUE,
     metrics = TRUE
   )
 

@@ -13,11 +13,11 @@ tst.df <- to.model.df[to.model.df$rowname == "ENSG00000002587", ]
 testthat::test_that("kimma_lmerel produces correct results with gene weights", {
 
   lmerel.res <- kimma_lmerel(
-    model.lme = "expression~virus*asthma+(1|ptID)",
-    to.model.gene = tst.df,
+    model_lme = "expression~virus*asthma+(1|ptID)",
+    to_model_gene = tst.df,
     gene = "ENSG00000002587",
-    kin.subset = kimma::example.kin,
-    use.weights = TRUE,
+    kin_subset = kimma::example.kin,
+    use_weights = TRUE,
     patientID = "ptID",
     metrics = TRUE
   )
@@ -38,11 +38,11 @@ testthat::test_that("kimma_lmerel produces correct results with gene weights", {
 testthat::test_that("kimma_lmerel produces correct results without gene weights", {
 
   lmerel.res <- kimma_lmerel(
-    model.lme = "expression~virus*asthma+(1|ptID)",
-    to.model.gene = tst.df,
+    model_lme = "expression~virus*asthma+(1|ptID)",
+    to_model_gene = tst.df,
     gene = "ENSG00000002587",
-    kin.subset = kimma::example.kin,
-    use.weights = FALSE,
+    kin_subset = kimma::example.kin,
+    use_weights = FALSE,
     patientID = "ptID",
     metrics = TRUE
   )

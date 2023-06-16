@@ -18,11 +18,11 @@ kimma_lme <- function(model_lme, to_model_gene, gene, use_weights, metrics){
     .GlobalEnv$to_model_gene <- to_model_gene
 
     #Fit LME model
-    if(use.weights){
-      fit.lme <- lme4::lmer(model.lme, data=to.model.gene,
-                            weights=to.model.gene$gene_weight)
+    if(use_weights){
+      fit.lme <- lme4::lmer(model_lme, data=to_model_gene,
+                            weights=to_model_gene$gene_weight)
     } else{
-      fit.lme <- lme4::lmer(model.lme, data=to.model.gene, weights=NULL)
+      fit.lme <- lme4::lmer(model_lme, data=to_model_gene, weights=NULL)
     }
 
     #Estimate P-value

@@ -17,10 +17,10 @@ kimma_lm <- function(model_lm, to_model_gene, gene, use_weights, metrics){
     .GlobalEnv$to_model_gene <- to_model_gene
 
     #Fit model
-    if(use.weights){
-      fit.lm <- stats::lm(model.lm, data=to.model.gene, weights=to.model.gene$gene_weight)
+    if(use_weights){
+      fit.lm <- stats::lm(model_lm, data=to_model_gene, weights=to_model_gene$gene_weight)
     } else{
-      fit.lm <- stats::lm(model.lm, data=to.model.gene, weights=NULL)
+      fit.lm <- stats::lm(model_lm, data=to_model_gene, weights=NULL)
     }
 
     p.lm <- broom::tidy(fit.lm)
