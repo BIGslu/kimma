@@ -1,33 +1,33 @@
 #' Run kimma linear mixed effects model with kinship
 #'
-#' @param model.lme Character model created in kmFit
-#' @param to.model.gene Data frame formatted in kmFit, subset to gene of interest
+#' @param model_lme Character model created in kmFit
+#' @param to_model_gene Data frame formatted in kmFit, subset to gene of interest
 #' @param gene Character of gene to model
-#' @param kin.subset Pairwise kinship matrix
-#' @param use.weights Logical if gene specific weights should be used in model. Default is FALSE
+#' @param kin_subset Pairwise kinship matrix
+#' @param use_weights Logical if gene specific weights should be used in model. Default is FALSE
 #' @param patientID Character of variable name to match dat$targets to kinship row and column names.
 #' @param metrics Logical if should calculate model fit metrics such as AIC, BIC, R-squared. Default is FALSE
 #'
 #' @return Linear mixed effect with kinship results data frame for 1 gene
 #' @keywords internal
 
-kimma_lmerel <- function(model.lme, to.model.gene, gene, kin.subset, use.weights,
+kimma_lmerel <- function(model_lme, to_model_gene, gene, kin_subset, use_weights,
                          patientID, metrics){
   rowname <- NULL
   #Place holder LME results
   p.kin <- NaN
   sigma.kin <- 0
   results.kin <- NULL
-  .GlobalEnv$to.model.gene <- to.model.gene
+  .GlobalEnv$to_model_gene <- to_model_gene
 
   #Format kinship matrix to list
   kin.ls <- list()
-  kin.ls[[patientID]] <- as.matrix(kin.subset)
+  kin.ls[[patientID]] <- as.matrix(kin_subset)
   #Fit kin model
     if(use.weights){
     fit.kin <- lme4qtl::relmatLmer(model.lme, data=to.model.gene,
                                    relmat = kin.ls,
-                                   weights=to.model.gene$gene_weight)
+                                   weights=to_model_gene$gene_weight)
   } else{
     fit.kin <- lme4qtl::relmatLmer(model.lme, data=to.model.gene,
                                    relmat = kin.ls)
@@ -68,11 +68,11 @@ kimma_lmerel <- function(model.lme, to.model.gene, gene, kin.subset, use.weights
 
   if(metrics){
     #Calculate R-squared
-    if(use.weights){
-      null <- stats::glm(formula = expression ~ 1, data = to.model.gene,
-                         weights = to.model.gene$gene_weight)
+    if(use_weights){
+      null <- stats::glm(formula = expression ~ 1, data = to_model_gene,
+                         weights = to_model_gene$gene_weight)
     } else{
-      null <- stats::glm(formula = expression ~ 1, data = to.model.gene)
+      null <- stats::glm(formula = expression ~ 1, data = to_model_gene)
     }
 
     L0 <- as.vector(stats::logLik(null))
@@ -93,7 +93,6 @@ kimma_lmerel <- function(model.lme, to.model.gene, gene, kin.subset, use.weights
   } else{
     fit.metrics <- NULL
   }
-
 
   results.kin.ls <- list()
   results.kin.ls[["fit"]] <- fit.kin

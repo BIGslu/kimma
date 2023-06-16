@@ -13,11 +13,11 @@ kimma_cleaning(
   meta = NULL,
   genes = NULL,
   weights = NULL,
-  subset.var = NULL,
-  subset.lvl = NULL,
-  subset.genes = NULL,
-  model.lm = NULL,
-  genotype.name = NULL
+  subset_var = NULL,
+  subset_lvl = NULL,
+  subset_genes = NULL,
+  model_lm = NULL,
+  genotype_name = NULL
 )
 }
 \arguments{
@@ -41,15 +41,15 @@ Alternate data if not using EList object}
 
 Subset data (optional)}
 
-\item{subset.var}{Character list of variable name(s) to filter data by.}
+\item{subset_var}{Character list of variable name(s) to filter data by.}
 
-\item{subset.lvl}{Character list of variable value(s) or level(s) to filter data to. Must match order of subset.var}
+\item{subset_lvl}{Character list of variable value(s) or level(s) to filter data to. Must match order of subset_var}
 
-\item{subset.genes}{Character vector of genes to include in models.}
+\item{subset_genes}{Character vector of genes to include in models.}
 
-\item{model.lm}{Character vector of simple linear model version of model provided}
+\item{model_lm}{Character vector of simple linear model version of model provided}
 
-\item{genotype.name}{Character string. Used internally for kmFit_eQTL}
+\item{genotype_name}{Character string. Used internally for kmFit_eQTL}
 }
 \value{
 Data frame formatted for use in kmFit

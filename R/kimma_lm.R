@@ -1,20 +1,20 @@
 #' Run kimma linear model
 #'
-#' @param model.lm Character model created in kmFit
-#' @param to.model.gene Data frame formatted in kmFit, subset to gene of interest
+#' @param model_lm Character model created in kmFit
+#' @param to_model_gene Data frame formatted in kmFit, subset to gene of interest
 #' @param gene Character of gene to model
-#' @param use.weights Logical if gene specific weights should be used in model. Default is FALSE
+#' @param use_weights Logical if gene specific weights should be used in model. Default is FALSE
 #' @param metrics Logical if should calculate model fit metrics such as AIC, BIC, R-squared. Default is FALSE
 #'
 #' @return Linear model results data frame for 1 gene
 #' @keywords internal
 
-kimma_lm <- function(model.lm, to.model.gene, gene, use.weights, metrics){
+kimma_lm <- function(model_lm, to_model_gene, gene, use_weights, metrics){
     #Place holder LM results
     p.lm <- NaN
     sigma.lm <- 0
     results.lm <- NULL
-    .GlobalEnv$to.model.gene <- to.model.gene
+    .GlobalEnv$to_model_gene <- to_model_gene
 
     #Fit model
     if(use.weights){

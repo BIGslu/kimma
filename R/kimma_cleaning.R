@@ -13,11 +13,11 @@
 #' @param weights Matrix or data frame of gene specific weights
 #'
 #' Subset data (optional)
-#' @param subset.var Character list of variable name(s) to filter data by.
-#' @param subset.lvl Character list of variable value(s) or level(s) to filter data to. Must match order of subset.var
-#' @param subset.genes Character vector of genes to include in models.
-#' @param model.lm Character vector of simple linear model version of model provided
-#' @param genotype.name Character string. Used internally for kmFit_eQTL
+#' @param subset_var Character list of variable name(s) to filter data by.
+#' @param subset_lvl Character list of variable value(s) or level(s) to filter data to. Must match order of subset_var
+#' @param subset_genes Character vector of genes to include in models.
+#' @param model_lm Character vector of simple linear model version of model provided
+#' @param genotype_name Character string. Used internally for kmFit_eQTL
 #'
 #' @return Data frame formatted for use in kmFit
 #' @keywords internal
@@ -25,8 +25,8 @@
 
 kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                            counts=NULL, meta=NULL, genes=NULL, weights=NULL,
-                           subset.var = NULL, subset.lvl = NULL, subset.genes = NULL,
-                           model.lm = NULL, genotype.name = NULL){
+                           subset_var = NULL, subset_lvl = NULL, subset_genes = NULL,
+                           model_lm = NULL, genotype_name = NULL){
   i <- rowname <- NULL
   #If data are NOT a voom EList, create a mock version
   if(is.null(dat)) {
@@ -135,10 +135,10 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
   dat.subset <- dat.format
 
   #Subset samples
-  if(!is.null(subset.var)){
-    for(i in 1:length(subset.var)) {
+  if(!is.null(subset_var)){
+    for(i in 1:length(subset_var)) {
       dat.subset$targets <- dplyr::filter(dat.subset$targets,
-                                          get(subset.var[[i]]) %in% subset.lvl[[i]])
+                                          get(subset_var[[i]]) %in% subset_lvl[[i]])
 
       dat.subset$E <- dplyr::select(as.data.frame(dat.subset$E),
                                     rowname,
@@ -153,12 +153,12 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
   }
 
   #Subset genes
-  if(!is.null(subset.genes)){
+  if(!is.null(subset_genes)){
     dat.subset$E <- dplyr::filter(as.data.frame(dat.subset$E),
-                                  rowname %in% subset.genes)
+                                  rowname %in% subset_genes)
     if(!is.null(dat.subset$weights)){
       dat.subset$weights <- dplyr::filter(as.data.frame(dat.subset$weights),
-                                          rowname %in% subset.genes)
+                                          rowname %in% subset_genes)
     }
   }
 
@@ -239,7 +239,7 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
     }
 
     ##Missing other variables
-    all_vars <- gsub("expression~", "", model.lm)
+    all_vars <- gsub("expression~", "", model_lm)
     all_vars <- unique(strsplit(all_vars, "\\+|\\*|:")[[1]])
 
     complete <- to.model %>%
@@ -286,10 +286,10 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
     }
 
     ## Missing data
-    all_vars <- gsub("expression~", "", model.lm)
+    all_vars <- gsub("expression~", "", model_lm)
     all_vars <- unique(strsplit(all_vars, "\\+|\\*|:")[[1]])
 
-    if(!is.null(genotype.name)){ all_vars <- c(all_vars, genotype.name)}
+    if(!is.null(genotype_name)){ all_vars <- c(all_vars, genotype_name)}
 
     complete <- to.model %>%
       dplyr::select(tidyselect::all_of(c(libraryID, all_vars))) %>%

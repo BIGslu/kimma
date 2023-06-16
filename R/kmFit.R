@@ -10,22 +10,33 @@
 #' @param meta Matrix or data frame of sample and individual metadata.
 #' @param genes Optional matrix or data frame of gene metadata.
 #' @param weights Optional matrix of data frame of gene specific weights. Usually calculated with limma::voomWithQualityWeights().
-#' @param subset.var Character list of variable name(s) to filter data by.
-#' @param subset.lvl Character list of variable value(s) or level(s) to filter data to. Must match order of subset.var
-#' @param subset.genes Character vector of genes to include in models.
+#' @param subset_var Character list of variable name(s) to filter data by.
+#' @param subset_lvl Character list of variable value(s) or level(s) to filter data to. Must match order of subset_var
+#' @param subset_genes Character vector of genes to include in models.
 #' @param model Character vector of model starting with ~ Should include (1|patientID) if mixed effects will be run
-#' @param use.weights Logical if gene specific weights should be used in model. Default is FALSE
-#' @param run.lm Logical if should run lm model without kinship
-#' @param run.lme Logical if should run lme model without kinship
-#' @param run.lmerel Logical if should run lmerel model with kinship
-#' @param run.contrast Logical if should run pairwise contrasts. If no matrix provided, all possible pairwise comparisons are completed.
-#' @param contrast.var Character vector of variable in model to run contrasts of. Interaction terms must be specified as "var1:var2". If NULL (default), all contrasts for all variables in the model are run
+#' @param use_weights Logical if gene specific weights should be used in model. Default is FALSE
+#' @param run_lm Logical if should run lm model without kinship
+#' @param run_lme Logical if should run lme model without kinship
+#' @param run_lmerel Logical if should run lmerel model with kinship
+#' @param run_contrast Logical if should run pairwise contrasts. If no matrix provided, all possible pairwise comparisons are completed.
+#' @param contrast_var Character vector of variable in model to run contrasts of. Interaction terms must be specified as "var1:var2". If NULL (default), all contrasts for all variables in the model are run
 #' @param metrics Logical if should calculate model fit metrics such as AIC, BIC, R-squared. Default is FALSE
 #' @param processors Numeric processors to run in parallel. Default is 2 less than the total available
-#' @param p.method Character of FDR adjustment method. Values as in p.adjust( )
-#' @param genotype.name Character string. Used internally for kmFit_eQTL
-#' @param run.lmekin Depreciated. Please use run.lmerel
+#' @param p_method Character of FDR adjustment method. Values as in p.adjust( )
+#' @param genotype_name Character string. Used internally for kmFit_eQTL
 #'
+#' @param run.lmekin Deprecated. Please use run_lmerel
+#' @param subset.var Deprecated form of subset_var
+#' @param subset.lvl Deprecated form of subset_lvl
+#' @param subset.genes Deprecated form of subset_genes
+#' @param use.weights Deprecated form of use_weights
+#' @param run.lm Deprecated form of run_lm
+#' @param run.lme Deprecated form of run_lme
+#' @param run.lmerel Deprecated form of run_lmerel
+#' @param run.contrast Deprecated form of run_contrast
+#' @param contrast.var Deprecated form of contrast_var
+#' @param p.method Deprecated form of p_method
+
 #' @return List of data frames including
 #'    - lm/lme/lmerel: model estimates and significance
 #'    - *.contrast: model estimates and significance for pairwise contrasts with variables in the original model
@@ -39,63 +50,88 @@
 #' # All samples and all genes
 #' ## Not run
 #' # kmFit(dat = example.voom,
-#' #     kin = example.kin, run.lmerel = TRUE,
+#' #     kin = example.kin, run_lmerel = TRUE,
 #' #     model = "~ virus + (1|ptID)")
 #'
 #' # Subset samples and genes
 #' ## Also with weights
 #' kmFit(dat = example.voom,
-#'       run.lm = TRUE, use.weights = FALSE,
-#'       subset.var = list("asthma"), subset.lvl = list(c("asthma")),
-#'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
+#'       run_lm = TRUE, use_weights = FALSE,
+#'       subset_var = list("asthma"), subset_lvl = list(c("asthma")),
+#'       subset_genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
 #'       model = "~ virus + (1|ptID)")
 #'
 #' # Pairwise contrasts
 #' ## Continuous interaction
 #' kmFit(dat = example.voom,
-#'       run.lme = TRUE, run.contrast = TRUE,
-#'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
+#'       run_lme = TRUE, run_contrast = TRUE,
+#'       subset_genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
 #'       model = "~ virus + asthma * median_cv_coverage + (1|ptID)",
-#'       contrast.var=c("asthma:median_cv_coverage"))
+#'       contrast_var=c("asthma:median_cv_coverage"))
 #'
 #' ## Categorical interaction
 #' kmFit(dat = example.voom, kin = example.kin,
-#'       run.lmerel = TRUE, run.contrast = TRUE, metrics=TRUE,
-#'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
+#'       run_lmerel = TRUE, run_contrast = TRUE, metrics=TRUE,
+#'       subset_genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
 #'       model = "~ virus*asthma + (1|ptID)",
-#'       contrast.var=c("virus:asthma"))
+#'       contrast_var=c("virus:asthma"))
 #'
 #' # Model with failed genes
 #' kmFit(dat = example.voom,
-#'       kin = example.kin, run.lmerel = TRUE, run.lm = TRUE,
-#'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
+#'       kin = example.kin, run_lmerel = TRUE, run_lm = TRUE,
+#'       subset_genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
 #'       model = "~ virus*asthma + lib.size + norm.factors + median_cv_coverage + ptID + (1|ptID)")
 #'
 #' # Non-dat data
 #' kmFit(counts = example.voom$E, meta = example.voom$targets,
-#'       run.lm = TRUE, use.weights = FALSE,
-#'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
+#'       run_lm = TRUE, use_weights = FALSE,
+#'       subset_genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
 #'       model = "~ virus + (1|ptID)")
 #'
 #' # Three level variable
 #' example.voom$targets$lvl <- rep(c("A","B","C"), length(example.voom$targets$libID)/3)
 #' kmFit(dat = example.voom,
-#'       run.lme= TRUE, run.contrast = TRUE,
-#'       subset.genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
+#'       run_lme= TRUE, run_contrast = TRUE,
+#'       subset_genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
 #'       model = "~ lvl + (1|ptID)")
 #'
 
 kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                   counts=NULL, meta=NULL, genes=NULL, weights=NULL,
+                  subset_var = NULL, subset_lvl = NULL, subset_genes = NULL,
+                  model, use_weights=FALSE,
+                  run_lm = FALSE, run_lme = FALSE, run_lmerel = FALSE,
+                  metrics = FALSE,
+                  run_contrast = FALSE, contrast_var = NULL,
+                  processors = NULL, p_method = "BH",
+                  genotype_name=NULL,
+                  #deprecated
+                  run.lmekin = NULL,
                   subset.var = NULL, subset.lvl = NULL, subset.genes = NULL,
-                  model, use.weights=FALSE,
+                  use.weights=FALSE,
                   run.lm = FALSE, run.lme = FALSE, run.lmerel = FALSE,
-                  metrics = FALSE, run.lmekin = NULL,
                   run.contrast = FALSE, contrast.var = NULL,
-                  processors = NULL, p.method = "BH",
-                  genotype.name=NULL){
+                  p.method = NULL){
 
   rowname <- libID <- variable <- statistic <- df <- pval <- group <- gene <- V1 <- V2 <- combo <- term <- p.value <- estimate <- contrast <- contrast.i <- weights.gene <- FDR <- contrast_ref <- contrast_lvl <- NULL
+
+  #Back compatibility
+  if(any(!is.null(subset.var),!is.null(subset.lvl),
+     !is.null(subset.genes),use.weights,run.lm,run.lme,
+     run.lmerel,run.contrast,!is.null(contrast.var),
+     !is.null(p.method))){
+    message("WARNING: Arguments with '.' have been deprecated. Please use '_' versions.")
+  }
+  if(!is.null(subset.var)){subset_var <- subset.var}
+  if(!is.null(subset.lvl)){subset_lvl <- subset.lvl}
+  if(!is.null(subset.genes)){subset_genes <- subset.genes}
+  if(use.weights){use_weights <- use.weights}
+  if(run.lm){run_lm <- run.lm}
+  if(run.lme){run_lme <- run.lme }
+  if(run.lmerel){run_lmerel <- run.lmerel}
+  if(run.contrast){run_contrast <- run.contrast}
+  if(!is.null(contrast.var)){contrast_var <- contrast.var}
+  if(!is.null(p.method)){p_method <- p.method}
 
   ###### Parallel ######
   #setup parallel processors
@@ -125,33 +161,33 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     stop("patientID column not found in dat$targets.")}
   if(!is.null(meta) & !(patientID %in% colnames(meta))){
     stop("patientID column not found in meta.")}
-  if(is.null(subset.var) & !is.null(subset.lvl)){
-    stop("Sample subsetting has been selected. Please also provide subset.var")}
-  if(!is.null(subset.var) & is.null(subset.lvl)){
-    stop("Sample subsetting has been selected. Please also provide subset.lvl")}
-  if(run.lmerel & !grepl("\\|", model)){
+  if(is.null(subset_var) & !is.null(subset_lvl)){
+    stop("Sample subsetting has been selected. Please also provide subset_var")}
+  if(!is.null(subset_var) & is.null(subset_lvl)){
+    stop("Sample subsetting has been selected. Please also provide subset_lvl")}
+  if(run_lmerel & !grepl("\\|", model)){
     stop("Kinship models require a random effect in the model as in (1 | ptID)")}
-  if(is.null(kin) & run.lmerel){
+  if(is.null(kin) & run_lmerel){
     stop("Kinship matrix is required to run lmerel")}
-  if(!run.lm & !run.lme & !run.lmerel & !run.contrast){
+  if(!run_lm & !run_lme & !run_lmerel & !run_contrast){
     stop("At least 1 model type must be selected. Please set one run parameter to TRUE.")}
-  if(!run.lm & !run.lme & !run.lmerel & run.contrast){
+  if(!run_lm & !run_lme & !run_lmerel & run_contrast){
       stop("Contrast models must be run with an accompanying linear model.")}
-  if(use.weights & is.null(weights) & is.null(dat$weights)){
-    stop("When use.weights is TRUE, must provide gene weights is dat object or separate data frame.")
+  if(use_weights & is.null(weights) & is.null(dat$weights)){
+    stop("When use_weights is TRUE, must provide gene weights is dat object or separate data frame.")
   }
   if("gene_weight" %in% c(colnames(meta), colnames(dat$targets))){
     stop("Variable gene_weight is present in dat$targets or meta. This name is used for model weights. Please change variable name in your data.")
   }
   if(!is.null(run.lmekin)){
-    stop("run.lmekin no longer supported. Please use run.lmerel")
+    stop("run.lmekin no longer supported. Please use run_lmerel")
   }
   if(grepl("\n", model)){
     stop("Model cannot contain hard returns \n. Please correct.")
   }
-  if(!use.weights){
+  if(!use_weights){
     if(!is.null(weights) | !is.null(dat$weights)){
-      message("WARNING: To use weights provided in dat$weights or weights, set use.weights = TRUE\n")
+      message("WARNING: To use weights provided in dat$weights or weights, set use_weights = TRUE\n")
     }
   }
 
@@ -167,11 +203,11 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
   model.lme <- paste("expression", gsub(" ", "", model), sep="")
 
   #Model message
-  if(run.lm){ message(paste("lm model:",model.lm))}
-  if(run.lme | run.lmerel){ message(paste("lme/lmerel model:",model.lme))}
+  if(run_lm){ message(paste("lm model:",model.lm))}
+  if(run_lme | run_lmerel){ message(paste("lme/lmerel model:",model.lme))}
 
   #If no contrast variable set, as all
-  if(run.contrast & is.null(contrast.var)){
+  if(run_contrast & is.null(contrast_var)){
     contrast.temp <- strsplit(gsub(" |~", "", model), split = "\\+\\(1")[[1]][1]
     #main term
     contrast.main <- strsplit(contrast.temp, split = "\\+|\\*")[[1]]
@@ -187,25 +223,25 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
       contrast.interact <- NULL
     }
 
-    contrast.var <- c(contrast.main, contrast.interact)
+    contrast_var <- c(contrast.main, contrast.interact)
 
     #Set eQTL variable
-    if(!is.null(genotype.name)){
-      contrast.var <- gsub("genotype", genotype.name, contrast.var)
+    if(!is.null(genotype_name)){
+      contrast_var <- gsub("genotype", genotype_name, contrast_var)
     }
   }
 
   #If contrast variables given, force run contrast model
-  if(!is.null(contrast.var)){run.contrast <- TRUE}
+  if(!is.null(contrast_var)){run_contrast <- TRUE}
 
   #Check contrast variable is character/factor
-  if(run.contrast){
+  if(run_contrast){
     if(!is.null(dat)){
       meta.temp <- dat$targets
     } else {
       meta.temp <- meta
     }
-    for(v in contrast.var){
+    for(v in contrast_var){
       #Deal with interaction terms. Only 1 need be non-numeric
       if(grepl("[*]|:", v)){
         v.sep <- strsplit(v, split="[*]|:")[[1]]
@@ -226,8 +262,8 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
   ###### Data #####
   to.model.ls <- kimma_cleaning(dat, kin, patientID, libraryID,
                                 counts, meta, genes, weights,
-                                subset.var, subset.lvl, subset.genes,
-                                model.lm, genotype.name)
+                                subset_var, subset_lvl, subset_genes,
+                                model.lm, genotype_name)
 
   ###### Run models ######
   #create blank df to hold results
@@ -252,10 +288,10 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     #### LM model #####
     #Run linear model without kinship
     results.lm.ls <- NULL
-    if(run.lm){
+    if(run_lm){
     #Wrap model run in error catch to allow loop to continue even if a single model fails
      results.lm.ls <- tryCatch({
-       kimma_lm(model.lm, to.model.gene, gene, use.weights, metrics)
+       kimma_lm(model.lm, to.model.gene, gene, use_weights, metrics)
      }, error=function(e){
        results.lm.ls[["error"]] <- data.frame(model="lm",
                                                gene=gene,
@@ -266,10 +302,10 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
 
     #### LME model #####
     results.lme.ls <- NULL
-    if(run.lme){
+    if(run_lme){
       #Wrap model run in error catch to allow loop to continue even if a single model fails
       results.lme.ls <- tryCatch({
-        kimma_lme(model.lme, to.model.gene, gene, use.weights, metrics)
+        kimma_lme(model.lme, to.model.gene, gene, use_weights, metrics)
         }, error=function(e){
           results.lme.ls[["error"]] <- data.frame(model="lme",
                                                   gene=gene,
@@ -280,11 +316,11 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
 
     ##### Kinship model ######
     results.kin.ls <- NULL
-    if(run.lmerel){
+    if(run_lmerel){
       #Wrap model run in error catch to allow loop to continue even if a single model fails
       results.kin.ls <- tryCatch({
         kimma_lmerel(model.lme, to.model.gene, gene, to.model.ls[["kin.subset"]],
-                     use.weights, patientID, metrics)
+                     use_weights, patientID, metrics)
         }, error=function(e){
           results.kin.ls[["error"]] <- data.frame(model="lmerel",
                                                   gene=gene,
@@ -299,11 +335,11 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     contrast.kin <- NULL
     contrast.results <- NULL
 
-    if(run.contrast){
+    if(run_contrast){
       if(!is.null(results.lm.ls[["results"]])){
         contrast.lm <- tryCatch({
-          kmFit_contrast(results.lm.ls[["fit"]], contrast.var, to.model.gene,
-                         genotype.name) %>%
+          kmFit_contrast(results.lm.ls[["fit"]], contrast_var, to.model.gene,
+                         genotype_name) %>%
             dplyr::mutate(model="lm.contrast")
         }, error=function(e){
           contrast.lm.error <- data.frame(model="lm.contrast",
@@ -315,8 +351,8 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
 
       if(!is.null(results.lme.ls[["results"]])){
         contrast.lme <- tryCatch({
-          kmFit_contrast(results.lme.ls[["fit"]], contrast.var, to.model.gene,
-                         genotype.name) %>%
+          kmFit_contrast(results.lme.ls[["fit"]], contrast_var, to.model.gene,
+                         genotype_name) %>%
             dplyr::mutate(model="lme.contrast")
         }, error=function(e){
           contrast.lme.error <- data.frame(model="lme.contrast",
@@ -328,8 +364,8 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
 
       if(!is.null(results.kin.ls[["results"]])){
         contrast.kin <- tryCatch({
-          kmFit_contrast(results.kin.ls[["fit"]], contrast.var, to.model.gene,
-                         genotype.name) %>%
+          kmFit_contrast(results.kin.ls[["fit"]], contrast_var, to.model.gene,
+                         genotype_name) %>%
             dplyr::mutate(model="lmerel.contrast")
         }, error=function(e){
           contrast.kin.error <- data.frame(model="lmerel.contrast",
@@ -411,11 +447,11 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
 
   if(nrow(fit.results) > 0 ){
     # Calculate FDR
-    if(run.contrast){
+    if(run_contrast){
       kmFit.results <- fit.results %>%
         #Within model and variable
         dplyr::group_by(model, variable, contrast_ref, contrast_lvl) %>%
-        dplyr::mutate(FDR=stats::p.adjust(pval, method=p.method)) %>%
+        dplyr::mutate(FDR=stats::p.adjust(pval, method=p_method)) %>%
         dplyr::ungroup() %>%
         dplyr::select(model:statistic, contrast_ref, contrast_lvl,
                       estimate, pval, FDR, dplyr::everything())
@@ -423,7 +459,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
       kmFit.results <- fit.results %>%
         #Within model and variable
         dplyr::group_by(model, variable) %>%
-        dplyr::mutate(FDR=stats::p.adjust(pval, method=p.method)) %>%
+        dplyr::mutate(FDR=stats::p.adjust(pval, method=p_method)) %>%
         dplyr::ungroup() %>%
         dplyr::select(model:statistic, estimate, pval, FDR,
                       dplyr::everything())
