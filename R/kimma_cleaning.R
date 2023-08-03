@@ -26,7 +26,8 @@
 kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                            counts=NULL, meta=NULL, genes=NULL, weights=NULL,
                            subset_var = NULL, subset_lvl = NULL, subset_genes = NULL,
-                           model_lm = NULL, genotype_name = NULL){
+                           model_lm = NULL, genotype_name = NULL,
+                           run_lmerel = FALSE){
   i <- rowname <- NULL
   #If data are NOT a voom EList, create a mock version
   if(is.null(dat)) {
@@ -169,7 +170,7 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
     dat.subset$targets[,to.modelID] <- dat.subset$targets[,patientID]
   } else{ to.modelID <- patientID }
 
-  if(!is.null(kin)){
+  if(!is.null(kin) & run_lmerel){
     #Format kinship matrix if rownames inside matrix
     if(!is.numeric(as.matrix(kin))){
       name.col <- as.data.frame(kin) %>%
@@ -189,10 +190,17 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
     #Combine expression data (E) and sample metadata (targets)
     to.model <- dat.subset$E %>%
       tidyr::pivot_longer(-rowname, names_to = libraryID, values_to = "expression") %>%
-      dplyr::inner_join(dat.subset$targets, by=libraryID) %>%
-      #Remove samples missing kinship
-      dplyr::filter(get(to.modelID) %in% colnames(kin.format)) %>%
-      dplyr::arrange(get(to.modelID))
+      dplyr::inner_join(dat.subset$targets, by=libraryID)
+
+    if(run_lmerel){
+      to.model <- to.model %>%
+        #Remove samples missing kinship
+        dplyr::filter(get(to.modelID) %in% colnames(kin.format)) %>%
+        dplyr::arrange(get(to.modelID))
+    } else{
+      to.model <- to.model %>%
+        dplyr::arrange(get(to.modelID))
+    }
 
     #Add weights if available
     if(!is.null(dat.subset$weights)){
@@ -207,13 +215,17 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
 
     #Remove samples from kinship missing expression data
     #Order kinship as in to.model
-    to.keep <- unique(unlist(to.model[,to.modelID]))
-    kin.subset <- as.data.frame(kin.format) %>%
-      tibble::rownames_to_column() %>%
-      dplyr::filter(rowname %in% to.keep) %>%
-      dplyr::select(rowname, tidyselect::all_of(to.keep)) %>%
-      dplyr::arrange(rowname) %>%
-      tibble::column_to_rownames()
+    if(run_lmerel){
+      to.keep <- unique(unlist(to.model[,to.modelID]))
+      kin.subset <- as.data.frame(kin.format) %>%
+        tibble::rownames_to_column() %>%
+        dplyr::filter(rowname %in% to.keep) %>%
+        dplyr::select(rowname, tidyselect::all_of(to.keep)) %>%
+        dplyr::arrange(rowname) %>%
+        tibble::column_to_rownames()
+    } else{
+      kin.subset <- NULL
+    }
 
     #Total samples messages
     ##total libraries
@@ -223,19 +235,23 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
     if(patientID %in% colnames(dat.subset$targets)){
       pt.no <- dat.subset$targets %>%
         dplyr::distinct(get(patientID)) %>% nrow()
-      message("Input: ", lib.no, " libraries from ", pt.no, " unique patients")
+      message("Input: ", lib.no, " libraries from ", pt.no, " unique individuals")
     } else {
       message("Input: ",lib.no, " libraries")
     }
 
     ## Missing data
     ## Missing kinship
-    kin.no <- to.model %>%
-      dplyr::distinct(get(libraryID)) %>% nrow()
-    kin.miss <- lib.no-kin.no
+    if(run_lmerel){
+      kin.no <- to.model %>%
+        dplyr::distinct(get(libraryID)) %>% nrow()
+      kin.miss <- lib.no-kin.no
 
-    if(kin.miss > 0 ){
-      message("- ", kin.miss, " libraries missing kinship")
+      if(kin.miss > 0){
+        message("- ", kin.miss, " libraries missing kinship")
+      }
+    } else{
+      kin.miss <- 0
     }
 
     ##Missing other variables
@@ -248,9 +264,16 @@ kimma_cleaning <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libI
       dplyr::distinct() %>%
       tidyr::drop_na() %>% nrow()
 
-    miss.no <- lib.no-kin.miss-complete
-    if(miss.no>0){
-      message("- ", miss.no, " libraries missing fixed effect variable(s)") }
+    if(run_lmerel){
+      miss.no <- lib.no-kin.miss-complete
+      if(miss.no>0){
+        message("- ", miss.no, " additional libraries missing fixed effect variable(s)") }
+    } else{
+      miss.no <- lib.no-complete
+      if(miss.no>0){
+        message("- ", miss.no, " libraries missing fixed effect variable(s)") }
+    }
+
 
     message("Model: ",lib.no-kin.miss-miss.no, " libraries")
   } else{

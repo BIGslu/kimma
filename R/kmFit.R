@@ -190,6 +190,11 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
       message("WARNING: To use weights provided in dat$weights or weights, set use_weights = TRUE\n")
     }
   }
+  if(run_lme | run_lmerel){
+    if(!grepl(patientID, model)){
+      stop("patientID value does not match variable used in model.")
+    }
+  }
 
   ###### Formulae #####
   #Make formulae. as.formula does not work
@@ -263,7 +268,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
   to.model.ls <- kimma_cleaning(dat, kin, patientID, libraryID,
                                 counts, meta, genes, weights,
                                 subset_var, subset_lvl, subset_genes,
-                                model.lm, genotype_name)
+                                model.lm, genotype_name, run_lmerel)
 
   ###### Run models ######
   #create blank df to hold results

@@ -20,7 +20,12 @@
 #'       kin = example.kin,
 #'       run_lme = TRUE, run_lmerel=TRUE, run_contrast=TRUE,
 #'       subset_genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
-#'       model = "~ virus + (1|ptID)")
+#'       model = "~ virus + asthma + (1|ptID)")
+#'
+#' # Or extract limma results
+#' # design <- model.matrix(~ virus + asthma, data = example.voom$targets)
+#' # fit <- limma::eBayes(limma::lmFit(example.voom$E, design))
+#' # model_results <- extract_lmFit(design = design, fit = fit)
 #'
 #' # Summarise results
 #' summarise_kmFit(fdr = model_results$lmerel, fdr_cutoff = c(0.01, 0.5),
@@ -42,9 +47,11 @@ summarise_kmFit <- function(fdr, fdr_cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
   if(!is.null(p.cutoff)){p_cutoff <- p.cutoff}
 
   if(intercept | "contrast_ref" %in% colnames(fdr)){
-    fdr.filter <- fdr
+    fdr.filter <- fdr %>%
+      dplyr::mutate(variable = as.factor(variable))
   } else{
     fdr.filter <- dplyr::filter(fdr, variable != '(Intercept)') %>%
+      dplyr::mutate(variable = as.factor(variable)) %>%
       droplevels()
   }
 
@@ -58,7 +65,10 @@ summarise_kmFit <- function(fdr, fdr_cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
 
   if(FCgroup){
     fdr.filter.FC <- fdr.filter %>%
-      dplyr::mutate(FCgroup = ifelse(estimate < 0, "down", "up"))
+      dplyr::mutate(FCgroup = dplyr::case_when(estimate < 0 ~ "down",
+                                               estimate > 0 ~ "up",
+                                               TRUE ~ "0"),
+                    FCgroup = as.factor(FCgroup))
     #Blank df for results
     result <- data.frame()
 
@@ -67,6 +77,7 @@ summarise_kmFit <- function(fdr, fdr_cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
       #Calculate total, nonredundant signif genes at different levels
       total.temp <- fdr.filter.FC %>%
         dplyr::filter(get(fdr.var) <= FDR.i) %>%
+        droplevels() %>%
         dplyr::distinct(gene, FCgroup) %>%
         dplyr::count(FCgroup, .drop = FALSE) %>%
         dplyr::mutate(variable = "total (nonredundant)")
@@ -74,8 +85,13 @@ summarise_kmFit <- function(fdr, fdr_cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
       #Summarize signif genes per variable at various levels
       if("contrast_ref" %in% colnames(fdr.filter.FC)){
         group.temp <- fdr.filter.FC %>%
+          dplyr::mutate(dplyr::across(c(contrast_ref, contrast_lvl),
+                                      ~as.factor(.))) %>%
           dplyr::filter(get(fdr.var) <= FDR.i) %>%
-          dplyr::count(variable, contrast_ref, contrast_lvl, FCgroup, .drop = FALSE)
+          dplyr::count(variable, contrast_ref, contrast_lvl, FCgroup, .drop = FALSE) %>%
+          dplyr::inner_join(dplyr::distinct(fdr.filter.FC,
+                                            variable, contrast_ref, contrast_lvl),
+                            by = c("variable", "contrast_ref", "contrast_lvl"))
 
         result.temp <- total.temp %>%
           dplyr::bind_rows(group.temp) %>%
@@ -85,7 +101,8 @@ summarise_kmFit <- function(fdr, fdr_cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
       } else{
         group.temp <- fdr.filter.FC %>%
           dplyr::filter(get(fdr.var) <= FDR.i) %>%
-          dplyr::count(variable, FCgroup, .drop = FALSE)
+          dplyr::count(variable, FCgroup, .drop = FALSE) %>%
+          dplyr::filter(FCgroup != "0" | n > 0)
 
         result.temp <- dplyr::bind_rows(total.temp, group.temp) %>%
           dplyr::mutate(group = name.fdr)
@@ -102,6 +119,7 @@ summarise_kmFit <- function(fdr, fdr_cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
       #Calculate total, nonredundant signif genes at different levels
       total.temp <- fdr.filter %>%
         dplyr::filter(get(fdr.var) <= FDR.i) %>%
+        droplevels() %>%
         dplyr::distinct(gene) %>%
         dplyr::mutate(variable = "total (nonredundant)") %>%
         dplyr::count(variable, .drop = FALSE)
@@ -109,8 +127,13 @@ summarise_kmFit <- function(fdr, fdr_cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
       #Summarize signif genes per variable at various levels
       if("contrast_ref" %in% colnames(fdr.filter)){
         group.temp <- fdr.filter %>%
+          dplyr::mutate(dplyr::across(c(contrast_ref, contrast_lvl),
+                                      ~as.factor(.))) %>%
           dplyr::filter(get(fdr.var) <= FDR.i) %>%
-          dplyr::count(variable, contrast_ref, contrast_lvl, .drop = FALSE)
+          dplyr::count(variable, contrast_ref, contrast_lvl, .drop = FALSE) %>%
+          dplyr::inner_join(dplyr::distinct(fdr.filter,
+                                            variable, contrast_ref, contrast_lvl),
+                            by = c("variable", "contrast_ref", "contrast_lvl"))
 
         result.temp <- total.temp %>%
           dplyr::bind_rows(group.temp) %>%
@@ -131,23 +154,26 @@ summarise_kmFit <- function(fdr, fdr_cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
   }
 
   #Stop if not signif
-  if(nrow(result) == 0){
+  if(sum(result$n) == 0){
     stop("No significant genes. Please increase FDR or P-value cutoffs.")
   }
 
   #Format to wide output
   result.format <- tidyr::pivot_wider(result, names_from = group,
-                                        values_from = n) %>%
-      dplyr::mutate(variable = forcats::fct_relevel(factor(variable),
-                                                    "total (nonredundant)",
-                                                    after=Inf)) %>%
-      dplyr::arrange(variable)
+                                      values_from = n) %>%
+    dplyr::mutate(variable = forcats::fct_relevel(factor(variable),
+                                                  "total (nonredundant)",
+                                                  after=Inf)) %>%
+    dplyr::arrange(variable) %>%
+    dplyr::mutate(dplyr::across(dplyr::contains("fdr"),
+                                ~tidyr::replace_na(., 0))) %>%
+    dplyr::rename_all(~gsub("fdr_","fdr<",.))
 
-  #rename for P-value if specified
-  if(!is.null(p_cutoff)) {
-    result.format <- result.format %>%
-      dplyr::rename_all(~gsub("fdr_","p_",.))
-  }
+    #rename for P-value if specified
+    if(!is.null(p_cutoff)) {
+      result.format <- result.format %>%
+        dplyr::rename_all(~gsub("fdr_","p_",.))
+    }
 
   return(result.format)
 }
@@ -155,3 +181,5 @@ summarise_kmFit <- function(fdr, fdr_cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
 #' @rdname summarise_kmFit
 #' @export
 summarize_kmFit <- summarise_kmFit
+summarise_lmFit <- summarise_kmFit
+summarize_lmFit <- summarise_kmFit

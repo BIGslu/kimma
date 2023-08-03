@@ -17,7 +17,8 @@ kimma_cleaning(
   subset_lvl = NULL,
   subset_genes = NULL,
   model_lm = NULL,
-  genotype_name = NULL
+  genotype_name = NULL,
+  run_lmerel = FALSE
 )
 }
 \arguments{
