@@ -144,7 +144,8 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     #Use 2 less than total if not user defined
     processors.to.use <- parallel::detectCores()-2
     if(processors.to.use == 0){
-      stop("Error processors: Default resulted in 0. Please correct.")}
+      stop("Error processors: Default resulted in 0. Please correct.")
+      }
   } else {
     #Use user defined number
     processors.to.use <- processors
