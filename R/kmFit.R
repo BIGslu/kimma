@@ -190,6 +190,11 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
       message("WARNING: To use weights provided in dat$weights or weights, set use_weights = TRUE\n")
     }
   }
+  if(run_lme | run_lmerel){
+    if(!grepl(patientID, model)){
+      stop("patientID value does not match variable used in model.")
+    }
+  }
 
   ###### Formulae #####
   #Make formulae. as.formula does not work
