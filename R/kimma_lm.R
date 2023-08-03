@@ -18,10 +18,8 @@ kimma_lm <- function(model_lm, to_model_gene, gene, use_weights, metrics){
 
     #Fit model
     if(use_weights){
-      set.seed(42)
       fit.lm <- stats::lm(model_lm, data=to_model_gene, weights=to_model_gene$gene_weight)
     } else{
-      set.seed(42)
       fit.lm <- stats::lm(model_lm, data=to_model_gene, weights=NULL)
     }
 

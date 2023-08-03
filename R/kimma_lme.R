@@ -19,11 +19,9 @@ kimma_lme <- function(model_lme, to_model_gene, gene, use_weights, metrics){
 
     #Fit LME model
     if(use_weights){
-      set.seed(42)
       fit.lme <- lme4::lmer(model_lme, data=to_model_gene,
                             weights=to_model_gene$gene_weight)
     } else{
-      set.seed(42)
       fit.lme <- lme4::lmer(model_lme, data=to_model_gene, weights=NULL)
     }
 
@@ -88,7 +86,6 @@ kimma_lme <- function(model_lme, to_model_gene, gene, use_weights, metrics){
     } else{
       fit.metrics <- NULL
     }
-
 
     results.lme.ls <- list()
     results.lme.ls[["fit"]] <- fit.lme
