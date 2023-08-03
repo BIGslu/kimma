@@ -263,7 +263,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
   to.model.ls <- kimma_cleaning(dat, kin, patientID, libraryID,
                                 counts, meta, genes, weights,
                                 subset_var, subset_lvl, subset_genes,
-                                model.lm, genotype_name)
+                                model.lm, genotype_name, run_lmerel)
 
   ###### Run models ######
   #create blank df to hold results
