@@ -31,7 +31,7 @@ Imports:
     tidyselect
 RoxygenNote: 7.3.1
 Depends: 
-    R (>= 4.2)
+    R (>= 4.3)
 Suggests: 
     testthat (>= 3.0.0),
     edgeR
