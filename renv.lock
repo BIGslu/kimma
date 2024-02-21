@@ -3,6 +3,26 @@
     "Version": "4.3.2",
     "Repositories": [
       {
+        "Name": "BioCsoft",
+        "URL": "https://bioconductor.org/packages/3.18/bioc"
+      },
+      {
+        "Name": "BioCann",
+        "URL": "https://bioconductor.org/packages/3.18/data/annotation"
+      },
+      {
+        "Name": "BioCexp",
+        "URL": "https://bioconductor.org/packages/3.18/data/experiment"
+      },
+      {
+        "Name": "BioCworkflows",
+        "URL": "https://bioconductor.org/packages/3.18/workflows"
+      },
+      {
+        "Name": "BioCbooks",
+        "URL": "https://bioconductor.org/packages/3.18/books"
+      },
+      {
         "Name": "CRAN",
         "URL": "https://cloud.r-project.org"
       }
@@ -26,7 +46,7 @@
       "Package": "BiocVersion",
       "Version": "3.18.1",
       "Source": "Repository",
-      "Repository": "https://bioconductor.org/packages/3.18/bioc",
+      "Repository": "Bioconductor 3.18",
       "Requirements": [
         "R"
       ],
@@ -680,7 +700,6 @@
       "Package": "limma",
       "Version": "3.58.1",
       "Source": "Repository",
-      "Repository": "https://bioconductor.org/packages/3.18/bioc",
       "Requirements": [
         "R",
         "grDevices",
@@ -1039,15 +1058,13 @@
     },
     "renv": {
       "Package": "renv",
-      "Version": "1.0.3.9000",
-      "Source": "git",
-      "RemoteType": "git",
-      "RemoteUrl": "https://github.com/rstudio/renv",
-      "RemoteRef": "",
+      "Version": "1.0.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
       "Requirements": [
         "utils"
       ],
-      "Hash": "3f27406d9cd7ff11ed83797638bebccb"
+      "Hash": "41b847654f567341725473431dd0d5ab"
     },
     "rlang": {
       "Package": "rlang",
