@@ -3,6 +3,8 @@
 \name{summarise_kmFit}
 \alias{summarise_kmFit}
 \alias{summarize_kmFit}
+\alias{summarise_lmFit}
+\alias{summarize_lmFit}
 \title{Summarise kmFit FDR results}
 \usage{
 summarise_kmFit(
@@ -16,6 +18,26 @@ summarise_kmFit(
 )
 
 summarize_kmFit(
+  fdr,
+  fdr_cutoff = c(0.05, 0.1, 0.2, 0.3, 0.4, 0.5),
+  p_cutoff = NULL,
+  FCgroup = FALSE,
+  intercept = FALSE,
+  fdr.cutoff = NULL,
+  p.cutoff = NULL
+)
+
+summarise_lmFit(
+  fdr,
+  fdr_cutoff = c(0.05, 0.1, 0.2, 0.3, 0.4, 0.5),
+  p_cutoff = NULL,
+  FCgroup = FALSE,
+  intercept = FALSE,
+  fdr.cutoff = NULL,
+  p.cutoff = NULL
+)
+
+summarize_lmFit(
   fdr,
   fdr_cutoff = c(0.05, 0.1, 0.2, 0.3, 0.4, 0.5),
   p_cutoff = NULL,
