@@ -257,7 +257,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
           stop(paste("Contrast variable", v, "is numeric. Please specify only character/factor contrasts."))
         }
       } else {
-        v.class <- class(meta.temp[,v])
+        v.class <- class(unlist(meta.temp[,v]))
         if(v.class %in% c("numeric","integer","double")){
           stop(paste("Contrast variable", v, "is numeric. Please specify only character/factor contrasts."))
         }
