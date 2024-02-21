@@ -201,16 +201,16 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
   #Make formulae. as.formula does not work
   if(grepl("\\|", model)){
     model.temp <- strsplit(gsub(" ", "", model), split = "\\+\\(1")[[1]][1]
-    model.lm <- paste("expression", model.temp, sep="")
+    model_lm <- paste("expression", model.temp, sep="")
   } else {
-    model.lm <- paste("expression", model, sep="")
-    model.lm <- gsub(" ","",model.lm)
+    model_lm <- paste("expression", model, sep="")
+    model_lm <- gsub(" ","",model_lm)
   }
-  model.lme <- paste("expression", gsub(" ", "", model), sep="")
+  model_lme <- paste("expression", gsub(" ", "", model), sep="")
 
   #Model message
-  if(run_lm){ message(paste("lm model:",model.lm))}
-  if(run_lme | run_lmerel){ message(paste("lme/lmerel model:",model.lme))}
+  if(run_lm){ message(paste("lm model:",model_lm))}
+  if(run_lme | run_lmerel){ message(paste("lme/lmerel model:",model_lme))}
 
   #If no contrast variable set, as all
   if(run_contrast & is.null(contrast_var)){
@@ -269,7 +269,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
   to.model.ls <- kimma_cleaning(dat, kin, patientID, libraryID,
                                 counts, meta, genes, weights,
                                 subset_var, subset_lvl, subset_genes,
-                                model.lm, genotype_name, run_lmerel)
+                                model_lm, genotype_name, run_lmerel)
 
   ###### Run models ######
   #create blank df to hold results
@@ -297,7 +297,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     if(run_lm){
     #Wrap model run in error catch to allow loop to continue even if a single model fails
      results.lm.ls <- tryCatch({
-       kimma_lm(model.lm, to.model.gene, gene, use_weights, metrics)
+       kimma_lm(model_lm, to.model.gene, gene, use_weights, metrics)
      }, error=function(e){
        results.lm.ls[["error"]] <- data.frame(model="lm",
                                                gene=gene,
@@ -311,7 +311,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     if(run_lme){
       #Wrap model run in error catch to allow loop to continue even if a single model fails
       results.lme.ls <- tryCatch({
-        kimma_lme(model.lme, to.model.gene, gene, use_weights, metrics)
+        kimma_lme(model_lme, to.model.gene, gene, use_weights, metrics)
         }, error=function(e){
           results.lme.ls[["error"]] <- data.frame(model="lme",
                                                   gene=gene,
@@ -325,7 +325,7 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     if(run_lmerel){
       #Wrap model run in error catch to allow loop to continue even if a single model fails
       results.kin.ls <- tryCatch({
-        kimma_lmerel(model.lme, to.model.gene, gene, to.model.ls[["kin.subset"]],
+        kimma_lmerel(model_lme, to.model.gene, gene, to.model.ls[["kin.subset"]],
                      use_weights, patientID, metrics)
         }, error=function(e){
           results.kin.ls[["error"]] <- data.frame(model="lmerel",
