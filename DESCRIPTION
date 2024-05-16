@@ -1,7 +1,7 @@
 Package: kimma
 Type: Package
 Title: Kinship In Mixed Model Analysis of RNA-seq
-Version: 1.6.2
+Version: 1.6.3
 Author: Kim Dill-McFarland
 Maintainer: Kim Dill-McFarland <kadm@uw.edu>
 Description: Linear mixed effects models with pairwise kinship for RNA-seq data.
@@ -31,7 +31,7 @@ Imports:
     tidyselect
 RoxygenNote: 7.3.1
 Depends: 
-    R (>= 4.3)
+    R (>= 4.4)
 Suggests: 
     testthat (>= 3.0.0),
     edgeR
