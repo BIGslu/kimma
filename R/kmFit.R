@@ -167,7 +167,9 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
   if(!is.null(subset_var) & is.null(subset_lvl)){
     stop("Sample subsetting has been selected. Please also provide subset_lvl")}
   if(run_lmerel & !grepl("\\|", model)){
-    stop("Kinship models require a random effect in the model as in (1 | ptID)")}
+    stop("Kinship models require a random effect in the model as in (1 | patientID)")}
+  if(run_lme & !grepl("\\|", model)){
+    stop("LME models require a random effect in the model")}
   if(is.null(kin) & run_lmerel){
     stop("Kinship matrix is required to run lmerel")}
   if(!run_lm & !run_lme & !run_lmerel & !run_contrast){
