@@ -181,5 +181,9 @@ summarise_kmFit <- function(fdr, fdr_cutoff = c(0.05,0.1,0.2,0.3,0.4,0.5),
 #' @rdname summarise_kmFit
 #' @export
 summarize_kmFit <- summarise_kmFit
+#' @rdname summarise_kmFit
+#' @export
 summarise_lmFit <- summarise_kmFit
+#' @rdname summarise_kmFit
+#' @export
 summarize_lmFit <- summarise_kmFit
