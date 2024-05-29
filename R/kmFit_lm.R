@@ -100,7 +100,7 @@ kmFit_lm <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
   model_lm <- gsub(" ","",model_lm)
 
   #Model message
-  if(run_lm){ message(paste("lm model:",model_lm))}
+  message(paste("lm model:",model_lm))
 
   #If no contrast variable set, as all
   if(run_contrast & is.null(contrast_var)){
@@ -179,7 +179,6 @@ kmFit_lm <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     #### LM model #####
     #Run linear model without kinship
     results.lm.ls <- NULL
-    if(run_lm){
     #Wrap model run in error catch to allow loop to continue even if a single model fails
      results.lm.ls <- tryCatch({
        kimma_lm(model_lm, to.model.gene, gene, use_weights, metrics)
@@ -189,7 +188,6 @@ kmFit_lm <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                                                message=conditionMessage(e))
        return(results.lm.ls)
      })
-    }
 
     #### Contrasts ####
     contrast.lm <- NULL

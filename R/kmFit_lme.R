@@ -183,8 +183,7 @@ kmFit_lme <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
 
     #### LME model #####
     results.lme.ls <- NULL
-    if(run_lme){
-      #Wrap model run in error catch to allow loop to continue even if a single model fails
+    #Wrap model run in error catch to allow loop to continue even if a single model fails
       results.lme.ls <- tryCatch({
         kimma_lme(model_lme, to.model.gene, gene, use_weights, metrics)
         }, error=function(e){
@@ -193,7 +192,6 @@ kmFit_lme <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                                                   message=conditionMessage(e))
           return(results.lme.ls)
         })
-    }
 
     #### Contrasts ####
     contrast.lm <- NULL

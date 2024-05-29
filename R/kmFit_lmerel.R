@@ -185,8 +185,7 @@ kmFit_lmerel <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID"
 
     ##### Kinship model ######
     results.kin.ls <- NULL
-    if(run_lmerel){
-      #Wrap model run in error catch to allow loop to continue even if a single model fails
+    #Wrap model run in error catch to allow loop to continue even if a single model fails
       results.kin.ls <- tryCatch({
         kimma_lmerel(model_lme, to.model.gene, gene, to.model.ls[["kin.subset"]],
                      use_weights, patientID, metrics)
@@ -196,7 +195,6 @@ kmFit_lmerel <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID"
                                                   message=conditionMessage(e))
           return(results.kin.ls)
         })
-    }
 
     #### Contrasts ####
     contrast.lm <- NULL
