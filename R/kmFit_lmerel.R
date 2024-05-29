@@ -32,55 +32,7 @@
 #' @export
 #'
 #' @examples
-#' NEED TO BE UPDATED
-#' # All samples and all genes
-#' ## Not run
-#' # kmFit(dat = example.voom,
-#' #     kin = example.kin, run_lmerel = TRUE,
-#' #     model = "~ virus + (1|ptID)")
-#'
-#' # Subset samples and genes
-#' ## Also with weights
-#' kmFit(dat = example.voom,
-#'       run_lm = TRUE, use_weights = FALSE,
-#'       subset_var = list("asthma"), subset_lvl = list(c("asthma")),
-#'       subset_genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
-#'       model = "~ virus + (1|ptID)")
-#'
-#' # Pairwise contrasts
-#' ## Continuous interaction
-#' kmFit(dat = example.voom,
-#'       run_lme = TRUE, run_contrast = TRUE,
-#'       subset_genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
-#'       model = "~ virus + asthma * median_cv_coverage + (1|ptID)",
-#'       contrast_var=c("asthma:median_cv_coverage"))
-#'
-#' ## Categorical interaction
-#' kmFit(dat = example.voom, kin = example.kin,
-#'       run_lmerel = TRUE, run_contrast = TRUE, metrics=TRUE,
-#'       subset_genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
-#'       model = "~ virus*asthma + (1|ptID)",
-#'       contrast_var=c("virus:asthma"))
-#'
-#' # Model with failed genes
-#' kmFit(dat = example.voom,
-#'       kin = example.kin, run_lmerel = TRUE, run_lm = TRUE,
-#'       subset_genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
-#'       model = "~ virus*asthma + lib.size + norm.factors + median_cv_coverage + ptID + (1|ptID)")
-#'
-#' # Non-dat data
-#' kmFit(counts = example.voom$E, meta = example.voom$targets,
-#'       run_lm = TRUE, use_weights = FALSE,
-#'       subset_genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
-#'       model = "~ virus + (1|ptID)")
-#'
-#' # Three level variable
-#' example.voom$targets$lvl <- rep(c("A","B","C"), length(example.voom$targets$libID)/3)
-#' kmFit(dat = example.voom,
-#'       run_lme= TRUE, run_contrast = TRUE,
-#'       subset_genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
-#'       model = "~ lvl + (1|ptID)")
-#'
+#' #NEED TO BE UPDATED
 
 kmFit_lmerel <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                   counts=NULL, meta=NULL, genes=NULL, weights=NULL,
