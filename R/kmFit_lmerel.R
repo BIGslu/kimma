@@ -82,7 +82,7 @@
 #'       model = "~ lvl + (1|ptID)")
 #'
 
-kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
+kmFit_lmerel <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                   counts=NULL, meta=NULL, genes=NULL, weights=NULL,
                   subset_var = NULL, subset_lvl = NULL, subset_genes = NULL,
                   model, use_weights=FALSE,
