@@ -103,6 +103,8 @@ kmFit_lmerel <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID"
 
   ###### Formulae #####
   #Make formulae. as.formula does not work
+  model.temp <- strsplit(gsub(" ", "", model), split = "\\+\\(1")[[1]][1]
+  model_lm <- paste("expression", model.temp, sep="")
   model_lme <- paste("expression", gsub(" ", "", model), sep="")
 
   #Model message
@@ -160,8 +162,7 @@ kmFit_lmerel <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID"
   to.model.ls <- kimma_cleaning(dat, kin, patientID, libraryID,
                                 counts, meta, genes, weights,
                                 subset_var, subset_lvl, subset_genes,
-                                model_lme, genotype_name, run_lmerel=TRUE)
-  ## CHECK - kmFit has model_lm in cleaning. IDK if using model_lme breaks anything
+                                model_lm, genotype_name, run_lmerel=TRUE)
 
   ###### Run models ######
   #create blank df to hold results
