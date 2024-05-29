@@ -33,6 +33,9 @@
 #'
 #' @examples
 #' #NEED TO BE UPDATED
+#' kmFit_lmerel(dat = example.voom,
+#'     subset_genes = c("ENSG00000250479","ENSG00000250510","ENSG00000255823"),
+#'     kin = example.kin, model = "~ virus + (1|ptID)", run_contrast=TRUE)
 
 kmFit_lmerel <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
                   counts=NULL, meta=NULL, genes=NULL, weights=NULL,
