@@ -21,7 +21,7 @@
 #' @param run_contrast Logical if should run pairwise contrasts. If no matrix provided, all possible pairwise comparisons are completed.
 #' @param contrast_var Character vector of variable in model to run contrasts of. Interaction terms must be specified as "var1:var2". If NULL (default), all contrasts for all variables in the model are run
 #' @param metrics Logical if should calculate model fit metrics such as AIC, BIC, R-squared. Default is FALSE
-#' @param processors Numeric processors to run in parallel. Default is 2 less than the total available
+#' @param processors Numeric processors to run in parallel. Default is 2.
 #' @param p_method Character of FDR adjustment method. Values as in p.adjust( )
 #' @param genotype_name Character string. Used internally for kmFit_eQTL
 #'
@@ -141,11 +141,18 @@ kmFit <- function(dat=NULL, kin=NULL, patientID="ptID", libraryID="libID",
     #Use 2 in CRAN/Travis/AppVeyor
     processors.to.use <- 2
   } else if (is.null(processors)){
-    #Use 2 less than total if not user defined
-    processors.to.use <- parallel::detectCores()-2
-    if(processors.to.use == 0){
-      stop("Error processors: Default resulted in 0. Please correct.")
-      }
+    # #Use 2 less than total if not user defined
+    # processors.to.use <- parallel::detectCores()-2
+    # if(processors.to.use == 0){
+    #   stop("Error processors: Default resulted in 0. Please correct.")
+    #   }
+    # if user does not define number of processors, use 2
+    # check that more than 2 are available, otherwise use 1
+    if((parallel::detectCores()-2) < 1){
+      processors.to.use <- 1
+    }else{
+      processors.to.use <- 2
+    }
   } else {
     #Use user defined number
     processors.to.use <- processors
